@@ -1,0 +1,5 @@
+knowledge/Object_Detection detection
+
+---
+
+geometry_msgs/Point poke_position
