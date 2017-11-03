@@ -8,7 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 add_message_files(FILES ObjectDetection.msg)
-add_service_files(FILES PokeObject.srv)
+add_service_files(FILES PokeObject.srv VisObjectInfo.srv)
 
 generate_messages(
   DEPENDENCIES
