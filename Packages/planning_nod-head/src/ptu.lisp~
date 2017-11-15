@@ -1,0 +1,18 @@
+(in-package :planning-nod-head)
+(defvar *actionclient*)
+(defvar *actionserver*)
+(defvar *actiongoal*)
+(defvar *trans-stamped*)
+(defvar *x* 1.0)
+(defvar *y* 2.0)
+(defvar *z* -1.2)
+
+
+(defun main ()
+  (setf *actionclient* (actionlib:make-action-client "head_traj_controller/point_head_action" "pr2_controllers_msgs/PointHeadAction"))
+  (loop until
+    (actionlib:wait-for-server *actionclient*))
+  (setf *trans-stamped* (cl-transforms-stamped:to-msg (cl-transforms-stamped:make-point-stamped "base_link" 0 (cl-transforms:make-3d-vector *x* *y* *z*))))
+  (setf *actiongoal* (actionlib:make-action-goal *actionclient* target *trans-stamped*))
+  (actionlib:call-goal *actionclient* *actiongoal*))
+
