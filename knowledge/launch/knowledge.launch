@@ -1,0 +1,6 @@
+<launch>
+  <param name="initial_package" type="string" value="knowledge" />
+ 
+  <node name="json_prolog_node" pkg="json_prolog" type="json_prolog_node" cwd="node" output="screen" />
+  <node name="poke_service_node" pkg="knowledge" type="poke_service_node" output="screen" />
+</launch>

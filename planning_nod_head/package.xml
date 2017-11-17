@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>planning_nod-head</name>
+  <name>planning_nod_head</name>
   <version>0.4.0</version>
   <description>planning_nod-head</description>
   <author>Kevin Störmer, Vanessa Hassouna, Hauke Tietjen</author>
@@ -12,4 +12,7 @@
   <buildtool_depend>actionlib_lisp</buildtool_depend>
   <buildtool_depend>geometry_msgs</buildtool_depend>
   <buildtool_depend>pr2_controllers_msgs</buildtool_depend>
+  <buildtool_depend>motion_msgs</buildtool_depend>
+  <buildtool_depend>object_detection</buildtool_depend>
+
 </package>

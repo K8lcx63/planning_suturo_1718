@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>planning_nod-head</name>
+  <name>planning_nod_head</name>
   <version>0.4.0</version>
   <description>planning_nod-head</description>
   <author>Kevin Störmer, Vanessa Hassouna, Hauke Tietjen</author>
