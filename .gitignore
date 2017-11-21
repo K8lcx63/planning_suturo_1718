@@ -16,5 +16,7 @@ roslisp_common/
 simple_head/
 suturo_msgs/
 vision_test/
+knowledge/
+object_detection/
 \.rosinstall
 \.rosinstall\.bak
