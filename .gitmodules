@@ -1,0 +1,3 @@
+[submodule "suturo_msgs"]
+	path = suturo_msgs
+	url = https://github.com/menanuni/suturo_msgs.git
