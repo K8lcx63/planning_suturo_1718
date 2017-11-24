@@ -1,2 +1,2 @@
-string type
-geometry_msgs/Point position
+string error
+geometry_msgs/PointStamped position
