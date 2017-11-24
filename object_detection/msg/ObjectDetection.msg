@@ -1,2 +1,0 @@
-string error
-geometry_msgs/PointStamped position

@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>cram_beginner_tutorial</name>
+  <version>0.4.0</version>
+  <description>The cram_beginner_tutorial package</description>
+
+  <author>Lorenz Moesenlechner</author>
+  <author>Benjamin Brieber</author>
+  <author email="blandc@cs.uni-bremen.de">Mihai Pomarlan</author>
+  <author email="kazhoyan@cs.uni-bremen.de">Gayane Kazhoyan</author>
+  <author email="cpollok@uni-bremen.de">Christopher Pollok</author>
+
+  <maintainer email="kazhoyan@cs.uni-bremen.de">Gayane Kazhoyan</maintainer>
+
+  <license>BSD</license>
+
+  <url type="website">http://cram-system.org/tutorials</url>
+  <url type="bugtracker">https://github.com/cram2/cram_tutorials/issues</url>
+  <url type="repository">https://github.com/cram2/cram_tutorials</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>roslisp</depend>
+  <depend>cl_transforms</depend>
+  <depend>cram_executive</depend>
+  <depend>cram_language</depend>
+  <depend>cram_designators</depend>
+  <depend>cram_process_modules</depend>
+  <depend>cram_prolog</depend>
+  <depend>geometry_msgs</depend>
+  <depend>std_srvs</depend>
+  <depend>turtlesim</depend>
+</package>
