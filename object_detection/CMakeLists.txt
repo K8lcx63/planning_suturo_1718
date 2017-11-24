@@ -19,3 +19,5 @@ generate_messages(
 catkin_package(
 	CATKIN_DEPENDS message_runtime geometry_msgs std_msgs 
 )
+
+add_dependencies(gazebo_ros)
