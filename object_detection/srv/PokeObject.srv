@@ -2,4 +2,4 @@ ObjectDetection detection
 
 ---
 
-geometry_msgs/Point poke_position
+geometry_msgs/PointStamped poke_position
