@@ -1,0 +1,2 @@
+bool isStanding
+string information
