@@ -1,0 +1,14 @@
+(in-package :planning-nod-head)
+(defvar *actionclient*)
+(defvar *actionserver*)
+(defvar *actiongoal*)
+(defvar *trans-stamped*)
+        
+(defun callMotion ()
+(setf actionclient (actionlib:make-action-client "/moving" "motion_msgs/MovingCommandAction"))
+(setf xtrans (cl-transforms-stamped:to-msg (cl-transforms:make-3d-vector 5.0 3.0 1.2)))
+(setf actiongoal (actionlib:make-action-goal actionclient vector xtrans command 1))
+(actionlib:call-goal *actionclient* *actiongoal*)
+)
+
+
