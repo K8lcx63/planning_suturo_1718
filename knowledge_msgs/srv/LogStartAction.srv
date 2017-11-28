@@ -1,0 +1,8 @@
+string action_type
+string task_context
+time start_time
+string prev_action
+
+---
+
+bool success
