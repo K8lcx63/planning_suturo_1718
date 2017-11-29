@@ -1,0 +1,10 @@
+(in-package :planning-motion)
+
+(defun call-Vision-Point ()
+  "here we are asking the vision service for a point"
+	(roslisp:call-service "/VisObjectInfo" 'object_detection-srv:VisObjectInfo))
+  
+
+
+
+

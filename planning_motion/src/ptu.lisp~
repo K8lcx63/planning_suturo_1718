@@ -1,0 +1,10 @@
+(in-package :planning-motion)
+(defvar *test*)
+
+
+(defun main (x)
+  (setf *test* x)
+		
+
+
+

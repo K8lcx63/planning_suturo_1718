@@ -1,0 +1,13 @@
+# goal
+
+string obj_name
+
+---
+
+# result
+bool found
+geometry_msgs/PoseStamped pose
+---
+
+#feedback
+bool found
