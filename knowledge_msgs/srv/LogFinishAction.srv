@@ -1,6 +1,0 @@
-string action_type
-time end_time
-
----
-
-bool success
