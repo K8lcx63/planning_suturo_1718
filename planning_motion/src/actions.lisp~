@@ -1,6 +1,6 @@
 (in-package :planning-motion)
 
-(defun call-Motion-Move-Arm ()
+(defun call-Motion-Move-Arm (x y z)
   "Moves robot-arms into home position"
   (let actionclient 
     (actionlib:make-action-client "/moving" "motion_msgs/MovingCommandAction")
@@ -8,7 +8,7 @@
           (actionlib:wait-for-server actionclient))
     (let xtrans
       (cl-tf:make-point-stamped "base_link" 0 
-                                (cl-transforms:make-3d-vector 5.0 3.0 1.2)))
+                                (cl-transforms:make-3d-vector x y z)))
       (let actiongoal 
         (actionlib:make-action-goal actionclient point_stamped xtrans command 1)
         (actionlib:call-goal actionclient actiongoal))))
