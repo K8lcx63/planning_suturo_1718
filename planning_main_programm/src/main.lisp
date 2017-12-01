@@ -12,9 +12,9 @@
   (roslisp:with-ros-node ("planning_main")
 			 (planning-move::move-Head *x* *y* *z*)
 			 (planning-motion::call-Motion-Move-Arm)
-			 (let point-center-of-object (planning-vision::call-vision-point point-center-of-object)
-			 (planning-knowledge::ask-knowledge point-center-of-object))
-			 (planning-motion::call-Motion-Move-To-Point point-center-of-object)))
+			 (let ((point-center-of-object (planning-vision::call-vision-point)))
+			 (planning-knowledge::ask-knowledge point-center-of-object)
+			 (planning-motion::call-Motion-Move-To-Point point-center-of-object))))
 
 
 (defun init-variables ()

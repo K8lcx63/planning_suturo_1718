@@ -10,8 +10,8 @@
       (cl-tf:make-point-stamped "base_link" 0 
                                 (cl-transforms:make-3d-vector 5.0 3.0 1.2))))
       (let ((actiongoal 
-        (actionlib:make-action-goal actionclient point_stamped xtrans command 1)))
-        (actionlib:call-goal actionclient actiongoal)))))
+        (actionlib:make-action-goal actionclient point_stamped xtrans command 1)
+        (actionlib:call-goal actionclient actiongoal)))))))
 
 		
 
@@ -23,6 +23,7 @@
     (loop until
           (actionlib:wait-for-server actionclient))
     (let ((actiongoal
-      (actionlib:make-action-goal actionclient point_stamped point-center-of-object command 3)))
-      (actionlib:call-goal actionclient actiongoal))))
+      (actionlib:make-action-goal actionclient point_stamped point-center-of-object command 3)
+      (actionlib:call-goal actionclient actiongoal))))))
+
 
