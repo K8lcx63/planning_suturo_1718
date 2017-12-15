@@ -9,7 +9,7 @@
   (roslisp:call-service "/vision_main/objectPose" 'vision_msgs-srv:GetObjectInfo))
 
 (defun check-points-is-equal (msg-one msg-two delta)
-  "Maybe the ugliest function ever. Compares two points with delta."
+  "Compares two points with delta."
   (roslisp:with-fields ((x1 (geometry_msgs-msg:x geometry_msgs-msg:point)) 
                         (y1 (geometry_msgs-msg:y geometry_msgs-msg:point))
                         (z1 (geometry_msgs-msg:z geometry_msgs-msg:point)))
