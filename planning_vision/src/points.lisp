@@ -2,7 +2,27 @@
 
 (defun call-vision-point ()
   "Call vision service, to look for point. Returns ObjectDetection object"
-  (roslisp:call-service "/vision_main/objectPoint" 'object_detection-srv:VisObjectInfo))
+  (cpl:with-retry-counters ((retry-counter 5))
+    (cpl:with-failure-handling
+        ((cpl:simple-plan-failure (error-object)
+           (format t "An error happened: ~a~%" error-object)
+           (cpl:do-retry retry-counter
+             (format t "Now retrying~%")
+             (cpl:retry))
+           (format t "Reached maximum amount of retries. Now propagating the failure up.~%")))
+      (let ((response
+              (roslisp:call-service
+               "/vision_main/objectPoint"
+               'object_detection-srv:VisObjectInfo))
+            )
+        (roslisp:with-fields (object_detection-msg:error) (object_detection-srv:object response)
+          (if (or (string= "Cloud empty. " object_detection-msg:error)
+                  (string= "Cloud was empty after filtering. " object_detection-msg:error)
+                  (string= "No plane found. " object_detection-msg:error)
+                  (string= "Final extracted cluster was empty. " object_detection-msg:error))
+              (cpl:fail "service call failed")
+              (format t "service call successful")))))))
+
 
 (defun call-vision-pose ()
   "Call vision service, to look for point. Returns ObjectDetection object"
