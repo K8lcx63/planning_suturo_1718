@@ -10,6 +10,7 @@
                geometry_msgs-msg
                pr2_controllers_msgs-msg
 	       object_detection-srv
+	       motion_msgs-srvs
 	       motion_msgs-msg
 		)
   :components
