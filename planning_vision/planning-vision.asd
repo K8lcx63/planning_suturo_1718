@@ -12,7 +12,7 @@
 	       object_detection-srv
 	       vision_msgs-srv
 	       motion_msgs-msg
-		)
+	       cram-language)
   :components
   ((:module "src"
     :components
