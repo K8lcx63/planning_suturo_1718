@@ -23,7 +23,7 @@
                             (let ((point-center-of-object
                                     (progn
                                       (roslisp::ros-info "Main" "Calling Vision for center point of object")
-                                      (planning-vision::call-vision-point)))
+                                      (planning-vision::call-vision-point))))
                               (progn
                                 (setf *point-center-of-object* point-center-of-object)
                                 (roslisp:ros-info "Main" "Asking knowledge where to poke")
@@ -42,6 +42,7 @@
       )
     )
   )
+  
 
 
 (defun init-variables ()
