@@ -1,10 +1,9 @@
 (in-package :planning-main-programm)
 
-(defvar *point-center-of-object*)
+(defvar *point-center-of-object* nil)
 
 (defun main ()
   "Main function - Executing and planning robot behaviour on the top level"
-  (init-variables)
   (roslisp:with-ros-node ("planning_main")
     (roslisp::ros-info "Main" "Robotlife seems hard, but lets do this")
     (if (planning-move::find-Object 1.0 0.5)
@@ -29,19 +28,8 @@
                             (planning-motion::call-Motion-Move-To-Point point-for-motion)
                             (return-from check-for-valid-point))
                           )
-                         (roslisp::ros-info "Main" "Object position doesnt seem to be valid anymore, i will check again")
-                    )
-                   )
-              )
-        )
-      )
-    )
-  )
+                         (roslisp::ros-info "Main" "Object position doesnt seem to be valid anymore, i will check again")))))))
         (return-from main  (roslisp::ros-info "Main" "Sorry i couldnt find any object :c")))))
 
 
-(defun init-variables ()
-  "initialize internal variables"
-  (setf *x* 1.0)
-  (setf *z* 0.5))
 
