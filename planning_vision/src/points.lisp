@@ -29,15 +29,19 @@
                   (stringp y)
                   (stringp z))
               (cpl:fail "One or more of the coordinates returned by the service /vision_main/objectPoint is of type String which is likely the not a number error")
-          (roslisp:with-fields (object_detection-msg:error) (object_detection-srv:object response)
-            (if (or (string= "Cloud empty. " object_detection-msg:error)
-                    (string= "Cloud was empty after filtering. " object_detection-msg:error)
-                    (string= "No plane found. " object_detection-msg:error)
-                    (string= "Final extracted cluster was empty. " object_detection-msg:error))
-                (cpl:fail "service call failed")
-                (progn
-                  (format t "service call successful")
-                  (return-from call-vision-point (roslisp:call-service "/vision_main/objectPoint" 'object_detection-srv:VisObjectInfo)))))))))))
+              (if (or (sb-ext:float-nan-p x)
+                      (sb-ext:float-nan-p y)
+                      (sb-ext:float-nan-p z))
+                  (cpl:fail "One or more of the coordinates returned by the service /vision_main/objectPoint is  not a number")
+                  (roslisp:with-fields (object_detection-msg:error) (object_detection-srv:object response)
+                    (if (or (string= "Cloud empty. " object_detection-msg:error)
+                            (string= "Cloud was empty after filtering. " object_detection-msg:error)
+                            (string= "No plane found. " object_detection-msg:error)
+                            (string= "Final extracted cluster was empty. " object_detection-msg:error))
+                        (cpl:fail "service call failed")
+                        (progn
+                          (format t "service call successful")
+                          (return-from call-vision-point (roslisp:call-service "/vision_main/objectPoint" 'object_detection-srv:VisObjectInfo))))))))))))
 
 
 (defun call-vision-pose ()
