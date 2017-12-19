@@ -1,8 +1,10 @@
 (in-package :planning-vision)
 
+(defvar not-a-number)
+
 (defun call-vision-point ()
   "Call vision service, to look for point. Returns ObjectDetection object"
-  (cpl:with-retry-counters ((retry-counter 5))
+  (cpl:with-retry-counters ((retry-counter 10))
     (cpl:with-failure-handling
         ((cpl:simple-plan-failure (error-object)
            (format t "An error happened: ~a~%" error-object)
@@ -13,17 +15,29 @@
       (let ((response
               (roslisp:call-service
                "/vision_main/objectPoint"
-               'object_detection-srv:VisObjectInfo))
+               'object_detection-srv:visobjectinfo))
             )
-        (roslisp:with-fields (object_detection-msg:error) (object_detection-srv:object response)
-          (if (or (string= "Cloud empty. " object_detection-msg:error)
-                  (string= "Cloud was empty after filtering. " object_detection-msg:error)
-                  (string= "No plane found. " object_detection-msg:error)
-                  (string= "Final extracted cluster was empty. " object_detection-msg:error))
-              (cpl:fail "service call failed")
-              (progn
-                (format t "service call successful")
-                (return-from call-vision-point (roslisp:call-service "/vision_main/objectPoint" 'object_detection-srv:VisObjectInfo)))))))))
+        ;;Debug um NaN von Vision herauszufinden
+        (setf not-a-number response)
+        (print not-a-number)
+        (roslisp:with-fields ((x (geometry_msgs-msg:x geometry_msgs-msg:point)) 
+                              (y (geometry_msgs-msg:y geometry_msgs-msg:point))
+                              (z (geometry_msgs-msg:z geometry_msgs-msg:point)))
+            (object_detection-msg:position (object_detection-srv:object response))
+          ;;If Vision returns a NaN and it is of type String this will recover from the error
+          (if (or (stringp x)
+                  (stringp y)
+                  (stringp z))
+              (cpl:fail "One or more of the coordinates returned by the service /vision_main/objectPoint is of type String which is likely the not a number error")
+          (roslisp:with-fields (object_detection-msg:error) (object_detection-srv:object response)
+            (if (or (string= "Cloud empty. " object_detection-msg:error)
+                    (string= "Cloud was empty after filtering. " object_detection-msg:error)
+                    (string= "No plane found. " object_detection-msg:error)
+                    (string= "Final extracted cluster was empty. " object_detection-msg:error))
+                (cpl:fail "service call failed")
+                (progn
+                  (format t "service call successful")
+                  (return-from call-vision-point (roslisp:call-service "/vision_main/objectPoint" 'object_detection-srv:VisObjectInfo)))))))))))
 
 
 (defun call-vision-pose ()
@@ -36,7 +50,7 @@
   (roslisp:with-fields ((x1 (geometry_msgs-msg:x geometry_msgs-msg:point)) 
                         (y1 (geometry_msgs-msg:y geometry_msgs-msg:point))
                         (z1 (geometry_msgs-msg:z geometry_msgs-msg:point)))
-                     (object_detection-msg:position (object_detection-srv:object msg-one))
+      (object_detection-msg:position (object_detection-srv:object msg-one))
      (roslisp:with-fields ((x2 (geometry_msgs-msg:x geometry_msgs-msg:point)) 
                            (y2 (geometry_msgs-msg:y geometry_msgs-msg:point))
                            (z2 (geometry_msgs-msg:z geometry_msgs-msg:point)))
