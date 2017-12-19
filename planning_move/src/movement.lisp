@@ -1,5 +1,8 @@
 (in-package :planning-move)
 
+(defvar *VisionsMethodeSoon* T)
+
+
 (defun move-Head (x y z)
   "Moving robot head via head_traj_controller/point_head_action. X Y Z are treated as coordinates."
   (let ((actionclient 
@@ -28,3 +31,18 @@
 	(actionlib:make-action-goal actionclient target_pose pose-to-drive-to)))
   (actionlib:call-goal actionclient actiongoal)))))
 
+
+(defun find-Object (x z)
+  "Looking around from 0-2 and 0-(-2) to find an object"
+(let ((positions (make-array '(8) 
+   :initial-contents '(0.0 0.5 1 1.5 2.0 -0.5 -1.5 -2.0))))
+ (loop for i across positions do
+   (progn
+     (let ((y i))
+       (move-Head x y z))
+     (if *VisionsMethodeSoon*
+       (progn
+         (roslisp::ros-info "Main" "I found an object, lets move on ")
+         (return-from find-Object T))
+       (roslisp::ros-info "Main" "I can't find any object, let me try it again")))))
+(return-from find-Object nil))
