@@ -4,6 +4,7 @@
 
 (defun call-Motion-Move-Arm ()
   "Moves robot-arms into home position"
+   (roslisp::ros-info "Motion" "getting into home position")
   (let ((actionclient 
           (actionlib:make-action-client "/moving" "motion_msgs/MovingCommandAction")))
     (loop until
