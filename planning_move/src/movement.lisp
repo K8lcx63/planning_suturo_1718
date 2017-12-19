@@ -1,6 +1,8 @@
 (in-package :planning-move)
 
 (defvar *VisionsMethodeSoon* T)
+(defvar *test*)
+(defvar *t* 1)
 
 
 (defun move-Head (x y z)
@@ -40,9 +42,19 @@
    (progn
      (let ((y i))
        (move-Head x y z))
-     (if *VisionsMethodeSoon*
+     (if (planning-move::askFor)
        (progn
          (roslisp::ros-info "Main" "I found an object, lets move on ")
          (return-from find-Object T))
        (roslisp::ros-info "Main" "I can't find any object, let me try it again")))))
 (return-from find-Object nil))
+
+(defun askFor ()
+  "asking vision for the ice"
+  (setf *test* (roslisp:call-service "/vision_main/objectPose" 'vision_msgs-srv:GetObjectInfo))
+  (roslisp:with-fields (info) *test* (setf *test* info))
+  (roslisp:with-fields (isstanding) *test* (setf *test* isstanding))
+  (if (= *test* 2)
+      (return-from askFor T)
+      (return-from askFor nil)))
+  
