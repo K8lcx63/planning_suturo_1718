@@ -21,7 +21,9 @@
                   (string= "No plane found. " object_detection-msg:error)
                   (string= "Final extracted cluster was empty. " object_detection-msg:error))
               (cpl:fail "service call failed")
-              (format t "service call successful")))))))
+              (progn
+                (format t "service call successful")
+                (return-from call-vision-point (roslisp:call-service "/vision_main/objectPoint" 'object_detection-srv:VisObjectInfo)))))))))
 
 
 (defun call-vision-pose ()
