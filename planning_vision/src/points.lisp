@@ -15,9 +15,8 @@
       (let ((response
               (roslisp:call-service
                "/vision_main/objectPoint"
-               'object_detection-srv:visobjectinfo))
-            )
-        ;;Debug um NaN von Vision herauszufinden
+               'object_detection-srv:visobjectinfo)))
+        ;;Debug to find NaN message from vision
         (setf not-a-number response)
         (print not-a-number)
         (roslisp:with-fields ((x (geometry_msgs-msg:x geometry_msgs-msg:point)) 
@@ -28,7 +27,8 @@
           (if (or (stringp x)
                   (stringp y)
                   (stringp z))
-              (cpl:fail "One or more of the coordinates returned by the service /vision_main/objectPoint is of type String which is likely the not a number error")
+              (cpl:fail "One or more of the coordinates returned by the service /vision_main/objectPoint is of type String
+                        which is likely the not a number error")
               (if (or (sb-ext:float-nan-p x)
                       (sb-ext:float-nan-p y)
                       (sb-ext:float-nan-p z))
@@ -41,7 +41,8 @@
                         (cpl:fail "service call failed")
                         (progn
                           (format t "service call successful")
-                          (return-from call-vision-point (roslisp:call-service "/vision_main/objectPoint" 'object_detection-srv:VisObjectInfo))))))))))))
+                          (return-from call-vision-point
+                            (roslisp:call-service "/vision_main/objectPoint" 'object_detection-srv:VisObjectInfo))))))))))))
 
 
 (defun call-vision-pose ()
