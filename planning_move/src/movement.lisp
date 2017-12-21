@@ -1,9 +1,5 @@
 (in-package :planning-move)
 
-(defvar *VisionsMethodeSoon* T)
-(defvar *test*)
-(defvar *t* 1)
-
 
 (defun move-Head (x y z)
   "Moving robot head via head_traj_controller/point_head_action. X Y Z are treated as coordinates."
@@ -38,23 +34,22 @@
   "Looking around from 0-2 and 0-(-2) to find an object"
 (let ((positions (make-array '(8) 
    :initial-contents '(0.0 0.5 1 1.5 2.0 -0.5 -1.5 -2.0))))
- (loop for i across positions do
-   (progn
-     (let ((y i))
-       (move-Head x y z))
-     (if (planning-move::askFor)
-       (progn
-         (roslisp::ros-info "Main" "I found an object, lets move on ")
-         (return-from find-Object T))
-       (roslisp::ros-info "Main" "I can't find any object, let me try it again")))))
+  (loop for i across positions do
+    (progn
+      (let ((y i))
+        (move-Head x y z))
+      (if (planning-move::askFor)
+          (progn
+            (roslisp::ros-info "find-Object" "I found an object, lets move on ")
+            (return-from find-Object T))
+          (roslisp::ros-info "find-Object" "I can't find any object, let me try it again")))))
 (return-from find-Object nil))
 
 (defun askFor ()
   "asking vision for the ice"
-  (setf *test* (roslisp:call-service "/vision_main/objectPose" 'vision_msgs-srv:GetObjectInfo))
-  (roslisp:with-fields (info) *test* (setf *test* info))
-  (roslisp:with-fields (isstanding) *test* (setf *test* isstanding))
-  (if (= *test* 2)
-      (return-from askFor T)
-      (return-from askFor nil)))
+  (let ((object-Info (roslisp:call-service "/vision_main/objectPose" 'vision_msgs-srv:GetObjectInfo)))
+    (roslisp:with-fields (info) object-Info (setf object-Info info))
+    (roslisp:with-fields (isstanding) object-Info (setf object-Info isstanding))
+    (if (= object-Info 2)
+        (return-from askFor T))))
   
