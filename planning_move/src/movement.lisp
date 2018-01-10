@@ -1,6 +1,9 @@
 (in-package :planning-move)
 
 (defvar *VisionsMethodeSoon* T)
+(defvar *beliefstateHead* 0)
+
+(defvar *headMovementList* '((0 -1.5)(1 -1.0)(2 -0.5)(3 0.0)(4 0.5)(5 1.0)(6 1.5)(7 1.0)(8 0.5)(9 0.0)(10 -0.5)(11 -1.0)))
 
 
 (defun move-Head (x y z)
@@ -34,15 +37,9 @@
 
 (defun find-Object (x z)
   "Looking around from 0-2 and 0-(-2) to find an object"
-(let ((positions (make-array '(8) 
-   :initial-contents '(0.0 0.5 1 1.5 2.0 -0.5 -1.5 -2.0))))
- (loop for i across positions do
-   (progn
-     (let ((y i))
-       (move-Head x y z))
-     (if *VisionsMethodeSoon*
-       (progn
-         (roslisp::ros-info "Main" "I found an object, lets move on ")
-         (return-from find-Object T))
-       (roslisp::ros-info "Main" "I can't find any object, let me try it again")))))
-(return-from find-Object nil))
+  (loop for i from *beliefstateHead* to 24 do
+        (let ((c (mod i 12)))
+          (progn
+            (move-head x (second (assoc c *headMovementList*)) z)
+            (setf *beliefstateHead* c)
+            (print c)))))
