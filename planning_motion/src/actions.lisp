@@ -1,7 +1,17 @@
 (in-package :planning-motion)
 
+(defun motion-Home ()
+ "gibt die funktion mit true or false aus diese Dient erstmal als basic konstrukt und wird später noch genauer bearbeitet wenn die Funktioin drum herrum entstanden ist."
+(let ((result
+        (planning-motion::call-Motion-Move-Arm)))
+  (roslisp:with-fields(successful) result (print successful))))
 
-
+(defun motion-To-Point (point-center-Of-object)
+ "gibt die funktion mit true or false aus diese Dient erstmal als basic konstrukt und wird später noch genauer bearbeitet wenn die Funktioin drum herrum entstanden ist.gibt die funktion mit true or false aus"
+(let ((result
+        (planning-motion::call-Motion-Move-To-Point point-center-of-object)))
+  (roslisp:with-fields(successful) result (return-from motion-To-Point successful))))
+        
 (defun call-Motion-Move-Arm ()
   "Moves robot-arms into home position"
    (roslisp::ros-info "Motion" "getting into home position")
@@ -15,7 +25,7 @@
                                        (cl-transforms:make-3d-vector 5.0 3.0 1.2)))))
           (let ((actiongoal 
                   (actionlib:make-action-goal actionclient point_stamped xtrans command 1)))
-            (actionlib:call-goal actionclient actiongoal)))))
+                    (actionlib:call-goal actionclient actiongoal)))))
 
 		
 

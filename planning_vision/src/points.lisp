@@ -63,22 +63,22 @@
        (let (
              (dx (abs (- x1 x2)))
              (dy (abs (- y1 y2)))
-             (dz (abs (- z1 z2)))
-             )
+             (dz (abs (- z1 z2))))
          (if (and
               (<= dx delta)
               (<= dy delta)
-              (<= dz delta)
-              )
+              (<= dz delta))
              (print t)
-             (print nil)
-             )
-         )
-       )
-    )
-  )
+             (print nil))))))
     
   
+(defun askFor ()
+  "asking vision for the ice"
+  (let ((object-Info (roslisp:call-service "/vision_main/objectPose" 'vision_msgs-srv:GetObjectInfo)))
+    (roslisp:with-fields (info) object-Info (setf object-Info info))
+    (roslisp:with-fields (isstanding) object-Info (setf object-Info isstanding))
+    (if (= object-Info 2)
+        (return-from askFor T))))
   
   
 
