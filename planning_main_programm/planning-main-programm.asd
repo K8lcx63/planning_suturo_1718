@@ -14,8 +14,7 @@
 	       planning-motion
 	       planning-vision
 	       planning-knowledge
-	       planning-move
-	       cram-language)
+	       planning-move)
   :components
   ((:module "src"
     :components
