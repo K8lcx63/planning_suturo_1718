@@ -14,7 +14,6 @@
   <buildtool_depend>pr2_controllers_msgs</buildtool_depend>
   <buildtool_depend>motion_msgs</buildtool_depend>
   <buildtool_depend>object_detection</buildtool_depend>
-  <buildtool_depend>planning_vision</buildtool_depend>
 
 
 </package>
