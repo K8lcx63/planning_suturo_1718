@@ -50,8 +50,7 @@
   (let ((object-Info (roslisp:call-service "/vision_main/objectPose" 'vision_msgs-srv:GetObjectInfo)))
     (roslisp:with-fields (info) object-Info (setf object-Info info))
     (roslisp:with-fields (isstanding) object-Info (setf object-Info isstanding))
-    (if (= object-Info 2)
-        (return-from askFor T))))
+    (return-from askFor T)))
   
 
 
