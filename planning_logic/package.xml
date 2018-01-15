@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>planning_main_programm</name>
+  <name>planning_logic</name>
   <version>0.4.0</version>
   <description>planning_main_programm</description>
   <author>Kevin Störmer, Vanessa Hassouna, Hauke Tietjen</author>
@@ -19,6 +19,5 @@
   <buildtool_depend>planning_vision</buildtool_depend>
   <buildtool_depend>planning_move</buildtool_depend>
   <buildtool_depend>cram-language</buildtool_depend>
-  <buildtool_depend>planning_logic</buildtool_depend>
 
 </package>

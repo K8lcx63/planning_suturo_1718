@@ -1,4 +1,4 @@
-(defsystem planning-main-programm
+(defsystem planning-logic
 
   :author "Kevin Störmer, Vanessa Hassouna, Hauke Tietjen"
   :maintainer "Kevin Störmer, Vanessa Hassouna, Hauke Tietjen"
@@ -14,10 +14,9 @@
 	       planning-motion
 	       planning-vision
 	       planning-knowledge
-	       planning-move
-	       planning-logic)
+	       planning-move)
   :components
   ((:module "src"
     :components
     ((:file "package")
-     (:file "main" :depends-on ("package"))))))
+     (:file "logic" :depends-on ("package"))))))
