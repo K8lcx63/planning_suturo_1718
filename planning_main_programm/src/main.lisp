@@ -1,7 +1,7 @@
 (in-package :planning-main-programm)
 
 (defvar *point-center-of-object* nil)
-2
+
 (defun main ()
   "Main function - Executing and planning robot behaviour on the top level"
   (roslisp:with-ros-node ("planning_main")
