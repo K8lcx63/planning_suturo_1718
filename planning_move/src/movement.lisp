@@ -35,11 +35,18 @@
   (actionlib:call-goal actionclient actiongoal)))))
 
 
-(defun find-Object (x z)
-  "Looking around from 0-2 and 0-(-2) to find an object"
-  (loop for i from *beliefstateHead* to 24 do
-        (let ((c (mod i 12)))
-          (progn
-            (move-head x (second (assoc c *headMovementList*)) z)
-            (setf *beliefstateHead* c)
-            (print c)))))
+(defun find-Object (x z objectString)
+  "Looking around from 0-2 and 0-(-2) to find an object, restarting at current Point if reused"
+  (block find-Object-Start 
+    (loop for i from *beliefstateHead* to 24 do
+      (let ((c (mod i 12)))
+        (progn
+          (move-head x (second (assoc c *headMovementList*)) z)
+          (setf *beliefstateHead* c)
+          (if (planning-knowledge::is-Object i)
+              (return-from find-Object-Start)
+              ))))
+    (roslisp::ros-info "find-Object" "Couldnt find any Object in front of me")
+    (return-from find-Object nil))
+  (roslisp::ros-info "find-Object" "I see the Object. Head is in Position")
+  (return-from find-Object T))
