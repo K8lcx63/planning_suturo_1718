@@ -1,4 +1,4 @@
-(defsystem planning-logic
+(defsystem planning-motion
 
   :author "Kevin Störmer, Vanessa Hassouna, Hauke Tietjen"
   :maintainer "Kevin Störmer, Vanessa Hassouna, Hauke Tietjen"
@@ -10,13 +10,9 @@
                geometry_msgs-msg
                pr2_controllers_msgs-msg
 	       object_detection-srv
-	       motion_msgs-msg
-	       planning-motion
-	       planning-vision
-	       planning-knowledge
-	       planning-move)
+	       motion_msgs-msg)
   :components
   ((:module "src"
     :components
     ((:file "package")
-     (:file "logic" :depends-on ("package"))))))
+     (:file "motion-actions" :depends-on ("package"))))))

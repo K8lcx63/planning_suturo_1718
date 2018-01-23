@@ -1,6 +1,6 @@
 (in-package :cl-user)
 
 
-(defpackage planning-main-programm
+(defpackage planning-main
   (:use #:common-lisp))
 

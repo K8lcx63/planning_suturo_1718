@@ -1,4 +1,4 @@
-(defsystem planning-knowledge
+(defsystem planning-vision
 
   :author "Kevin Störmer, Vanessa Hassouna, Hauke Tietjen"
   :maintainer "Kevin Störmer, Vanessa Hassouna, Hauke Tietjen"
@@ -10,9 +10,11 @@
                geometry_msgs-msg
                pr2_controllers_msgs-msg
 	       object_detection-srv
-	       motion_msgs-msg)
+	       vision_msgs-srv
+	       motion_msgs-msg
+	       cram-language)
   :components
   ((:module "src"
     :components
     ((:file "package")
-     (:file "ask" :depends-on ("package"))))))
+     (:file "vision-communicate" :depends-on ("package"))))))

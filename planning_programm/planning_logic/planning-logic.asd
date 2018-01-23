@@ -1,4 +1,4 @@
-(defsystem planning-vision
+(defsystem planning-logic
 
   :author "Kevin Störmer, Vanessa Hassouna, Hauke Tietjen"
   :maintainer "Kevin Störmer, Vanessa Hassouna, Hauke Tietjen"
@@ -10,11 +10,13 @@
                geometry_msgs-msg
                pr2_controllers_msgs-msg
 	       object_detection-srv
-	       vision_msgs-srv
 	       motion_msgs-msg
-	       cram-language)
+	       planning-motion
+	       planning-vision
+	       planning-knowledge
+	       planning-move)
   :components
   ((:module "src"
     :components
     ((:file "package")
-     (:file "points" :depends-on ("package"))))))
+     (:file "external-logic" :depends-on ("package"))))))

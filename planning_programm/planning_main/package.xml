@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>planning_main_programm</name>
+  <name>planning_main</name>
   <version>0.4.0</version>
-  <description>planning_main_programm</description>
+  <description>planning_main</description>
   <author>Kevin Störmer, Vanessa Hassouna, Hauke Tietjen</author>
   <maintainer email="stoermer@uni-bremen.de">Kevin Störmer, Vanessa Hassouna, Hauke Tietjen</maintainer>
   <license>BSD</license>

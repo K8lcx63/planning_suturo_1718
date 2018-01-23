@@ -1,4 +1,4 @@
-(in-package :planning-main-programm)
+(in-package :planning-main)
 
 (defvar *point-center-of-object* nil)
 
