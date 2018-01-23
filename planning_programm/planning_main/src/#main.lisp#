@@ -40,4 +40,3 @@
     (return-from main (roslisp::ros-info "Main" "Sorry i couldnt find any object :c"))))
 
 
-

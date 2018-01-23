@@ -1,5 +1,5 @@
 (in-package :planning-logic)
-(defvar *pont*)
+
 
 
 (defun transformation-Vision-Point (point-center-of-object &optional (endFrame "/base_footprint"))
@@ -33,15 +33,14 @@
                          :target-frame endFrame))
 
 
-(defun let-Robo-Try-To-Poke ()
+(defun let-Robo-Try-To-Poke (visionPoint point-for-motion)
   "mit mathe herrausfinden warum nicht gepoked werden kann oder ob er"
-  (setf *pont* (planning-vision::call-Vision-Point))
-  (let ((pointTransformed(planning-logic::transformation-Vision-Point *pont*)))
+  (let ((pointTransformed(planning-logic::transformation-Vision-Point visionPoint)))
     (roslisp:with-fields (y) pointTransFormed
       (progn
         (if (> y 0)
-            (planning-motion::call-Motion-Move-Arm-To-Point *pont* 3)
-            (planning-motion::call-Motion-Move-Arm-To-Point *pont* 2))))))
+            (planning-motion::call-Motion-Move-Arm-To-Point point-for-motion 3)
+            (planning-motion::call-Motion-Move-Arm-To-Point point-for-motion 2))))))
                                                      
         
   
