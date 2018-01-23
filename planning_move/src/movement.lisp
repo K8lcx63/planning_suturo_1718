@@ -1,6 +1,9 @@
 (in-package :planning-move)
 
+(defvar *VisionsMethodeSoon* T)
+(defvar *beliefstateHead* 0)
 
+(defvar *headMovementList* '((0 -0.8)(1 -0.6)(2 -0.3)(3 0.0)(4 0.3)(5 0.6)(6 0.8)(7 0.6)(8 0.3)(9 0.0)(10 -0.3)(11 -0.6)))
 (defun move-Head (x y z)
   "Moving robot head via head_traj_controller/point_head_action. X Y Z are treated as coordinates."
   (let ((actionclient 
@@ -30,20 +33,21 @@
   (actionlib:call-goal actionclient actiongoal)))))
 
 
-(defun find-Object (x z)
-  "Looking around from 0-2 and 0-(-2) to find an object"
-(let ((positions (make-array '(8) 
-   :initial-contents '(0.0 0.5 1 1.5 2.0 -0.5 -1.5 -2.0))))
-  (loop for i across positions do
-    (progn
-      (let ((y i))
-        (move-Head x y z))
-      (if (askFor)
-          (progn
-            (roslisp::ros-info "find-Object" "I found an object, lets move on ")
-            (return-from find-Object T))
-          (roslisp::ros-info "find-Object" "I can't find any object, let me try it again")))))
-(return-from find-Object nil))
+(defun find-Object (x z objectString)
+  "Looking around from 0-2 and 0-(-2) to find an object, restarting at current Point if reused"
+  (block find-Object-Start 
+    (loop for i from *beliefstateHead* to 24 do
+      (let ((c (mod i 12)))
+        (progn
+          (move-head x (second (assoc c *headMovementList*)) z)
+          (setf *beliefstateHead* c)
+          (if (planning-knowledge::is-Object i)
+              (return-from find-Object-Start)
+              ))))
+    (roslisp::ros-info "find-Object" "Couldnt find any Object in front of me")
+    (return-from find-Object nil))
+  (roslisp::ros-info "find-Object" "I see the Object. Head is in Position")
+  (return-from find-Object T))
 
 (defun askFor ()
   "asking vision for the ice"
