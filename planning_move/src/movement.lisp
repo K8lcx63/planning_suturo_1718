@@ -4,8 +4,6 @@
 (defvar *beliefstateHead* 0)
 
 (defvar *headMovementList* '((0 -0.8)(1 -0.6)(2 -0.3)(3 0.0)(4 0.3)(5 0.6)(6 0.8)(7 0.6)(8 0.3)(9 0.0)(10 -0.3)(11 -0.6)))
-
-
 (defun move-Head (x y z)
   "Moving robot head via head_traj_controller/point_head_action. X Y Z are treated as coordinates."
   (let ((actionclient 
@@ -50,3 +48,15 @@
     (return-from find-Object nil))
   (roslisp::ros-info "find-Object" "I see the Object. Head is in Position")
   (return-from find-Object T))
+
+(defun askFor ()
+  "asking vision for the ice"
+  (let ((object-Info (roslisp:call-service "/vision_main/objectPose" 'vision_msgs-srv:GetObjectInfo)))
+    (roslisp:with-fields (info) object-Info (setf object-Info info))
+    (roslisp:with-fields (isstanding) object-Info (setf object-Info isstanding))
+    (if (= object-Info 2)
+        (return-from askFor T))))
+  
+
+
+  

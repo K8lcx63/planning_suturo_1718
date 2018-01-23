@@ -63,23 +63,16 @@
        (let (
              (dx (abs (- x1 x2)))
              (dy (abs (- y1 y2)))
-             (dz (abs (- z1 z2)))
-             )
+             (dz (abs (- z1 z2))))
          (if (and
               (<= dx delta)
               (<= dy delta)
-              (<= dz delta)
-              )
+              (<= dz delta))
              (print t)
-             (print nil)
-             )
-         )
-       )
-    )
-  )
+             (print nil))))))
     
   
-  
+
   
 
 
