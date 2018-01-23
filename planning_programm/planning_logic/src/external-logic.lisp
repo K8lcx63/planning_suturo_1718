@@ -1,7 +1,8 @@
 (in-package :planning-logic)
 (defvar *pont*)
 
-(defun transformation (point-center-of-object &optional (endFrame "/base_footprint"))
+
+(defun transformation-Vision-Point (point-center-of-object &optional (endFrame "/base_footprint"))
   "transform a msgs with an optional Frame, default is base_footprint"
   
   (roslisp:with-fields ((x
@@ -20,11 +21,11 @@
          (tf-point-stamped
            (cl-tf:make-point-stamped startFrame 0.0
                                      (cl-transforms:make-3d-vector x y z))))
-      (catch-Transform transform-listener tf-point-stamped endFrame))))
+      (catch-Transformation transform-listener tf-point-stamped endFrame))))
 
 
 
-(defun catch-Transform (transform-listener tf-point-stamped endFrame)
+(defun catch-Transformation (transform-listener tf-point-stamped endFrame)
   "transform-listener catch transformation (helpfunction)"
   (sleep 5.0)
   (cl-tf:transform-point transform-listener
@@ -32,17 +33,15 @@
                          :target-frame endFrame))
 
 
-(defun can-Robo-Poke ()
+(defun let-Robo-Try-To-Poke ()
   "mit mathe herrausfinden warum nicht gepoked werden kann oder ob er"
-  (setf *pont* (planning-vision::call-vision-point))
-  (let ((pointTransformed(planning-logic::transformation *pont*)))
+  (setf *pont* (planning-vision::call-Vision-Point))
+  (let ((pointTransformed(planning-logic::transformation-Vision-Point *pont*)))
     (roslisp:with-fields (y) pointTransFormed
       (progn
         (if (> y 0)
-            (planning-motion::
-             call-Motion-Move-To-Point *pont* 3)
-            (planning-motion::
-             call-Motion-Move-To-Point *pont* 2))))))
+            (planning-motion::call-Motion-Move-Arm-To-Point *pont* 3)
+            (planning-motion::call-Motion-Move-Arm-To-Point *pont* 2))))))
                                                      
         
   

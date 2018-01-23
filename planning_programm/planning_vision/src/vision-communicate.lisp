@@ -2,7 +2,7 @@
 
 (defvar not-a-number)
 
-(defun call-vision-point ()
+(defun call-Vision-Point ()
   "Call vision service, to look for point. Returns ObjectDetection object"
   (cpl:with-retry-counters ((retry-counter 10))
     (cpl:with-failure-handling
@@ -45,11 +45,9 @@
                             (roslisp:call-service "/vision_main/objectPoint" 'object_detection-srv:VisObjectInfo))))))))))))
 
 
-(defun call-vision-pose ()
-  "Call vision service, to look for pose. Returns ObjectDetection object"
-  (roslisp:call-service "/vision_main/objectPose" 'vision_msgs-srv:GetObjectInfo))
 
-(defun check-points-is-equal (msg-one msg-two delta)
+
+(defun check-Points-Is-Equal (msg-one msg-two delta)
   "Compares two points with delta."
   (roslisp::ros-info "check-points-is-equal" "Starting to check if point of object is still valid")
   (roslisp:with-fields ((x1 (geometry_msgs-msg:x geometry_msgs-msg:point)) 
@@ -71,7 +69,6 @@
              (print t)
              (print nil))))))
     
-  
 
   
 

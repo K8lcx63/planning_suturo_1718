@@ -2,7 +2,7 @@
 
 
 
-(defun ask-knowledge(point-center-of-object)
+(defun ask-Knowledge-For-Poke-Point(point-center-of-object)
   "Calling knowledge-service to look for a point to poke for specific object"
   (cpl:with-retry-counters ((retry-counter 10))
     (cpl:with-failure-handling

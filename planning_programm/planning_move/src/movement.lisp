@@ -1,9 +1,8 @@
 (in-package :planning-move)
 
-(defvar *VisionsMethodeSoon* T)
 (defvar *beliefstateHead* 0)
-
 (defvar *headMovementList* '((0 -0.8)(1 -0.6)(2 -0.3)(3 0.0)(4 0.3)(5 0.6)(6 0.8)(7 0.6)(8 0.3)(9 0.0)(10 -0.3)(11 -0.6)))
+
 (defun move-Head (x y z)
   "Moving robot head via head_traj_controller/point_head_action. X Y Z are treated as coordinates."
   (let ((actionclient 
@@ -39,7 +38,7 @@
     (loop for i from *beliefstateHead* to 24 do
       (let ((c (mod i 12)))
         (progn
-          (move-head x (second (assoc c *headMovementList*)) z)
+          (move-Head x (second (assoc c *headMovementList*)) z)
           (setf *beliefstateHead* c)
           (if (planning-knowledge::is-Object i)
               (return-from find-Object-Start)
@@ -51,11 +50,5 @@
 
 
   
-(defun askFor ()
-  "asking vision for the ice"
-  (let ((object-Info (roslisp:call-service "/vision_main/objectPose" 'vision_msgs-srv:GetObjectInfo)))
-    (roslisp:with-fields (info) object-Info (setf object-Info info))
-    (roslisp:with-fields (isstanding) object-Info (setf object-Info isstanding))
-    (return-from askFor T)))
 
   
