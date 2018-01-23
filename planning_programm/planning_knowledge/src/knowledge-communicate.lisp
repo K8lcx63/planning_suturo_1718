@@ -22,3 +22,7 @@
               (print point-center-of-object)))))))   
 
 
+(defun is-Object(objectString)
+  (if (= objectString 22)(return-from is-Object T)(return-from is-Object nil))
+  )
+
