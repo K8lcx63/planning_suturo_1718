@@ -3,7 +3,7 @@
 (defvar *VisionsMethodeSoon* T)
 (defvar *beliefstateHead* 0)
 
-(defvar *headMovementList* '((0 -1.5)(1 -1.0)(2 -0.5)(3 0.0)(4 0.5)(5 1.0)(6 1.5)(7 1.0)(8 0.5)(9 0.0)(10 -0.5)(11 -1.0)))
+(defvar *headMovementList* '((0 -0.8)(1 -0.6)(2 -0.3)(3 0.0)(4 0.3)(5 0.6)(6 0.8)(7 0.6)(8 0.3)(9 0.0)(10 -0.3)(11 -0.6)))
 
 
 (defun move-Head (x y z)
