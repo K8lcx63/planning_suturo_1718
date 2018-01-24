@@ -1,0 +1,2 @@
+[submodule "navigation"]
+	url = https://github.com/ros-planning/navigation.git
