@@ -1,7 +1,7 @@
 (in-package :planning-vision)
 
 (defvar not-a-number)
-
+ 
 (defun call-Vision-Point ()
   "Call vision service, to look for point. Returns ObjectDetection object"
   (cpl:with-retry-counters ((retry-counter 10))
