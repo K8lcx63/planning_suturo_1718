@@ -34,11 +34,11 @@
           (case status
             (0 (roslisp::ros-info "Motion" "Successfully moved into home position."))
             (1 (roslisp::ros-warn "Motion" "Goal is out of range.")
-             (cpl:fail 'planning-error::motion-error :message "Goal is out of range."))
+             (cpl:fail 'planning-error::move-error :message "Goal is out of range."))
             (2 (roslisp::ros-warn "Motion" "Path to goal is obstructed.")
-             (cpl:fail 'planning-error::motion-error :message "Path to goal is obstructed."))
+             (cpl:fail 'planning-error::move-error :message "Path to goal is obstructed."))
             (3 (roslisp::ros-error "Motion" "Unmanageble error occured in motion!")
-             (cpl:fail 'planning-error::motion-error :message "Unmanageable error occured in motion!"))))))))
+             (cpl:fail 'planning-error::move-error :message "Unmanageable error occured in motion!"))))))))
 
 (defun move-Base-To-Point (x y z w)
   "Moving robot base via nav_pcontroller/move_base. X Y Z are treated as coordinates. W for Orientation."
@@ -71,11 +71,11 @@
           (case status
                 (0 (roslisp::ros-info "Motion" "Successfully moved into home position."))
                 (1 (roslisp::ros-warn "Motion" "Goal is out of range.")
-                 (cpl:fail 'planning-error::motion-error :message "Goal is out of range."))
+                 (cpl:fail 'planning-error::move-error :message "Goal is out of range."))
                 (2 (roslisp::ros-warn "Motion" "Path to goal is obstructed.")
-                 (cpl:fail 'planning-error::motion-error :message "Path to goal is obstructed."))
+                 (cpl:fail 'planning-error::move-error :message "Path to goal is obstructed."))
                 (3 (roslisp::ros-error "Motion" "Unmanageble error occured in motion!")
-                 (cpl:fail 'planning-error::motion-error :message "Unmanageable error occured in motion!"))))))))
+                 (cpl:fail 'planning-error::move-error :message "Unmanageable error occured in motion!"))))))))
 
 
 (defun find-Object (x z objectString)
