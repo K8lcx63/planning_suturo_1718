@@ -15,7 +15,8 @@
 	       planning-vision
 	       planning-knowledge
 	       planning-move
-	       planning-logic)
+	       planning-logic
+	       planning-error)
   :components
   ((:module "src"
     :components

@@ -11,7 +11,8 @@
                pr2_controllers_msgs-msg
 	       object_detection-srv
 	       motion_msgs-msg
-	       cram-language)
+	       cram-language
+	       planning-error)
   :components
   ((:module "src"
     :components
