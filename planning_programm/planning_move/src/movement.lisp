@@ -32,13 +32,13 @@
                     (actionlib:call-goal actionclient actiongoal))))))
         (roslisp:with-fields (status (motion_msgs-msg:movingcommandresult motion_msgs-msg:status)) status-message
           (case status
-            (0 (roslisp::ros-info "Motion" "Successfully moved head."))
+            (0 (roslisp::ros-info "Motion" "Successfully moved into home position."))
             (1 (roslisp::ros-warn "Motion" "Goal is out of range.")
-             (cpl:fail))
+             (cpl:fail 'planning-error::move-error :message "Goal is out of range."))
             (2 (roslisp::ros-warn "Motion" "Path to goal is obstructed.")
-             (cpl:fail))
+             (cpl:fail 'planning-error::move-error :message "Path to goal is obstructed."))
             (3 (roslisp::ros-error "Motion" "Unmanageble error occured in motion!")
-             (cpl:fail))))))))
+             (cpl:fail 'planning-error::move-error :message "Unmanageable error occured in motion!"))))))))
 
 (defun move-Base-To-Point (x y z w)
   "Moving robot base via nav_pcontroller/move_base. X Y Z are treated as coordinates. W for Orientation."
@@ -69,13 +69,13 @@
                     (actionlib:call-goal actionclient actiongoal))))))
         (roslisp:with-fields (status (motion_msgs-msg:movingcommandresult motion_msgs-msg:status)) status-message
           (case status
-            (0 (roslisp::ros-info "Motion" "Successfully moved base to point."))
-            (1 (roslisp::ros-warn "Motion" "Goal is out of range.")
-             (cpl:fail))
-            (2 (roslisp::ros-warn "Motion" "Path to goal is obstructed.")
-             (cpl:fail))
-            (3 (roslisp::ros-error "Motion" "Unmanageble error occured in motion!")
-             (cpl:fail))))))))
+                (0 (roslisp::ros-info "Motion" "Successfully moved into home position."))
+                (1 (roslisp::ros-warn "Motion" "Goal is out of range.")
+                 (cpl:fail 'planning-error::move-error :message "Goal is out of range."))
+                (2 (roslisp::ros-warn "Motion" "Path to goal is obstructed.")
+                 (cpl:fail 'planning-error::move-error :message "Path to goal is obstructed."))
+                (3 (roslisp::ros-error "Motion" "Unmanageble error occured in motion!")
+                 (cpl:fail 'planning-error::move-error :message "Unmanageable error occured in motion!"))))))))
 
 
 (defun find-Object (x z objectString)
