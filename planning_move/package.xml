@@ -12,6 +12,7 @@
   <buildtool_depend>actionlib_lisp</buildtool_depend>
   <buildtool_depend>geometry_msgs</buildtool_depend>
   <buildtool_depend>pr2_controllers_msgs</buildtool_depend>
+  <buildtool_depend>sensor_msgs</buildtool_depend>
   <buildtool_depend>motion_msgs</buildtool_depend>
   <buildtool_depend>object_detection</buildtool_depend>
 
