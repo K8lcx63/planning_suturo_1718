@@ -30,3 +30,5 @@
   (if (= objectString 22)(return-from is-Object T)(return-from is-Object nil))
   )
 
+(defun ask-knowledge-where-belongs (object)
+    (roslisp:call-service "/storage_place/storage_place_service" 'knowledge_msgs-srv:StoragePlace :object_label object))

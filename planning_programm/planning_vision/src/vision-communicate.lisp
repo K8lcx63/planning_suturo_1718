@@ -21,6 +21,7 @@
         (print not-a-number)
         (roslisp:with-fields ((x (geometry_msgs-msg:x geometry_msgs-msg:point)) 
                               (y (geometry_msgs-msg:y geometry_msgs-msg:point))
+
                               (z (geometry_msgs-msg:z geometry_msgs-msg:point)))
             (object_detection-msg:position (object_detection-srv:object response))
           ;;If Vision returns a NaN and it is of type String this will recover from the error

@@ -10,9 +10,9 @@
                geometry_msgs-msg
                pr2_controllers_msgs-msg
 	       object_detection-srv
-	       motion_msgs-msg
 	       cram-language
-	       planning-error)
+	       planning-error
+	       knowledge_msgs-srv)
 
   :components
   ((:module "src"

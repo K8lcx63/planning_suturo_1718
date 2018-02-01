@@ -21,5 +21,6 @@
   <buildtool_depend>planning_error</buildtool_depend>
   <buildtool_depend>cram-language</buildtool_depend>
   <buildtool_depend>planning_logic</buildtool_depend>
+  <buildtool_depend>planning_objects</buildtool_depend>
 
 </package>

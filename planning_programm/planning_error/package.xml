@@ -2,7 +2,7 @@
 <package>
   <name>planning_error</name>
   <version>0.4.0</version>
-  <description>planning-motion</description>
+  <description>planning-error</description>
   <author>Kevin Störmer, Vanessa Hassouna, Hauke Tietjen</author>
   <maintainer email="stoermer@uni-bremen.de">Kevin Störmer, Vanessa Hassouna, Hauke Tietjen</maintainer>
   <license>BSD</license>
