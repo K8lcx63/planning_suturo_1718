@@ -8,17 +8,40 @@
 
 (defun move-Head (x y z)
   "Moving robot head via head_traj_controller/point_head_action. X Y Z are treated as coordinates."
-  (let ((actionclient 
-	(actionlib:make-action-client "head_traj_controller/point_head_action" "pr2_controllers_msgs/PointHeadAction")))
-  (loop until
-	(actionlib:wait-for-server actionclient))
-  (let ((point-to-look-at 
-	(cl-transforms-stamped:to-msg 
-	 (cl-transforms-stamped:make-point-stamped "base_link" 0 
-						   (cl-transforms:make-3d-vector x y z)))))
-  (let ((actiongoal 
-	(actionlib:make-action-goal actionclient target point-to-look-at)))
-  (actionlib:call-goal actionclient actiongoal)))))
+  (roslisp::ros-info "Motion" "Moving head")
+  (cpl:with-retry-counters ((retry-counter 10))
+    (cpl:with-failure-handling
+        ((cpl:simple-plan-failure (error-object)
+           (format t "An error happened: ~a~%" error-object)
+           (roslisp::ros-info "Motion" "Trying to solve error.")
+           ;;Here is the place for solutions to the problem!
+           (cpl:do-retry retry-counter
+             (format t "Now retrying~%")
+             (roslisp::ros-info "Motion" "Now retrying ...")
+             (cpl:retry))
+           (format t "Reached maximum amount of retries. Now propagating the failure up.~%")
+           (roslisp::ros-error "Motion" "Reached maximum amount of retries. Now propagating the failure up.~%")))
+      (let ((status-message
+              (let ((actionclient 
+                      (actionlib:make-action-client "head_traj_controller/point_head_action" "pr2_controllers_msgs/PointHeadAction")))
+                (loop until
+                      (actionlib:wait-for-server actionclient))
+                (let ((point-to-look-at 
+                        (cl-transforms-stamped:to-msg 
+                         (cl-transforms-stamped:make-point-stamped "base_link" 0 
+                                                                   (cl-transforms:make-3d-vector x y z)))))
+                  (let ((actiongoal 
+                          (actionlib:make-action-goal actionclient target point-to-look-at)))
+                    (actionlib:call-goal actionclient actiongoal))))))
+        (roslisp:with-fields (status (motion_msgs-msg:movingcommandresult motion_msgs-msg:status)) status-message
+          (case status
+            (0 (roslisp::ros-info "Motion" "Successfully moved into home position."))
+            (1 (roslisp::ros-warn "Motion" "Goal is out of range.")
+             (cpl:fail 'planning-error::move-error :message "Goal is out of range."))
+            (2 (roslisp::ros-warn "Motion" "Path to goal is obstructed.")
+             (cpl:fail 'planning-error::move-error :message "Path to goal is obstructed."))
+            (3 (roslisp::ros-error "Motion" "Unmanageble error occured in motion!")
+             (cpl:fail 'planning-error::move-error :message "Unmanageable error occured in motion!"))))))))
 
 
 

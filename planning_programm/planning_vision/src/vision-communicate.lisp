@@ -1,7 +1,7 @@
 (in-package :planning-vision)
 
 (defvar not-a-number)
-
+ 
 (defun call-Vision-Point ()
   "Call vision service, to look for point. Returns ObjectDetection object"
   (cpl:with-retry-counters ((retry-counter 10))
@@ -27,18 +27,18 @@
           (if (or (stringp x)
                   (stringp y)
                   (stringp z))
-              (cpl:fail "One or more of the coordinates returned by the service /vision_main/objectPoint is of type String
+              (cpl:fail 'planning-error::vision-error :message "One or more of the coordinates returned by the service /vision_main/objectPoint is of type String
                         which is likely the not a number error")
               (if (or (sb-ext:float-nan-p x)
                       (sb-ext:float-nan-p y)
                       (sb-ext:float-nan-p z))
-                  (cpl:fail "One or more of the coordinates returned by the service /vision_main/objectPoint is  not a number")
+                  (cpl:fail 'planning-error::vision-error :message "One or more of the coordinates returned by the service /vision_main/objectPoint is not a number")
                   (roslisp:with-fields (object_detection-msg:error) (object_detection-srv:object response)
                     (if (or (string= "Cloud empty. " object_detection-msg:error)
                             (string= "Cloud was empty after filtering. " object_detection-msg:error)
                             (string= "No plane found. " object_detection-msg:error)
                             (string= "Final extracted cluster was empty. " object_detection-msg:error))
-                        (cpl:fail "service call failed")
+                        (cpl:fail 'planning-error::vision-error :message object_detection-msg:error)
                         (progn
                           (format t "service call successful")
                           (return-from call-vision-point
