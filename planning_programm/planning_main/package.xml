@@ -18,7 +18,6 @@
   <buildtool_depend>planning_knowledge</buildtool_depend>
   <buildtool_depend>planning_vision</buildtool_depend>
   <buildtool_depend>planning_move</buildtool_depend>
-  <buildtool_depend>planning_error</buildtool_depend>
   <buildtool_depend>cram-language</buildtool_depend>
   <buildtool_depend>planning_logic</buildtool_depend>
 
