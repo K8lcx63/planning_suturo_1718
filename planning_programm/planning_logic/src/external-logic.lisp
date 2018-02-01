@@ -1,5 +1,5 @@
 (in-package :planning-logic)
-(defvar *pont*)
+
 
 
 (defun transformation-Vision-Point (point-center-of-object &optional (endFrame "/base_footprint"))
@@ -33,15 +33,40 @@
                          :target-frame endFrame))
 
 
-(defun let-Robo-Try-To-Poke ()
-  "mit mathe herrausfinden warum nicht gepoked werden kann oder ob er"
-  (setf *pont* (planning-vision::call-Vision-Point))
-  (let ((pointTransformed(planning-logic::transformation-Vision-Point *pont*)))
+(defun let-Robo-Try-To-Poke (point-for-motion number-for-arm)
+  "trying to Poke the object, first both arms will be used after that the robot will try different poses."
+  (roslisp:ros-info (let-Robo-Try-To-Poke)
+                    "trying to poke the object now...")
+  (if (not(eq T (planning-motion::motion-To-Point point-for-motion number-for-arm)))
+      (progn
+        (if (/= 2 number-for-arm)
+            (planning-motion::motion-To-Point point-for-motion 2)
+            (planning-motion::motion-To-Point point-for-motion 3)))))
+
+(defun try-To-Poke-Different-Location(point-for-motion number-for-arm)
+  "trying to poke the object now again with different location.."
+   (roslisp:ros-info (try-To-Poke-Different-Location)
+                    "trying to poke the object now again with different location..")
+  (let ((position (make-array '(4)  
+                                 :initial-contents '(1.3 0.5 0 -0.3)))) 
+    (loop for y across position do
+      (planning-move::move-Base-To-Point 0.8 y 0 30)
+      (let ((rotation (make-array '(3)  
+                                  :initial-contents '(30 31 29)))) 
+        (loop for r across rotation do
+             (progn
+               (planning-move::move-Base-To-Point 0.8 y 0 r)
+               (if (eq T(let-Robo-Try-To-Poke point-for-motion number-for-arm))
+                   (return-from try-To-Poke-Different-Location T))))))))
+            
+
+
+(defun should-Robo-Use-Left-Or-Right-Arm (visionPoint)
+  "decides if the left or right arm is chosen depends on which one is closer"
+  (let ((pointTransformed(planning-logic::transformation-Vision-Point visionPoint)))
     (roslisp:with-fields (y) pointTransFormed
       (progn
         (if (> y 0)
-            (planning-motion::call-Motion-Move-Arm-To-Point *pont* 3)
-            (planning-motion::call-Motion-Move-Arm-To-Point *pont* 2))))))
-                                                     
-        
-  
+            (return-from should-Robo-Use-Left-Or-Right-Arm 3)
+            (return-from should-Robo-Use-Left-Or-Right-Arm 2))))))
+
