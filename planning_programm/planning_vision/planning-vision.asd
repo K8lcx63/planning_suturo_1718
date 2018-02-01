@@ -12,8 +12,7 @@
 	       object_detection-srv
 	       vision_msgs-srv
 	       motion_msgs-msg
-	       cram-language
-	       planning-error)
+	       cram-language)
   :components
   ((:module "src"
     :components
