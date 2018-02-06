@@ -1,4 +1,4 @@
-(defsystem planning-vision
+(defsystem planning-error
 
   :author "Kevin Störmer, Vanessa Hassouna, Hauke Tietjen"
   :maintainer "Kevin Störmer, Vanessa Hassouna, Hauke Tietjen"
@@ -12,10 +12,9 @@
 	       object_detection-srv
 	       vision_msgs-srv
 	       motion_msgs-msg
-	       cram-language
-	       planning-error)
+	       cram-language)
   :components
   ((:module "src"
     :components
     ((:file "package")
-     (:file "vision-communicate" :depends-on ("package"))))))
+     (:file "error-hierarchy" :depends-on ("package"))))))
