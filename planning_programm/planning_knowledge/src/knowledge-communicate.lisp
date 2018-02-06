@@ -26,13 +26,13 @@
               (print point-center-of-object)))))))   
 
 
-(defun what-Object(features)
+(defun what-object(features)
   "Takes set of features to knowledge, and asks for identification"
   (roslisp:call-service "/svm_classifier/classify_service" 'knowledge_msgs-srv:Classify :features features)
 )
 
-(defun is-Object(objectString features)
+(defun is-object(objectString features)
   "Takes features and string and asks knowledge if features are the object described in string"
-  T
+  (roslisp:with-fields (label (knowledge_msgs-srv:classify-response label)) (what-object features) (return-from is-object label))
 )
 
