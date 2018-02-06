@@ -33,6 +33,6 @@
 
 (defun is-object(objectString features)
   "Takes features and string and asks knowledge if features are the object described in string"
-  (roslisp:with-fields (label (knowledge_msgs-srv:classify-response label)) (what-object features) (return-from is-object label))
+  (roslisp:with-fields (label) (what-object features) (if (string= label objectString)(return-from is-object T)(return-from is-object nil)))
 )
 
