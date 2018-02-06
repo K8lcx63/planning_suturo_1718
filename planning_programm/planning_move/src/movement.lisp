@@ -22,8 +22,8 @@
 
 
 
-(defun find-Object (x z)
-  "Looking around from 0-2 and 0-(-2) to find an object, restarting at current Point if reused OBJECTSTRING TODO WIEDER REIN"
+(defun find-Object (x z objectString)
+  "Looking around from 0-2 and 0-(-2) to find an object, restarting at current Point if reused"
   (block find-Object-Start 
     (loop for i from *beliefstateHead* to 24 do
       (let ((c (mod i 12)))
