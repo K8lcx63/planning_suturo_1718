@@ -31,4 +31,4 @@
   )
 
 (defun ask-knowledge-where-belongs (object)
-    (roslisp:call-service "/storage_place/storage_place_service" 'knowledge_msgs-srv:StoragePlace :object_label object))
+    (roslisp:call-service "/storage_place_service/storage_place" 'knowledge_msgs-srv:StoragePlace :object_label object))
