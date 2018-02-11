@@ -26,6 +26,10 @@
 ;  (setf *height* (- *height* 0.1)))
 
 (defun split-landing-zone (position width height)
+  (cpl:with-failure-handling
+        ((cpl:simple-plan-failure (error-object)
+           (format t "An error happened: ~a~%" error-object)
+           (roslisp:ros-error "Objects" "Out of storage space!")))
   (roslisp:with-fields ((x (geometry_msgs-msg:x geometry_msgs-msg:point))
                         (y (geometry_msgs-msg:y geometry_msgs-msg:point))
                         (z (geometry_msgs-msg:z geometry_msgs-msg:point)))
@@ -37,6 +41,8 @@
         (0.75563d0 (setf last-middle-point-current *last-middle-point-x-2*))
         (0.38063d0 (setf last-middle-point-current *last-middle-point-x-3*))
         (0.00563d0 (setf last-middle-point-current *last-middle-point-x-4*)))
+      (if (< last-middle-point-current 1.40494)
+          (cpl:fail 'planning-error::objects-error :message "Out of storage space!"))
       (if (= last-middle-point-current 0.0)
           (setf x (+ x (/ height 2)))
           (setf x last-middle-point-current))
@@ -56,7 +62,7 @@
           (0.38063d0 (setf *last-middle-point-x-3* last-middle-point-current))
           (0.00563d0 (setf *last-middle-point-x-4* last-middle-point-current)))
         (vis-init)
-        (publish-pose middle-point-landing-zone-pose *marker-id* random-height width)))))
+        (publish-pose middle-point-landing-zone-pose *marker-id* random-height width))))))
     
 
 

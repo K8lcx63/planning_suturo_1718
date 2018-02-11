@@ -26,3 +26,9 @@
              (format stream "knowledge error: ~A~%"
                      (message condition))))
   (:documentation "knowledge error"))
+
+(define-condition objects-error (custom-error) ()
+  (:report (lambda (condition stream)
+             (format stream "objects error: ~A~%"
+                     (message condition))))
+  (:documentation "objects error"))
