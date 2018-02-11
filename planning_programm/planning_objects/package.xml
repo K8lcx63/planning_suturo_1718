@@ -16,6 +16,8 @@
   <buildtool_depend>object_detection</buildtool_depend>
   <buildtool_depend>cram_language</buildtool_depend>
   <buildtool_depend>planning_error</buildtool_depend>
+  <buildtool_depend>std_msgs</buildtool_depend>
+  <buildtool_depend>visualization_msgs</buildtool_depend>
 
 
 </package>

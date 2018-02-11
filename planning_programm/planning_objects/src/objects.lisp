@@ -1,36 +1,101 @@
 (in-package :planning-objects)
 
-(defvar *width*)
-(defvar *height*)
+(defvar pose-message)
+(defvar *marker-publisher* nil)
+(defvar *marker-id* 0)
+(defvar *last-middle-point-x-3*)
 
 (defun calculate-landing-zone (object)
-  (let ((landing-zone
+  (let ((landing-zone-message
           (planning-knowledge::ask-knowledge-where-belongs object)))
-    (roslisp:with-fields ((*width*(storage_place_width))
-                          (*height* (storage_place_height))
+    (roslisp:with-fields ((width (storage_place_width))
+                          (height (storage_place_height))
                           (position (storage_place_position)))
-        landing-zone
-      (setf *width* (- *width* 0.1))
-      (setf *height* (- *height* 0.1))
+        landing-zone-message
+      (setf width (- width 0.1))
+      (setf height (- height 0.1))
       ;;(shrink-landing-zone)
-      (split-landing-zone position))))
+      (split-landing-zone position width height))))
 
 ;(defun shrink-landing-zone
 ;  (setf *width* (- *width* 0.1))
 ;  (setf *height* (- *height* 0.1)))
 
-(defun split-landing-zone (position)
-  (roslisp:with-fields ((x (geometry_msgs-msg:x geometry_msgs-msg:point)))
+(defun split-landing-zone (position width height)
+  (roslisp:with-fields ((x (geometry_msgs-msg:x geometry_msgs-msg:point))
+                        (y (geometry_msgs-msg:y geometry_msgs-msg:point))
+                        (z (geometry_msgs-msg:z geometry_msgs-msg:point)))
       position
-  ;; check data structure if this position has already been split
-  (let ((offset (/ *height* 3.0)))
-  (x (- x offset))
-  ;; modify message position and safe in data structure?
-  (x (+ x offset))
-  ;; modify message position and safe in data structure?
-  )))
-  
-  
+    (incf *marker-id*)
+    (let* ((x (+ x (/ height 2)))
+           (random-height (+ 0.10 (random 0.06)))
+           (middle-point-landing-zone-x (- x (/ random-height 2.0)))
+           (middle-point-landing-zone-pose (cl-tf:make-pose-stamped
+                                            "/map"
+                                            0.0
+                                            (cl-transforms:make-3d-vector middle-point-landing-zone-x y z)
+                                            (cl-transforms:make-quaternion 0 0 0 1))))
+      
+      (vis-init)
+      (publish-pose middle-point-landing-zone-pose *marker-id* random-height width))))
+    
+
+
+
+;; Dependencies: visualization_msgs - visualization_msg-msg
+;;               std_msgs - std_msgs-msg
+;;               cl_transforms - cl-transforms
+;;               cl_tf - cl-tf
+
+;(setf pose-message (roslisp:make-message "geometry_msgs/Pose" 
+;  (position) (roslisp:make-msg "geometry_msgs/Point" (x) 3)
+;  (orientation) (roslisp:make-msg "geometry_msgs/Quaternion" (w) 1)))
+
+(defun vis-init ()
+  (setf *marker-publisher*
+        (roslisp:advertise "~location_marker" "visualization_msgs/Marker")))
+
+(defun publish-pose (pose id height width)
+  (let ((point (cl-transforms:origin pose))
+        (rot (cl-transforms:orientation pose))
+        (current-index 0))
+    (when *marker-publisher*
+      (roslisp:publish *marker-publisher*
+                       (roslisp:make-message "visualization_msgs/Marker"
+                                             (std_msgs-msg:stamp header) 
+                                             (roslisp:ros-time)
+                                             (std_msgs-msg:frame_id header)
+                                             (typecase pose
+                                               (cl-tf:pose-stamped (cl-tf:frame-id pose))
+                                               (t "map"))
+                                             ns "goal_locations"
+                                             id (or id (incf current-index))
+                                             type (roslisp:symbol-code
+                                                   'visualization_msgs-msg:<marker> :cube)
+                                             action (roslisp:symbol-code
+                                                     'visualization_msgs-msg:<marker> :add)
+                                             (x position pose) (cl-transforms:x point)
+                                             (y position pose) (cl-transforms:y point)
+                                             (z position pose) (cl-transforms:z point)
+                                             (x orientation pose) (cl-transforms:x rot)
+                                             (y orientation pose) (cl-transforms:y rot)
+                                             (z orientation pose) (cl-transforms:z rot)
+                                             (w orientation pose) (cl-transforms:w rot)
+                                             (x scale) height
+                                             (y scale) width
+                                             (z scale) 0.02
+                                             (r color) 1.0
+                                             (g color) 0.0
+                                             (b color) 0.0
+                                             (a color) 1.0)))))
+
+;; Example usage:
+;; (vis-init)
+;; (publish-pose (cl-tf:make-identity-pose))
+
+
+
+
 
   
 ;;    (landing-zone-small (roslisp:modify-message-copy landing-zone
