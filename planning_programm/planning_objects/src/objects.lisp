@@ -3,7 +3,11 @@
 (defvar pose-message)
 (defvar *marker-publisher* nil)
 (defvar *marker-id* 0)
-(defvar *last-middle-point-x-3*)
+
+(defvar *last-middle-point-x-1* 0.0)
+(defvar *last-middle-point-x-2* 0.0)
+(defvar *last-middle-point-x-3* 0.0)
+(defvar *last-middle-point-x-4* 0.0)
 
 (defun calculate-landing-zone (object)
   (let ((landing-zone-message
@@ -27,17 +31,32 @@
                         (z (geometry_msgs-msg:z geometry_msgs-msg:point)))
       position
     (incf *marker-id*)
-    (let* ((x (+ x (/ height 2)))
-           (random-height (+ 0.10 (random 0.06)))
-           (middle-point-landing-zone-x (- x (/ random-height 2.0)))
-           (middle-point-landing-zone-pose (cl-tf:make-pose-stamped
-                                            "/map"
-                                            0.0
-                                            (cl-transforms:make-3d-vector middle-point-landing-zone-x y z)
-                                            (cl-transforms:make-quaternion 0 0 0 1))))
-      
-      (vis-init)
-      (publish-pose middle-point-landing-zone-pose *marker-id* random-height width))))
+    (let ((last-middle-point-current))
+      (case y
+        (1.13063d0 (setf last-middle-point-current *last-middle-point-x-1*))
+        (0.75563d0 (setf last-middle-point-current *last-middle-point-x-2*))
+        (0.38063d0 (setf last-middle-point-current *last-middle-point-x-3*))
+        (0.00563d0 (setf last-middle-point-current *last-middle-point-x-4*)))
+      (if (= last-middle-point-current 0.0)
+          (setf x (+ x (/ height 2)))
+          (setf x last-middle-point-current))
+      (let* ((random-height (+ 0.10 (random 0.06)))
+             (middle-point-landing-zone-x (- x (/ random-height 2.0)))
+             (middle-point-landing-zone-pose (cl-tf:make-pose-stamped
+                                              "/map"
+                                              0.0
+                                              (cl-transforms:make-3d-vector middle-point-landing-zone-x y z)
+                                              (cl-transforms:make-quaternion 0 0 0 1))))
+        
+        (setf last-middle-point-current (- middle-point-landing-zone-x (/ random-height 2.0)))
+        
+        (case y
+          (1.13063d0 (setf *last-middle-point-x-1* last-middle-point-current))
+          (0.75563d0 (setf *last-middle-point-x-2* last-middle-point-current))
+          (0.38063d0 (setf *last-middle-point-x-3* last-middle-point-current))
+          (0.00563d0 (setf *last-middle-point-x-4* last-middle-point-current)))
+        (vis-init)
+        (publish-pose middle-point-landing-zone-pose *marker-id* random-height width)))))
     
 
 
@@ -84,9 +103,9 @@
                                              (x scale) height
                                              (y scale) width
                                              (z scale) 0.02
-                                             (r color) 1.0
-                                             (g color) 0.0
-                                             (b color) 0.0
+                                             (r color) 0.5
+                                             (g color) 0.5
+                                             (b color) 0.5
                                              (a color) 1.0)))))
 
 ;; Example usage:
