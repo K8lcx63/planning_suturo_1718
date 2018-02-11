@@ -77,7 +77,10 @@
 (defun publish-pose (pose id height width)
   (let ((point (cl-transforms:origin pose))
         (rot (cl-transforms:orientation pose))
-        (current-index 0))
+        (current-index 0)
+        (red (random 1.0))
+        (green (random 1.0))
+        (blue (random 1.0)))
     (when *marker-publisher*
       (roslisp:publish *marker-publisher*
                        (roslisp:make-message "visualization_msgs/Marker"
@@ -103,9 +106,9 @@
                                              (x scale) height
                                              (y scale) width
                                              (z scale) 0.02
-                                             (r color) 0.5
-                                             (g color) 0.5
-                                             (b color) 0.5
+                                             (r color) red
+                                             (g color) green
+                                             (b color) blue
                                              (a color) 1.0)))))
 
 ;; Example usage:
