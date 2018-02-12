@@ -6,7 +6,7 @@
                                  '("features1" "features2" "features3" "features4" "features5")))
 (defvar *head-array-tmp* (make-array '(5)
                                      :initial-contents
-                                     '(1 -1 2 -2 0)))
+                                     '(0 -2 2 -1 1)))
 
 (defun main (objectString)
   "Main function - Executing and planning robot behaviour on the top level"
