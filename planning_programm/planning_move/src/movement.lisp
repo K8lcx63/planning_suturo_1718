@@ -30,7 +30,7 @@
         (progn
           (move-Head x (second (assoc c *headMovementList*)) z)
           (setf *beliefstateHead* c)
-          (if (planning-knowledge::is-Object i)
+          (if (planning-knowledge::is-Object i objectString)
               (return-from find-Object-Start)
               ))))
     (roslisp::ros-info "find-Object" "Couldnt find any Object in front of me")
@@ -146,3 +146,15 @@
                          (>= b 0.004)
                          (<= b 0.08))(return-from is-gripper-filled T)(print b))))))))
 
+
+(defun aufnahme-Dummy (side)
+ "nur für heute"
+ (planning-move::init-Robo-Moving)
+ (planning-move::move-Robo-Into-Homeposition)
+ (planning-move::move-Base-To-Point 0.4 1 0 30)
+ (planning-move::move-Base-To-Point 0.4 1 0 180)
+ (if (is-gripper-filled side)
+     (planning-move::move-Base-To-Point -0.3 1 0 180)
+     (progn
+       (planning-move::move-Base-To-Point 0.4 1 0 30)
+       (planning-move::move-Robo-Into-Homeposition))))

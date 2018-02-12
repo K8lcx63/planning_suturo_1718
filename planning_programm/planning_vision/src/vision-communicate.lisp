@@ -75,6 +75,6 @@
 (defun call-Vision-Object-Clouds ()
   "calling Visions Service for the objectclouds"
   (roslisp:call-service
-   "/suturo_vision/objectCluster"
+   "/suturo_vision/objectClusters"
    'vision_msgs-srv:GetObjectClouds)) ;denkemal dass ist ihr neuer call
     
