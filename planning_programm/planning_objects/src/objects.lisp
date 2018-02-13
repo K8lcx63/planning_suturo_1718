@@ -4,10 +4,10 @@
 (defvar *marker-publisher* nil)
 (defvar *marker-id* 0)
 
-(defvar *last-middle-point-x-1* 0.0)
-(defvar *last-middle-point-x-2* 0.0)
-(defvar *last-middle-point-x-3* 0.0)
-(defvar *last-middle-point-x-4* 0.0)
+(defvar *last-middle-point-x-1* 9.0)
+(defvar *last-middle-point-x-2* 9.0)
+(defvar *last-middle-point-x-3* 9.0)
+(defvar *last-middle-point-x-4* 9.0)
 
 (defun calculate-landing-zone (object)
   (let ((landing-zone-message
@@ -43,7 +43,7 @@
         (0.00563d0 (setf last-middle-point-current *last-middle-point-x-4*)))
       (if (< last-middle-point-current 1.40494)
           (cpl:fail 'planning-error::objects-error :message "Out of storage space!"))
-      (if (= last-middle-point-current 0.0)
+      (if (= last-middle-point-current 9.0)
           (setf x (+ x (/ height 2)))
           (setf x last-middle-point-current))
       (let* ((random-height (+ 0.10 (random 0.06)))
