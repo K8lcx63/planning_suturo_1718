@@ -32,3 +32,7 @@
 
 (defun ask-knowledge-where-belongs (object)
     (roslisp:call-service "/storage_place_service/storage_place" 'knowledge_msgs-srv:StoragePlace :object_label object))
+
+;;muss noch an die kommende Message angepasst werden
+(defun ask-knowledge-y-axis-of (x y)
+    (roslisp:call-service "/object_grasping/grasp_pose" 'knowledge_msgs-srv:StoragePlace :x-axis x :y-axis y))
