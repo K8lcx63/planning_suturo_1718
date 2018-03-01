@@ -10,7 +10,7 @@
                geometry_msgs-msg
                pr2_controllers_msgs-msg
 	       object_detection-srv
-	       vision_msgs-srv
+	       vision_suturo_msgs-srv
 	       motion_msgs-msg
 	       cram-language)
   :components

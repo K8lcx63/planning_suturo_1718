@@ -44,7 +44,7 @@
   "Moving robot base via nav_pcontroller/move_base. X Y Z are treated as coordinates. angle for Orientation."
   (roslisp:ros-info (move-Base-To-Point)
                     "before im moving ill make sure that my arms arent in the way!") 
-  (planning-motion::call-Motion-Move-Arm-Homeposition)
+ ; (planning-motion::call-Motion-Move-Arm-Homeposition)
   (get-action-client-base)
   (let ((pose-to-drive-to 
           (cl-transforms-stamped:to-msg 

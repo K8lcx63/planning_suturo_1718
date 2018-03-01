@@ -76,14 +76,14 @@
   "dissamble the whole vision-msg, setting new params onto param server"
   (roslisp:with-fields
       ((normal_features
-        (vision_msgs-msg:normal_features))
+        (vision_suturo_msgs-msg:normal_features))
        (color_features
-        (vision_msgs-msg:color_features))
+        (vision_suturo_msgs-msg:color_features))
        (object_amount
-        (vision_msgs-msg:object_amount))
+        (vision_suturo_msgs-msg:object_amount))
        (object_poses
-        (vision_msgs-msg:object_poses)))
-      (vision_msgs-srv:clouds visionclouds)
+        (vision_suturo_msgs-msg:object_poses)))
+      (vision_suturo_msgs-srv:clouds visionclouds)
     (roslisp:set-param "normal_features" normal_features)
     (roslisp:ros-info (disassemble-Vision-Call)
                       "param normal_features now exist")
@@ -98,12 +98,12 @@
     (if (> n 0)
         (loop for amount from 1 to n do
             (if (= amount 1)
-                (set-Params-Features 0 0 308 768)
+                (set-Params-Features 0 0 308 768 amount)
                 (set-Params-Features
                  (* (- amount 1) 308)
                  (* (- amount 1) 768)
                  (* amount 308)
-                 (* amount 768))))))
+                 (* amount 768)amount)))))
   (return-from disassemble-vision-call *pose*))
 
  (defun list-to-1d-array (list)
@@ -125,7 +125,7 @@
     (return-from disassemble-Pose-Msg-To-Point-Stamped (roslisp:make-msg "geometry_msgs/pointstamped" (header) header1 (point) point1))))
 
 
-(defun set-Params-Features (normal-s color-s normal-e color-e)
+(defun set-Params-Features (normal-s color-s normal-e color-e amount)
   "soon"
   (roslisp:set-param (concatenate 'string "normal_features"
                                   (write-to-string amount))
