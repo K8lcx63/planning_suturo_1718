@@ -11,6 +11,7 @@
                pr2_controllers_msgs-msg
 	       object_detection-srv
 	       motion_msgs-msg
+	       cram-language
 	       planning-motion
 	       planning-vision
 	       planning-knowledge

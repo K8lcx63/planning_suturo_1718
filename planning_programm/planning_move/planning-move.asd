@@ -12,6 +12,7 @@
 	       object_detection-srv
 	       motion_msgs-msg
 	       sensor_msgs-msg
+	       cram-language
 	       move_base_msgs-msg)
   :components
   ((:module "src"

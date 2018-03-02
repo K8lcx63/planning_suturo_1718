@@ -6,6 +6,7 @@
 (defvar *action-client-base* nil)
 (defvar *headMovementList* '((0 -0.8)(1 -0.6)(2 -0.3)(3 0.0)(4 0.3)(5 0.6)(6 0.8)(7 0.6)(8 0.3)(9 0.0)(10 -0.3)(11 -0.6)))
 
+
 (defun move-Head (x y z)
   "Moving robot head via head_traj_controller/point_head_action. X Y Z are treated as coordinates."
   (let ((actionclient 
@@ -105,14 +106,4 @@
 
 
 
-(defun aufnahme-Dummy (side)
- "nur für heute"
- (planning-move::init-Robo-Moving)
- (planning-move::move-Robo-Into-Homeposition)
- (planning-move::move-Base-To-Point 0.4 1 0 30)
- (planning-move::move-Base-To-Point 0.4 1 0 180)
- (if (is-gripper-filled side)
-     (planning-move::move-Base-To-Point -0.3 1 0 180)
-     (progn
-       (planning-move::move-Base-To-Point 0.4 1 0 30)
-       (planning-move::move-Robo-Into-Homeposition))))
+       
