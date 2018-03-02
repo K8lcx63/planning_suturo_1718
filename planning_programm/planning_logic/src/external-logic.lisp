@@ -4,6 +4,10 @@
 (defvar *pose* nil)
 (defvar *pose-pr2* nil)
 
+;;Fluents for gripper-filled
+(defvar *gripper-right-state-fluent* (cram-language:make-fluent :name :gripper-right-state-fluent))
+(defvar *gripper-left-state-fluent* (cram-language:make-fluent :name :gripper-left-state-fluent))
+
 
 (defun transformation-Vision-Point (pose amount &optional (endFrame "/base_footprint")) 
   "transform a msgs with an optional Frame, default is base_footprint" 
@@ -191,67 +195,44 @@
         (sleep 5.0) (cl-tf:transform-pose-stamped transform-listener :pose tf-point-stamped :target-frame endFrame))))
 
 
+;; Methods for gripper filled controll sequence (Touch with caution)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-(Defun Save-joint-states (msg)
-"Callback to save one sensor-msgs/JointState"
-  (setf *joint-states* msg))
-
-(defun get-joint-states ()
-"gets exactly one sensor_msgs/JointState message"
-  (progn
-    (let
-        ((subsc
-           (roslisp:subscribe "/joint_states" "sensor_msgs/JointState" #'save-joint-states :max-queue-length 1)))
-      (progn
-        (sleep 1)
-        (roslisp:unsubscribe subsc)))
-    (return-from get-joint-states *joint-states*)))
-
-(defun is-gripper-filled (side)
-  "Checks if Gripper is filled after gripping something. Side is either left or right as string"
-  (if
-   (string= side "left")
+(defun init-gripper-states ()
+"subscribes to /joint_states and gives data to according handling method"
    (progn
-      (get-joint-states)
+     (roslisp:subscribe
+    "/joint_states"
+    "sensor_msgs/JointState"
+    #'is-gripper-filled :max-queue-length 1)
+     (return-from init-gripper-states())))
+
+(defun is-gripper-filled (msg)
+  "Callback for init-gripper-states, accepts sensor_msgs/JointState message, saves gripper state into fluents"
+   (progn
+     (cram-language:sleep 1)
       (roslisp:with-fields
           ((Name (sensor_msgs-msg:Name))
-           (Position (sensor_msgs-msg:Position))) *joint-states* 
+           (Position (sensor_msgs-msg:Position))) msg 
         (loop for a across Name 
               for b across Position do
                 (if (string= a "l_gripper_joint")
                     (if (and
-                         (>= b 0.004)
-                         (<= b 0.08))(return-from is-gripper-filled T)(print b))))))
-   (progn
-      (get-joint-states)
+                         (>= b 0.0055)
+                         (<= b 0.08))
+                        (setf
+                         (cram-language:value *gripper-right-state-fluent*) nil)
+                        (setf
+                         (cram-language:value *gripper-right-state-fluent*) T)))))
       (roslisp:with-fields
           ((Name (sensor_msgs-msg:Name))
-           (Position (sensor_msgs-msg:Position))) *joint-states* 
+           (Position (sensor_msgs-msg:Position))) msg 
         (loop for a across Name 
               for b across Position do
                 (if (string= a "r_gripper_joint")
                     (if (and
-                         (>= b 0.004)
-                         (<= b 0.08))(return-from is-gripper-filled T)(print b))))))))
+                         (>= b 0.0055)
+                         (<= b 0.08))
+                        (setf
+                         (cram-language:value *gripper-right-state-fluent*) nil)
+                        (setf
+                         (cram-language:value *gripper-right-state-fluent*) T)))))))
