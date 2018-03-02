@@ -5,6 +5,8 @@
 (defvar *beliefstateHead* 0)
 (defvar *action-client-base* nil)
 (defvar *headMovementList* '((0 -0.8)(1 -0.6)(2 -0.3)(3 0.0)(4 0.3)(5 0.6)(6 0.8)(7 0.6)(8 0.3)(9 0.0)(10 -0.3)(11 -0.6)))
+(defvar *gripper-right-state-fluent* (cram-language:make-fluent :name :gripper-right-state-fluent))
+(defvar *gripper-left-state-fluent* (cram-language:make-fluent :name :gripper-left-state-fluent))
 
 (defun move-Head (x y z)
   "Moving robot head via head_traj_controller/point_head_action. X Y Z are treated as coordinates."
@@ -103,16 +105,44 @@
   *action-client-base*)
 
 
+(defun init-gripper-states ()
+"subscribes to /joint_states and gives data to according handling method"
+   (progn
+     (roslisp:subscribe
+    "/joint_states"
+    "sensor_msgs/JointState"
+    #'is-gripper-filled :max-queue-length 1)
+     (return-from init-gripper-states())))
 
+(defun is-gripper-filled (msg)
+  "Callback for init-gripper-states, accepts sensor_msgs/JointState message, saves gripper state into fluents"
+   (progn
+     (cram-language:sleep 1)
+      (roslisp:with-fields
+          ((Name (sensor_msgs-msg:Name))
+           (Position (sensor_msgs-msg:Position))) msg 
+        (loop for a across Name 
+              for b across Position do
+                (if (string= a "l_gripper_joint")
+                    (if (and
+                         (>= b 0.0055)
+                         (<= b 0.08))
+                        (setf
+                         (cram-language:value *gripper-right-state-fluent*) nil)
+                        (setf
+                         (cram-language:value *gripper-right-state-fluent*) T)))))
+      (roslisp:with-fields
+          ((Name (sensor_msgs-msg:Name))
+           (Position (sensor_msgs-msg:Position))) msg 
+        (loop for a across Name 
+              for b across Position do
+                (if (string= a "r_gripper_joint")
+                    (if (and
+                         (>= b 0.0055)
+                         (<= b 0.08))
+                        (setf
+                         (cram-language:value *gripper-right-state-fluent*) nil)
+                        (setf
+                         (cram-language:value *gripper-right-state-fluent*) T)))))))
 
-(defun aufnahme-Dummy (side)
- "nur für heute"
- (planning-move::init-Robo-Moving)
- (planning-move::move-Robo-Into-Homeposition)
- (planning-move::move-Base-To-Point 0.4 1 0 30)
- (planning-move::move-Base-To-Point 0.4 1 0 180)
- (if (is-gripper-filled side)
-     (planning-move::move-Base-To-Point -0.3 1 0 180)
-     (progn
-       (planning-move::move-Base-To-Point 0.4 1 0 30)
-       (planning-move::move-Robo-Into-Homeposition))))
+       
