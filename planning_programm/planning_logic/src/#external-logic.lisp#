@@ -75,14 +75,14 @@
   "dissamble the whole vision-msg, setting new params onto param server"
   (roslisp:with-fields
       ((normal_features
-        (vision_suturo_msgs-msg:normal_features))
+        (vision_msgs-msg:normal_features))
        (color_features
-        (vision_suturo_msgs-msg:color_features))
+        (vision_msgs-msg:color_features))
        (object_amount
-        (vision_suturo_msgs-msg:object_amount))
+        (vision_msgs-msg:object_amount))
        (object_poses
-        (vision_suturo_msgs-msg:object_poses)))
-      (vision_suturo_msgs-srv:clouds visionclouds)
+        (vision_msgs-msg:object_poses)))
+      (vision_msgs-srv:clouds visionclouds)
     (roslisp:set-param "normal_features" normal_features)
     (roslisp:ros-info (disassemble-Vision-Call)
                       "param normal_features now exist")
@@ -143,10 +143,6 @@
 
 
 
-
-
-
-
 (defun save-Pr2-Pose (msg)
 "Callback to save one geometry_msgs/PoseWithCovarianceStamped"
   (setf *pose-pr2* msg))
@@ -164,7 +160,7 @@
 
 
 
-(defun transformation-Pr2-Pose (pose &optional (endFrame "/map"))
+(defun transformation-Pr2-Pose (pose &optional (endFrame "/base_footprint"))
  "transform a msgs with an optional Frame, default is base_footprint"
  (roslisp:with-fields
      ((startFrame
@@ -181,32 +177,15 @@
        (geometry_msgs-msg:y geometry_msgs-msg:orientation geometry_msgs-msg:pose geometry_msgs-msg:pose))
       (z2
        (geometry_msgs-msg:z geometry_msgs-msg:orientation geometry_msgs-msg:pose geometry_msgs-msg:pose)))
-     pose
-    (let
-       ((transform-listener
-          (make-instance 'cl-tf:transform-listener))
-        (tf-point-stamped
-          (cl-tf:make-pose-stamped startFrame 10.0
+     pose (let ((tf-point-stamped
+          (cl-tf:make-pose-stamped startFrame 0.0
                                    (cl-transforms:make-3d-vector x y 0) (cl-transforms:make-quaternion x2 y2 z2 w))))
-        (sleep 5.0) (cl-tf:transform-pose-stamped transform-listener :pose tf-point-stamped :target-frame endFrame))))
+            (catch-transformation->pose *transform-listener* tf-point-stamped endFrame))))
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+ (defun catch-Transformation->pose (transform-l tf-pose endframe)
+   (sleep 5.0)
+   (cl-tf:transform-pose-stamped *transform-listener* :pose tf-pose :target-frame endframe))
 
 
 
