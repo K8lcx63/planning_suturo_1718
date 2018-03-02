@@ -15,6 +15,7 @@
   <buildtool_depend>motion_msgs</buildtool_depend>
   <buildtool_depend>object_detection</buildtool_depend>
   <buildtool_depend>cram_language</buildtool_depend>
+  <buildtool_depend>vision_suturo_msgs</buildtool_depend>
   <buildtool_depend>planning_error</buildtool_depend>
   
 
