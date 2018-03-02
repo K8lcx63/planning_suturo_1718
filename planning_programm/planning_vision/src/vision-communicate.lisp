@@ -72,6 +72,9 @@
 
   
 
-
-
-
+(defun call-Vision-Object-Clouds ()
+  "calling Visions Service for the objectclouds"
+  (roslisp:call-service
+   "/vision_suturo/objects_information"
+   'vision_suturo_msgs-srv:objects)) ;denkemal dass ist ihr neuer call
+    

@@ -1,7 +1,7 @@
 (in-package :planning-move)
 
 
-(defvar *joint-states* 0)
+
 (defvar *beliefstateHead* 0)
 (defvar *action-client-base* nil)
 (defvar *headMovementList* '((0 -0.8)(1 -0.6)(2 -0.3)(3 0.0)(4 0.3)(5 0.6)(6 0.8)(7 0.6)(8 0.3)(9 0.0)(10 -0.3)(11 -0.6)))
@@ -22,15 +22,15 @@
 
 
 
-(defun find-Object (x z)
-  "Looking around from 0-2 and 0-(-2) to find an object, restarting at current Point if reused OBJECTSTRING TODO WIEDER REIN"
+(defun find-Object (x z objectString)
+  "Looking around from 0-2 and 0-(-2) to find an object, restarting at current Point if reused"
   (block find-Object-Start 
     (loop for i from *beliefstateHead* to 24 do
       (let ((c (mod i 12)))
         (progn
           (move-Head x (second (assoc c *headMovementList*)) z)
           (setf *beliefstateHead* c)
-          (if (planning-knowledge::is-Object i)
+          (if (planning-knowledge::is-Object i objectString)
               (return-from find-Object-Start)
               ))))
     (roslisp::ros-info "find-Object" "Couldnt find any Object in front of me")
@@ -44,7 +44,7 @@
   "Moving robot base via nav_pcontroller/move_base. X Y Z are treated as coordinates. angle for Orientation."
   (roslisp:ros-info (move-Base-To-Point)
                     "before im moving ill make sure that my arms arent in the way!") 
-  (planning-motion::call-Motion-Move-Arm-Homeposition)
+;  (planning-motion::call-Motion-Move-Arm-Homeposition)
   (get-action-client-base)
   (let ((pose-to-drive-to 
           (cl-transforms-stamped:to-msg 
@@ -104,45 +104,15 @@
 
 
 
-(defun save-joint-states (msg)
-"Callback to save one sensor-msgs/JointState"
-  (setf *joint-states* msg))
 
-(defun get-joint-states ()
-"gets exactly one sensor_msgs/JointState message"
-  (progn
-    (let
-        ((subsc
-           (roslisp:subscribe "/joint_states" "sensor_msgs/JointState" #'save-joint-states :max-queue-length 1)))
-      (progn
-        (sleep 1)
-        (roslisp:unsubscribe subsc)))
-    (return-from get-joint-states *joint-states*)))
-
-(defun is-gripper-filled (side)
-  "Checks if Gripper is filled after gripping something. Side is either left or right as string"
-  (if
-   (string= side "left")
-   (progn
-      (get-joint-states)
-      (roslisp:with-fields
-          ((Name (sensor_msgs-msg:Name))
-           (Position (sensor_msgs-msg:Position))) planning-move::*joint-states* 
-        (loop for a across Name 
-              for b across Position do
-                (if (string= a "l_gripper_joint")
-                    (if (and
-                         (>= b 0.004)
-                         (<= b 0.08))(return-from is-gripper-filled T)(print b))))))
-   (progn
-      (get-joint-states)
-      (roslisp:with-fields
-          ((Name (sensor_msgs-msg:Name))
-           (Position (sensor_msgs-msg:Position))) planning-move::*joint-states* 
-        (loop for a across Name 
-              for b across Position do
-                (if (string= a "r_gripper_joint")
-                    (if (and
-                         (>= b 0.004)
-                         (<= b 0.08))(return-from is-gripper-filled T)(print b))))))))
-
+(defun aufnahme-Dummy (side)
+ "nur für heute"
+ (planning-move::init-Robo-Moving)
+ (planning-move::move-Robo-Into-Homeposition)
+ (planning-move::move-Base-To-Point 0.4 1 0 30)
+ (planning-move::move-Base-To-Point 0.4 1 0 180)
+ (if (is-gripper-filled side)
+     (planning-move::move-Base-To-Point -0.3 1 0 180)
+     (progn
+       (planning-move::move-Base-To-Point 0.4 1 0 30)
+       (planning-move::move-Robo-Into-Homeposition))))

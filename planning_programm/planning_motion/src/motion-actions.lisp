@@ -74,13 +74,12 @@
                 (loop until
                       (actionlib:wait-for-server actionclient))
                 (let ((actiongoal
-                        (roslisp:with-fields(poke_position) point-center-of-object
-                          (actionlib:make-action-goal actionclient point_stamped poke_position command x))))
+                        (actionlib:make-action-goal actionclient point_stamped point-center-of-object command x)))
                   (actionlib:call-goal actionclient actiongoal)))))
              (roslisp:with-fields (motion_msgs-msg:status (motion_msgs-msg:movingcommandresult status))
             status-message
               (case motion_msgs-msg:status
-                (0 (roslisp::ros-info "Motion" "Successfully moved into home position."))
+                (0 (roslisp::ros-info "Motion" "Successfully moved into position."))
                 (1 (roslisp::ros-warn "Motion" "Goal is out of range.")
                  (cpl:fail 'planning-error::motion-error :message "Goal is out of range."))
                 (2 (roslisp::ros-warn "Motion" "Path to goal is obstructed.")
