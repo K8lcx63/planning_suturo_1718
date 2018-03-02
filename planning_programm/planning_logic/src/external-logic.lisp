@@ -6,8 +6,8 @@
 (defvar *perception-publisher*)
 
 ;;Fluents for gripper-filled
-(defvar *gripper-right-state-fluent* (cram-language:make-fluent :name :gripper-right-state-fluent))
-(defvar *gripper-left-state-fluent* (cram-language:make-fluent :name :gripper-left-state-fluent))
+(defvar *gripper-righ-state-fluent* (cram-language:make-fluent))
+(defvar *gripper-left-state-fluent* (cram-language:make-fluent))
 
 
 (defun transformation-Vision-Point (pose amount &optional (endFrame "/base_footprint")) 
@@ -216,27 +216,27 @@
            (Position (sensor_msgs-msg:Position))) msg 
         (loop for a across Name 
               for b across Position do
-                (if (string= a "l_gripper_joint")
-                    (if (and
-                         (>= b 0.0055)
-                         (<= b 0.08))
-                        (setf
-                         (cram-language:value *gripper-right-state-fluent*) nil)
-                        (setf
-                         (cram-language:value *gripper-right-state-fluent*) T)))))
-      (roslisp:with-fields
-          ((Name (sensor_msgs-msg:Name))
-           (Position (sensor_msgs-msg:Position))) msg 
-        (loop for a across Name 
-              for b across Position do
                 (if (string= a "r_gripper_joint")
                     (if (and
                          (>= b 0.0055)
                          (<= b 0.08))
                         (setf
-                         (cram-language:value *gripper-right-state-fluent*) nil)
+                         (cram-language:value *gripper-righ-state-fluent*) nil)
                         (setf
-                         (cram-language:value *gripper-right-state-fluent*) T)))))))
+                         (cram-language:value *gripper-righ-state-fluent*) T)))))
+      (roslisp:with-fields
+          ((Name (sensor_msgs-msg:Name))
+           (Position (sensor_msgs-msg:Position))) msg 
+        (loop for a across Name 
+              for b across Position do
+                (if (string= a "l_gripper_joint")
+                    (if (and
+                         (>= b 0.0055)
+                         (<= b 0.08))
+                        (setf
+                         (cram-language:value *gripper-left-state-fluent*) nil)
+                        (setf
+                         (cram-language:value *gripper-left-state-fluent*) T)))))))
 
 
 (defun vis-init ()
@@ -250,10 +250,11 @@
                       (roslisp:make-message "geometry_msgs/PoseStamped"
                                             label object_pose))))
 
+
 (defun test-right-gripper ()
   (cram-language:top-level
     (cram-language:pursue
-      (cram-language:wait-for *gripper-right-state-fluent*)
+      (cram-language:wait-for *gripper-righ-state-fluent*)
       (cram-language:unwind-protect
            (loop for i from 1 to 1000 do
              (progn
