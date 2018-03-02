@@ -17,7 +17,7 @@
                           (position (storage_place_position)))
         landing-zone-message
       (setf width (- width 0.1))
-      (setf height (- height 0.1))
+      (setf height (- height 0.4))
       ;;(shrink-landing-zone)
       (split-landing-zone position width height))))
 
@@ -46,7 +46,7 @@
       (if (= last-middle-point-current 9.0)
           (setf x (+ x (/ height 2)))
           (setf x last-middle-point-current))
-      (let* ((random-height (+ 0.10 (random 0.06)))
+      (let* ((random-height (+ 0.10 (random 0.01)))
              (middle-point-landing-zone-x (- x (/ random-height 2.0)))
              (middle-point-landing-zone-pose (cl-tf:make-pose-stamped
                                               "/map"
