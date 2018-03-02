@@ -204,13 +204,13 @@
      (roslisp:subscribe
     "/joint_states"
     "sensor_msgs/JointState"
-    #'is-gripper-filled :max-queue-length 1)
+    #'is-gripper-filled :max-queue-length 0)
      (return-from init-gripper-states())))
 
 (defun is-gripper-filled (msg)
   "Callback for init-gripper-states, accepts sensor_msgs/JointState message, saves gripper state into fluents"
    (progn
-     (cram-language:sleep 1)
+     (cram-language:sleep 0.01)
       (roslisp:with-fields
           ((Name (sensor_msgs-msg:Name))
            (Position (sensor_msgs-msg:Position))) msg 
@@ -254,12 +254,12 @@
 (defun test-right-gripper ()
   (cram-language:top-level
     (cram-language:pursue
-      (cram-language:wait-for *gripper-righ-state-fluent*)
+      (cram-language:wait-for *gripper-left-state-fluent*)
       (cram-language:unwind-protect
            (loop for i from 1 to 1000 do
              (progn
-               (print i)
-               (cram-language:sleep 1)
+               (print *gripper-left-state-fluent*)
+               (cram-language:sleep 0.1)
                ))
         (progn
           (format t "do shit"))))))
