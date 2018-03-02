@@ -2,9 +2,9 @@
 
 
 
-(defvar *beliefstateHead* 0)
+
 (defvar *action-client-base* nil)
-(defvar *headMovementList* '((0 -0.8)(1 -0.6)(2 -0.3)(3 0.0)(4 0.3)(5 0.6)(6 0.8)(7 0.6)(8 0.3)(9 0.0)(10 -0.3)(11 -0.6)))
+
 
 
 (defun move-Head (x y z)
@@ -23,21 +23,6 @@
 
 
 
-(defun find-Object (x z objectString)
-  "Looking around from 0-2 and 0-(-2) to find an object, restarting at current Point if reused"
-  (block find-Object-Start 
-    (loop for i from *beliefstateHead* to 24 do
-      (let ((c (mod i 12)))
-        (progn
-          (move-Head x (second (assoc c *headMovementList*)) z)
-          (setf *beliefstateHead* c)
-          (if (planning-knowledge::is-Object i objectString)
-              (return-from find-Object-Start)
-              ))))
-    (roslisp::ros-info "find-Object" "Couldnt find any Object in front of me")
-    (return-from find-Object nil))
-  (roslisp::ros-info "find-Object" "I see the Object. Head is in Position")
-  (return-from find-Object T))
 
 
   
@@ -64,7 +49,7 @@
   
 (defun move-Robo-Into-Homeposition ()
    "moving robot into homeposition with frame map"
-(move-Base-To-Point 0.8 1 0 30))
+  (move-Base-To-Point -0.3 1 0 180))
 
 
 

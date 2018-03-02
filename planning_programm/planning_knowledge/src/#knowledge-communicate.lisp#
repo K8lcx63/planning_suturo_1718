@@ -35,3 +35,7 @@
 ;;   (roslisp:with-fields (label) (what-object features) (if (string= label objectString)(return-from is-object T)(return-from is-object nil)))
 ;;
 
+(defun what-Should-I-Grab ()
+  "Asking Knowledge which object the robot should grab, returns 0-2 strings"
+  (roslisp:call-service "/beliefstate/objects_to_pick" 'knowledge_msgs-srv:ObjectsToPick))
+
