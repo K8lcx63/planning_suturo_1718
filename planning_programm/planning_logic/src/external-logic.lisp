@@ -249,3 +249,16 @@
     (roslisp:publish *perception-publisher*
                       (roslisp:make-message "geometry_msgs/PoseStamped"
                                             label object_pose))))
+
+(defun test-right-gripper ()
+  (cram-language:top-level
+    (cram-language:pursue
+      (cram-language:wait-for *gripper-right-state-fluent*)
+      (cram-language:unwind-protect
+           (loop for i from 1 to 1000 do
+             (progn
+               (print i)
+               (cram-language:sleep 1)
+               ))
+        (progn
+          (format t "do shit"))))))
