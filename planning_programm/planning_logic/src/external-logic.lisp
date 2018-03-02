@@ -3,6 +3,7 @@
 (defvar *joint-states* 0)
 (defvar *pose* nil)
 (defvar *pose-pr2* nil)
+(defvar *perception-publisher*)
 
 ;;Fluents for gripper-filled
 (defvar *gripper-right-state-fluent* (cram-language:make-fluent :name :gripper-right-state-fluent))
@@ -236,3 +237,15 @@
                          (cram-language:value *gripper-right-state-fluent*) nil)
                         (setf
                          (cram-language:value *gripper-right-state-fluent*) T)))))))
+
+
+(defun vis-init ()
+  (setf *perception-publisher*
+       (roslisp:advertise "/beliefstate/perceive_action" "knowledge_msgs/PerceivedObject")))
+
+;muss noch überarbeitet werden klappt so noch nicht
+(defun publish-pose (label object_pose)
+  (when *perception-publisher*
+    (roslisp:publish *perception-publisher*
+                      (roslisp:make-message "geometry_msgs/PoseStamped"
+                                            label object_pose))))
