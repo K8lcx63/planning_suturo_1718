@@ -5,7 +5,7 @@
 (defvar *pose-array* nil)
 (defvar *my-array* (make-array '(5) 
                                  :initial-contents
-                                 '("features1" "features2" "features3" "features4" "features5")))
+                                 '("features1" "features2" "features3" "features4" "features5" "features6" "features7" "features8" "features9" "features10")))
 (defvar *head-array-tmp* (make-array '(5)
                                      :initial-contents
                                      '(0 -2 2 -1 1)))
