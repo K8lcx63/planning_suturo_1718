@@ -16,7 +16,7 @@
 ;homeposi
 ;kopf-bewegen
 
-;[FUNKTION OBJEKT SUCHEN]                                        ;{
+;[FUNKTION OBJEKT SUCHEN] 
 ;{
 ;alle object Suchen --> Wenn alle Objekte gefunden nach einander an knowledgen geben (input feature vektoren output string z.B "Ja_Milch")
 ;weitergabe an vision von Objekten String+Nummer im array, sodass pose kommt --> publish an knowledge String + Pose
@@ -78,7 +78,7 @@
                           ))
                      (planning-logic::publish-pose name object_pose))))))
                      ;what should i grep?>>>>>>
-    (planning-knowledge::what-should-i-grab)
+    ;(planning-knowledge::what-should-i-grab)
     ;(how can i grap )!!!
     ))
                    
