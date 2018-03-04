@@ -2,7 +2,7 @@
 
 (defvar pose-message)
 (defvar *marker-publisher* nil)
-(defvar *marker-id* 0)
+(defvar *marker-id* 10)
 
 (defvar *last-y-border-y-1* 9.0)
 (defvar *last-y-border-y-2* 9.0)
@@ -16,40 +16,66 @@
                           (height (storage_place_height))
                           (position (storage_place_position)))
         landing-zone-message
-      (width (- width 0.1))
-      (height (- height 0.2))
-      (split-landing-zone position width height))))
+      (setf width (- width 0.1))
+      (setf height (- height 0.2))
+      (fill-landing-zone-horizontally position width height))))
 
 
 (defun fill-landing-zone-horizontally (position width height)
+  (cpl:with-failure-handling
+        ((cpl:simple-plan-failure (error-object)
+           (format t "An error happened: ~a~%" error-object)
+           (roslisp:ros-error "Objects" "Out of storage space!")))
   (roslisp:with-fields ((x (geometry_msgs-msg:x geometry_msgs-msg:point))
                         (y (geometry_msgs-msg:y geometry_msgs-msg:point))
                         (z (geometry_msgs-msg:z geometry_msgs-msg:point)))
       position
     (let ((last-y-border)
+          (current-y-border)
           (width-split (/ width 2.0))
-          (height-split (/ height 2.0))
-      (if (>= y (- 1.13063 width-split))
-          (setf last-y-border *last-y-border-y-1*)
-          (if ((>= y (- 0.75563 width-split)))
-               (setf last-y-border *last-y-border-y-2*)
-               (if ((>= y (- 0.38063 width-split)))
-                    (setf last-y-border *last-y-border-y-3*)
-                    (if ((>= y (- 0.00563 width-split)))
-                         (setf last-y-border *last-y-border-y-4*)))))
+          (height-split (/ height 2.0)))
+
+      (cond ((>= y (- 1.13063d0 width-split))
+             (setf last-y-border *last-y-border-y-1*))
+            ((>= y (- 0.75563 width-split))
+             (setf last-y-border *last-y-border-y-2*))
+            ((>= y (- 0.38063 width-split))
+             (setf last-y-border *last-y-border-y-3*))
+            ((>= y (- 0.00563 width-split))
+            (setf last-y-border *last-y-border-y-4*)))
+      
+      
       (if (< last-y-border (- y (- width-split 0.08)))
           (cpl:fail 'planning-error::objects-error :message "Out of storage space!"))
       (if (= last-y-border 9.0)
-          (setf y (+ y width-split))
-          (setf y (last-y-border)))
+          (setf last-y-border (+ y width-split)))
       (let* ((random-height (random height-split))
-             (x (- x random-height))
-             (y (
+             (landing-zone-width (/ width 3.0))
+             (current-middle-point-x (- x random-height))
+             (current-middle-point-y (- last-y-border (/ landing-zone-width 2.0)))
+             (landing-zone-pose (cl-tf:make-pose-stamped
+                                              "/map"
+                                              0.0
+                                              (cl-transforms:make-3d-vector current-middle-point-x current-middle-point-y z)
+                                              (cl-transforms:make-quaternion 0 0 0 1))))
+
+        (setf current-y-border (- last-y-border landing-zone-width))
+        
+        (cond ((>= y (- 1.13063 width-split))
+               (setf *last-y-border-y-1* current-y-border))
+            ((>= y (- 0.75563 width-split))
+             (setf last-y-border *last-y-border-y-2*))
+            ((>= y (- 0.38063 width-split))
+             (setf last-y-border *last-y-border-y-3*))
+            ((>= y (- 0.00563 width-split))
+            (setf last-y-border *last-y-border-y-4*)))
+        (vis-init)
+        (publish-pose landing-zone-pose *marker-id* 0.1 landing-zone-width))))))
              
            
            
            
-(defun visualize-landing-zone pose)
+;;(defun visualize-landing-zone pose)
 
 (defun vis-init ()
   (setf *marker-publisher*
