@@ -76,11 +76,11 @@
                        ((object_pose
                     ;(planning-vision::object-Information name amount)!!!!!
                           ))
-                     (planning-logic::publish-pose name object_pose))))))
+                     ;(planning-logic::publish-pose name object_pose))))))
                      ;what should i grep?>>>>>>
     ;(planning-knowledge::what-should-i-grab)
     ;(how can i grap )!!!
-    ))
+    )))))))
                    
                  
        
