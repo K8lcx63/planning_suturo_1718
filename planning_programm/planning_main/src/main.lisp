@@ -3,12 +3,10 @@
 (defvar *beliefstateHead* 0)
 (defvar *headMovementList* '((0 -0.8)(1 -0.6)(2 -0.3)(3 0.0)(4 0.3)(5 0.6)(6 0.8)(7 0.6)(8 0.3)(9 0.0)(10 -0.3)(11 -0.6)))
 (defvar *pose-array* nil)
-(defvar *my-array* (make-array '(5) 
+(defvar *my-array* (make-array '(10) 
                                  :initial-contents
                                  '("features1" "features2" "features3" "features4" "features5" "features6" "features7" "features8" "features9" "features10")))
-(defvar *head-array-tmp* (make-array '(5)
-                                     :initial-contents
-                                     '(0 -2 2 -1 1)))
+
 
 ;MAINFUNKTION~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ;>>LOOP<<

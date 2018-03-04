@@ -157,6 +157,11 @@
   (setf *perception-publisher*
        (roslisp:advertise "/beliefstate/perceive_action" "knowledge_msgs/PerceivedObject")))
 
+(Defun move-pr2 (x y z)
+  ".."
+  (planning-move::move-base-to-point-safe x y z
+                           (angle-from-pr2-pose-to-point x y z)))
+
 ;muss noch überarbeitet werden klappt so noch nicht
 ;; (defun publish-pose (label object_pose) 
 ;;   (when *perception-publisher*
@@ -169,6 +174,7 @@
 
 (defun angle-From-Pr2-Pose-To-Point (x-goal y-goal z-goal)
   ""
+  (init-pr2)
   (roslisp:with-fields
       ((x
         (geometry_msgs-msg:x geometry_msgs-msg:position))

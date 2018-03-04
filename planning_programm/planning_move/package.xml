@@ -16,7 +16,6 @@
   <buildtool_depend>object_detection</buildtool_depend>
   <buildtool_depend>sensor_msgs</buildtool_depend>
   <buildtool_depend>move_base_msgs</buildtool_depend>	
-  <buildtool_depend>cram_language</buildtool_depend>	
-
+  <buildtool_depend>cram_language</buildtool_depend>
 
 </package>

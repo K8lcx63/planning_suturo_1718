@@ -20,11 +20,6 @@
   (actionlib:call-goal actionclient actiongoal)))))
 
 
-
-(Defun move-pr2 (x y z)
-  ".."
-  (move-base-to-point-safe x y z
-                           (planning-logic::angle-from-pr2-pose-to-point x y z)))
                           
 
 (Defun move-Base-To-Point-Safe (x y z angle)
