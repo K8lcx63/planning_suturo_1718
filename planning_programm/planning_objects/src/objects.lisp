@@ -35,7 +35,9 @@
           (width-split (/ width 2.0))
           (height-split (/ height 2.0)))
 
-      (cond ((>= y (- 1.13063d0 width-split))
+      (print y)
+      (print width-split)
+      (cond ((>= y (- 1.13063 width-split))
              (setf last-y-border *last-y-border-y-1*))
             ((>= y (- 0.75563 width-split))
              (setf last-y-border *last-y-border-y-2*))
@@ -60,22 +62,26 @@
                                               (cl-transforms:make-quaternion 0 0 0 1))))
 
         (setf current-y-border (- last-y-border landing-zone-width))
-        
+
+        (print y)
+        (print width-split)
         (cond ((>= y (- 1.13063 width-split))
                (setf *last-y-border-y-1* current-y-border))
-            ((>= y (- 0.75563 width-split))
-             (setf last-y-border *last-y-border-y-2*))
-            ((>= y (- 0.38063 width-split))
-             (setf last-y-border *last-y-border-y-3*))
-            ((>= y (- 0.00563 width-split))
-            (setf last-y-border *last-y-border-y-4*)))
+              ((>= y (- 0.75563 width-split))
+               (setf *last-y-border-y-2* current-y-border))
+              ((>= y (- 0.38063 width-split))
+               (setf *last-y-border-y-3* current-y-border))
+              ((>= y (- 0.00563 width-split))
+               (setf *last-y-border-y-4* current-y-border)))
         (vis-init)
         (publish-pose landing-zone-pose *marker-id* 0.1 landing-zone-width))))))
-             
+
+
+;;(defun calculate-landing-zone-visualized (object))
            
+;;(defun check-which-storage-place (y))           
            
-           
-;;(defun visualize-landing-zone pose)
+;;(defun visualize-landing-zone (pose))
 
 (defun vis-init ()
   (setf *marker-publisher*
