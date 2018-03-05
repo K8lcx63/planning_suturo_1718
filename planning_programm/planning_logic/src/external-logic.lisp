@@ -49,21 +49,28 @@
 ;;             (planning-motion::motion-To-Point point-for-motion 2)
 ;;             (planning-motion::motion-To-Point point-for-motion 3)))))
 
-;; (defun try-To-Poke-Different-Location(point-for-motion number-for-arm)
-;;   "trying to poke the object now again with different location.."
-;;    (roslisp:ros-info (try-To-Poke-Different-Location)
-;;                     "trying to poke the object now again with different location..")
-;;   (let ((position (make-array '(4)  
-;;                                  :initial-contents '(1.3 0.5 0 -0.3)))) 
-;;     (loop for y across position do
-;;       (planning-move::move-Base-To-Point 0.8 y 0 30)
-;;       (let ((rotation (make-array '(3)  
-;;                                   :initial-contents '(30 31 29)))) 
-;;         (loop for r across rotation do
-;;              (progn
-;;                (planning-move::move-Base-To-Point 0.8 y 0 r)
-;;                (if (eq T(let-Robo-Try-To-Poke point-for-motion number-for-arm))
-;;                    (return-from try-To-Poke-Different-Location T))))))))
+
+;das klappt jetzt muss aber angepeasst werden auf motion grab und in der doku
+(defun try-To-Grab-Different-Location(x y z)
+  "trying to grab the object now again with different location.."
+   (roslisp:ros-info (try-To-Poke-Different-Location)
+                    "trying to grab the object now again with different location..")
+  (let ((position (make-array '(4)  
+                                 :initial-contents '(-0.1 -0.2 0.1 0.2)))) 
+    (loop for ya across position do
+      (planning-move::move-Base-To-Point x (+ y ya) z 180)
+      (let ((rotation (make-array '(3)  
+                                  :initial-contents '(0 -10 10))))
+        (loop for r across rotation do
+             (progn
+               (cram-language:wait-for
+                (planning-move::move-Base-To-Point x (+ y ya) z (+ r 180)))
+             (if
+              (eq 1
+                  (planning-motion::call-motion-move-arm-homeposition))
+              (print r)
+              (return-from try-To-Grab-Different-Location "nooo"))))))))
+                                                  
             
 
 
@@ -153,21 +160,11 @@
   (setf (cram-language:value *pr2-pose*) msg))
 
 
-(defun vis-init ()
-  (setf *perception-publisher*
-       (roslisp:advertise "/beliefstate/perceive_action" "knowledge_msgs/PerceivedObject")))
-
 (Defun move-pr2 (x y z)
   ".."
   (planning-move::move-base-to-point-safe x y z
                            (angle-from-pr2-pose-to-point x y z)))
 
-;muss noch überarbeitet werden klappt so noch nicht
-;; (defun publish-pose (label object_pose) 
-;;   (when *perception-publisher*
-;;     (roslisp:publish *perception-publisher*
-;;                       (roslisp:make-message "geometry_msgs/PoseStamped"
-;;                                             label object_pose))))
 
 
 
