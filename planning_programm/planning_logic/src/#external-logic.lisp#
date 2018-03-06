@@ -291,10 +291,16 @@
           (format t "do shit"))))))
 
 
-(defun pick-The-Object ()
-  (
-
-
+(defun move-With-Picked-Object (x y z label)
+  (planning-knowledge::how-To-Pick-Objects label)
+;Kritischer Abschnitt beginnt
+  (cram-language:top-level
+    (cram-language:pursue
+      (cram-language:wait-for *gripper-left-state-fluent*)
+      (cram-language:unwind-protect
+           (move-Pr2 x y z)
+        (progn
+          (format t "do shit"))))))
 
 
 
