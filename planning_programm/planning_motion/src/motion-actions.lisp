@@ -55,7 +55,7 @@
 		
 
 
-(defun call-Motion-Move-Arm-To-Point (point-center-of-object &optional (x 3))
+(defun call-Motion-Move-Arm-To-Point (point-center-of-object label &optional (x 3))
   "Moves choosen robot-arm (optional parameter) to the point-center-of-object (default right arm 3=right, 2=left)"
   (roslisp::ros-info "Motion" "moving arm to point")
   (cpl:with-retry-counters ((retry-counter 10))
@@ -76,7 +76,7 @@
                 (loop until
                       (actionlib:wait-for-server actionclient))
                 (let ((actiongoal
-                        (actionlib:make-action-goal actionclient point_stamped point-center-of-object command x)))
+                        (actionlib:make-action-goal actionclient goal_pose point-center-of-object command x grasped_object_label label)))
                   (actionlib:call-goal actionclient actiongoal)))))
              (roslisp:with-fields (motion_msgs-msg:status (motion_msgs-msg:movingcommandresult status))
             status-message
