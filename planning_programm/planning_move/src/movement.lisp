@@ -25,7 +25,7 @@
 (Defun move-Base-To-Point-Safe (x y z angle)
   ".."
   (cram-language:wait-for
-   (move-Base-To-Point 0.3 0.8 0 -90))
+   (move-Base-To-Point 0.2 1.0 0 -90))
   (if (and (> angle 90) (< angle 270))
       (move-Base-To-Point x y z 180)
       (move-Base-To-Point x y z 0)))
@@ -54,7 +54,7 @@
 
 (defun move-Robo-Into-Homeposition ()
    "moving robot into homeposition with frame map"
-  (move-Base-To-Point -0.3 1 0 180))
+  (move-Base-To-Point -0.29 1.12 0 180))
 
 
 

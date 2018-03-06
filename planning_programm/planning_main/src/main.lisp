@@ -56,7 +56,6 @@
                       "Robotlife seems hard, but lets do this")
 
     (planning-move::move-Robo-Into-Homeposition)
-    (planning-move::move-Head 2.6 0 0)
     (if (eq T (find-Object 1.6 0))
              (let
                  ((n
@@ -72,13 +71,18 @@
                    ;WEITERGABE AN VISION>>>>>>
                    (let
                        ((object_pose
-                    ;(planning-vision::object-Information name amount)!!!!!
-                          ))
-                     ;(planning-logic::publish-pose name object_pose))))))
+                          (planning-vision::call-vision-object-pose name amount)))
+                     (planning-logic::publish-pose name object_pose))
                      ;what should i grep?>>>>>>
-    ;(planning-knowledge::what-should-i-grab)
-    ;(how can i grap )!!!
-    )))))))
+                   (roslisp:with-fields
+                       (object_label_1 object_label_2)
+                       (planning-knowledge::objects-to-pick)
+                     (if (> (length object_label_1) 0)
+                         ;GREIFE DAS OBJECT CALLL
+                         (print "hallo")
+                         ;KEIN OBJEKT ZUM GREIFEN
+                         (print "noo")))
+                   ))))))
                    
                  
        

@@ -12,6 +12,7 @@
 (defun init-logic ()
   (vis-init)
   (init-gripper-states)
+  (init-pr2)
 )
 
 (defun transformation-Vision-Point (pose amount &optional (endFrame "/base_footprint")) 

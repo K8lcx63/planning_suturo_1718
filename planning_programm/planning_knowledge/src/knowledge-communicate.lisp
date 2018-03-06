@@ -10,30 +10,6 @@
   "Takes features and string and asks knowledge if features are the object described in string"
   (roslisp:with-fields (label) (what-object features) (if (string= label objectString)(return-from is-object T)(return-from is-object nil))))
 
-(defun init-Perceive-Topic ()
-(setf *percieved-topic*
-       (roslisp:advertise "/beliefstate/perceive_action" "knowledge_msgs/PerceivedObject")))
-
-;Hier müssen wir nochmal rüber gehen stimmt noch nicht ganz und konnte nicht getestet werden.
-(defun publish-pose (pose)
-  (when *percieved-topic*
-     (roslisp:publish *marker-publisher*
-                      (roslisp:make-message "knowledge_msgs/PercievedObject"
-                                            ;object-label?
-                                            (roslisp:make-message "geometry_msgs/PoseStamped"
-                                            (std_msgs-msg:stamp header)
-                                            (roslisp:ros-time)
-                                            (std_msgs-msg:frame_id header)
-                                            (typecase pose
-                                              (cl-tf:pose-stamped (cl-tf:frame-id pose)))
-                                            (x position pose) (cl-transforms:x point)
-                                            (y position pose) (cl-transforms:y point)
-                                            (z position pose) (cl-transforms:z point)
-                                            (x orientation pose) (cl-transforms:x quaternion)
-                                            (y orientation pose) (cl-transforms:y quaternion)
-                                            (z orientation pose) (cl-transforms:z quaternion)
-                                            (w orientation pose) (cl-transforms:w quaternion))))))
-
 
 
 
