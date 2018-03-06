@@ -263,6 +263,9 @@
                         (setf
                          (cram-language:value *gripper-left-state-fluent*) T)))))))
 
+(defun vis-init () 
+  (setf *perception-publisher* 
+       (roslisp:advertise "/beliefstate/perceive_action" "knowledge_msgs/PerceivedObject")))
 
 
 ;muss noch überarbeitet werden klappt so noch nicht
