@@ -74,21 +74,36 @@
                           (planning-vision::call-vision-object-pose name amount)))
                      (planning-logic::publish-pose name object_pose))
                      ;what should i grep?>>>>>>
-                   (roslisp:with-fields
-                       (object_label_1 object_label_2)
-                       (planning-knowledge::objects-to-pick)
-                     (if (> (length object_label_1) 0)
-                         ;GREIFE DAS OBJECT CALLL
-                         (print "hallo")
-                         ;KEIN OBJEKT ZUM GREIFEN
-                         (print "noo")))
-                   ))))))
+
+                   (let
+                       ((list-of-objects
+                          (multiple-value-bind (o1 o2)
+                                  (planning-knowledge::objects-to-pick)
+                                (list o1 o2))))
+                     (loop for object from 0 to 1 do
+                      ;let's grab >>>>>>>>>>>>>>>>
+                       (if (>
+                            (length
+                               (nth object list-of-objects)) 0)
+                                        ;GREIFE DAS OBJECT1 = linker Arm
+                                        ;(planning-Motion::pickpickpick)
+                                        ;zusammen mit how-To-Pick
+                                        ;KEIN OBJEKT ZUM GREIFEN
+                            (print "pech")))
+                                        ;FAHREN >>>>>>>>>>>>>>>>>>
+                                   (multiple-value-bind
+                                         (left_gripper right_gripper)
+                                                           (planning-knowledge::objects-to-pick)
+                                     (if (eq T (or left_gripper right_gripper))
+                                         (cram-language:wait-for
+                                          (planning-move::move-base-to-point-safe 0.78 0.8 0 0)))))))))))
+                            ;landin zone --> y daten 
                    
                  
        
 
 (defun find-Object (x z)
-  "Looking around to find an object, restarting at current Point if reused" 
+  "Looking around to find /beliefstate/gripper_empty an object, restarting at current Point if reused" 
   (block find-Object-Start
     (loop for i from *beliefstateHead* to 24 do
       (let ((c (mod i 12)))
