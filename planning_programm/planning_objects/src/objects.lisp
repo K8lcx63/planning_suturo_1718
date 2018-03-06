@@ -5,6 +5,8 @@
 (defvar *marker-id* 10)
 (defvar *transform-listener*)
 
+(defparameter *transform-listener* (make-instance 'cl-tf:transform-listener))
+
 (defvar *last-y-border-y-1* 9.0)
 (defvar *last-y-border-y-2* 9.0)
 (defvar *last-y-border-y-3* 9.0)
@@ -20,20 +22,21 @@
       (setf width (- width 0.1))
       (setf height (- height 0.2))
       (let ((middle-point-landing-zone-pose (fill-landing-zone-horizontally position width height)))
-        (defparameter *transform-listener* (make-instance 'cl-tf:transform-listener))
-        ;;Es muss villeicht ein paar Sekunden gewartet werden bis der transfrom listener alle frames hat
-        (roslisp:wait-duration 2)
-        (cl-tf:transform-pose-stamped *transform-listener* :pose middle-point-landing-zone-pose :target-frame "/sink_area_surface")
         (roslisp:with-fields ((x (geometry_msgs-msg:x geometry_msgs-msg:pose))
                               (y (geometry_msgs-msg:y geometry_msgs-msg:pose))) middle-point-landing-zone-pose
-          (let ((landing-pose-message (planning-knowledge::ask-knowledge-y-axis-of x y)))
-            (setq landing-pose-message
-                  (roslisp:modify-message-copy landing-pose-message
-                                               (geometry_msgs-msg:x geometry_msgs-msg:pose) x
-                                               (geometry_msgs-msg:y geometry_msgs-msg:pose) y))
-            (setf landing-pose-message
-                  (cl-tf:transform-pose-stamped *transform-listener* :pose landing-pose-message :target-frame "/map"))
-            (return-from calculate-landing-zone landing-pose-message)))))))
+          (let ((landing-pose-message (planning-knowledge::how-To-Pick-Objects object))
+                (grasp-pose)
+                (grasp-pose-map))
+            (setf grasp-pose (cl-tf:from-msg (roslisp:msg-slot-value landing-pose-message 'knowledge_msgs-srv:grasp_pose)))
+            
+            (setf grasp-pose-map
+                  (cl-tf:transform-pose-stamped *transform-listener* :pose *lisp-pose* :target-frame "map" :use-current-ros-time t))
+            
+            (setf grasp-pose-map
+                  (cl-tf:copy-pose-stamped grasp-pose-map :origin
+                                           (cl-tf:copy-3d-vector
+                                            (cl-tf:origin grasp-pose-map) :x x :y y)))
+            (return-from calculate-landing-zone grasp-pose-map)))))))
 
 
 (defun fill-landing-zone-horizontally (position width height)
@@ -75,8 +78,6 @@
                                               (cl-transforms:make-quaternion 0 0 0 1))))
 
         (setf current-y-border (- last-y-border landing-zone-width))
-
-        (print landing-zone-width)
         
         (cond ((>= y (- 1.13063 width-split))
                (setf *last-y-border-y-1* current-y-border))
