@@ -34,10 +34,12 @@
                       (actionlib:wait-for-server actionclient))
                 (let ((xtrans
                         (cl-transforms-stamped:to-msg
-                         (cl-tf:make-point-stamped "base_link" 0 
-                                                   (cl-transforms:make-3d-vector 5.0 3.0 1.2)))))
+                         (cl-tf:make-pose-stamped "base_link" 0 
+                                                  (cl-tf:make-point-stamped "base_link" 0 
+                                                                            (cl-transforms:make-3d-vector 5.0 3.0 1.2))
+                                                  (cl-tf:make-quaternion 1 1 1 1)))))
                   (let ((actiongoal 
-                          (actionlib:make-action-goal actionclient point_stamped xtrans command 1)))
+                          (actionlib:make-action-goal actionclient goal_pose xtrans command 1)))
                     (actionlib:call-goal actionclient actiongoal))))))
         (roslisp:with-fields (motion_msgs-msg:status (motion_msgs-msg:movingcommandresult status))
             status-message
