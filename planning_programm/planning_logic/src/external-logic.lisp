@@ -14,6 +14,12 @@
   (init-gripper-states)
 )
 
+(defun disassemble-graspindividual-response (msg)
+  (geometry_msgs-msg:y
+          (geometry_msgs-msg:position 
+           (geometry_msgs-msg:pose 
+            (knowledge_msgs-srv:grasp_pose msg)))))
+
 (defun transformation-Vision-Point (pose amount &optional (endFrame "/base_footprint")) 
   "transform a msgs with an optional Frame, default is base_footprint" 
   (roslisp:with-fields 
