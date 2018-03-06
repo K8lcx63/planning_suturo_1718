@@ -9,6 +9,10 @@
 (defvar *gripper-righ-state-fluent* (cram-language:make-fluent))
 (defvar *gripper-left-state-fluent* (cram-language:make-fluent))
 
+(defun init-logic ()
+  (vis-init)
+  (init-gripper-states)
+)
 
 (defun transformation-Vision-Point (pose amount &optional (endFrame "/base_footprint")) 
   "transform a msgs with an optional Frame, default is base_footprint" 
@@ -247,8 +251,9 @@
 (defun publish-pose (label object_pose)
   (when *perception-publisher*
     (roslisp:publish *perception-publisher*
-                      (roslisp:make-message "geometry_msgs/PoseStamped"
-                                            label object_pose))))
+                     (roslisp:make-message "knowledge_msgs/PerceivedObject"
+                                           (object_label) label
+                                           (object_pose) object_pose))))
 
 
 (defun test-right-gripper ()
