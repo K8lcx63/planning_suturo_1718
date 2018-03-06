@@ -2,10 +2,10 @@
 
 (defvar *joint-states* 0)
 (defvar *pose* nil)
-(defvar *pose-pr2* nil)
-(defvar *perception-publisher*)
 
-;;Fluents for gripper-filled
+(defvar *perception-publisher*)
+(defvar *pr2-pose* (cram-language:make-fluent :name :pr2-pose) "current pose of pr2") 
+(defvar *pose-sub* nil "pose ROS subscriber")
 (defvar *gripper-righ-state-fluent* (cram-language:make-fluent))
 (defvar *gripper-left-state-fluent* (cram-language:make-fluent))
 
@@ -42,7 +42,7 @@
                          :point tf-point-stamped
                          :target-frame endFrame))
 
-;;muss überarbeitet werden sobald orientation hinzugefügt wurde
+;;muss überarbeitet werden sobald orientation hinzugefügt wurde!
 ;; (defun let-Robo-Try-To-Poke (point-for-motion number-for-arm)
 ;;   "trying to Poke the object, first both arms will be used after that the robot will try different poses."
 ;;   (roslisp:ros-info (let-Robo-Try-To-Poke)
@@ -53,21 +53,28 @@
 ;;             (planning-motion::motion-To-Point point-for-motion 2)
 ;;             (planning-motion::motion-To-Point point-for-motion 3)))))
 
-;; (defun try-To-Poke-Different-Location(point-for-motion number-for-arm)
-;;   "trying to poke the object now again with different location.."
-;;    (roslisp:ros-info (try-To-Poke-Different-Location)
-;;                     "trying to poke the object now again with different location..")
-;;   (let ((position (make-array '(4)  
-;;                                  :initial-contents '(1.3 0.5 0 -0.3)))) 
-;;     (loop for y across position do
-;;       (planning-move::move-Base-To-Point 0.8 y 0 30)
-;;       (let ((rotation (make-array '(3)  
-;;                                   :initial-contents '(30 31 29)))) 
-;;         (loop for r across rotation do
-;;              (progn
-;;                (planning-move::move-Base-To-Point 0.8 y 0 r)
-;;                (if (eq T(let-Robo-Try-To-Poke point-for-motion number-for-arm))
-;;                    (return-from try-To-Poke-Different-Location T))))))))
+
+;das klappt jetzt muss aber angepeasst werden auf motion grab und in der doku
+(defun try-To-Grab-Different-Location(x y z)
+  "trying to grab the object now again with different location.."
+   (roslisp:ros-info (try-To-Poke-Different-Location)
+                    "trying to grab the object now again with different location..")
+  (let ((position (make-array '(4)  
+                                 :initial-contents '(-0.1 -0.2 0.1 0.2)))) 
+    (loop for ya across position do
+      (planning-move::move-Base-To-Point x (+ y ya) z 180)
+      (let ((rotation (make-array '(3)  
+                                  :initial-contents '(0 -10 10))))
+        (loop for r across rotation do
+             (progn
+               (cram-language:wait-for
+                (planning-move::move-Base-To-Point x (+ y ya) z (+ r 180)))
+             (if
+              (eq 1
+                  (planning-motion::call-motion-move-arm-homeposition))
+              (print r)
+              (return-from try-To-Grab-Different-Location "nooo"))))))))
+                                                  
             
 
 
@@ -90,7 +97,7 @@
        (object_amount
         (vision_suturo_msgs-msg:object_amount))
        (object_poses
-        (vision_suturo_msgs-msg:object_poses)))
+        (vision_suturo_msgs-msg:object_information)))
       (vision_suturo_msgs-srv:clouds visionclouds)
     (roslisp:set-param "normal_features" normal_features)
     (roslisp:ros-info (disassemble-Vision-Call)
@@ -119,7 +126,7 @@
   (make-array (length list)
               :initial-contents list))
 
-
+;;fliegt raus sobald motion auf pose stamped ist.
 (defun disassemble-Pose-Msg-To-Point-Stamped (pose-array amount)
   "making pose_stamped to point_stamped"
   (roslisp:with-fields
@@ -148,56 +155,70 @@
                       (roslisp:get-param (concatenate 'string "normal_features"
                                                       (write-to-string amount))))))
 
+(defun init-pr2 ()
+  "Subscribes to topics for a pr2 and binds callbacks."
+           (roslisp:subscribe "/robot_pose" "geometry_msgs/Pose" #'pose-cb))
+
+(defun pose-cb (msg)
+  "Callback for pose values. Called by the pose topic subscriber."
+  (setf (cram-language:value *pr2-pose*) msg))
+
+
+(Defun move-pr2 (x y z)
+  ".."
+  (planning-move::move-base-to-point-safe x y z
+                           (angle-from-pr2-pose-to-point x y z)))
 
 
 
 
 
-
-
-
-(defun save-Pr2-Pose (msg)
-"Callback to save one geometry_msgs/PoseWithCovarianceStamped"
-  (setf *pose-pr2* msg))
-
-(defun get-Pr2-Pose ()
-"gets exactly one geometry_msgs/PoseWithCovarianceStamped  message"
-  (progn
+(defun angle-From-Pr2-Pose-To-Point (x-goal y-goal z-goal)
+  ""
+  (init-pr2)
+  (roslisp:with-fields
+      ((x
+        (geometry_msgs-msg:x geometry_msgs-msg:position))
+       (y
+        (geometry_msgs-msg:y geometry_msgs-msg:position))
+       (z
+        (geometry_msgs-msg:z geometry_msgs-msg:position))
+       (xq
+        (geometry_msgs-msg:x geometry_msgs-msg:orientation))
+       (yq
+        (geometry_msgs-msg:y geometry_msgs-msg:orientation))
+       (zq
+        (geometry_msgs-msg:z geometry_msgs-msg:orientation))
+       (w
+        (geometry_msgs-msg:w geometry_msgs-msg:orientation)))
+      (cram-language:value *pr2-pose*)
     (let
-        ((subsc
-           (roslisp:subscribe "/robot_pose_ekf/odom_combined""geometry_msgs/PoseWithCovarianceStamped" #'save-Pr2-Pose :max-queue-length 1)))
-      (progn
-        (sleep 1)
-        (roslisp:unsubscribe subsc)))
-    (return-from get-Pr2-Pose *pose-pr2*)))
-
-
-
-(defun transformation-Pr2-Pose (pose &optional (endFrame "/map"))
- "transform a msgs with an optional Frame, default is base_footprint"
- (roslisp:with-fields
-     ((startFrame
-       (STD_msgs-msg:frame_id geometry_msgs-msg:header))
-      (x
-       (geometry_msgs-msg:x geometry_msgs-msg:position geometry_msgs-msg:pose geometry_msgs-msg:pose))
-      (y
-       (geometry_msgs-msg:y geometry_msgs-msg:position geometry_msgs-msg:pose  geometry_msgs-msg:pose))
-      (w
-       (geometry_msgs-msg:w geometry_msgs-msg:orientation geometry_msgs-msg:pose geometry_msgs-msg:pose))
-      (x2
-       (geometry_msgs-msg:x geometry_msgs-msg:orientation geometry_msgs-msg:pose geometry_msgs-msg:pose))
-      (y2
-       (geometry_msgs-msg:y geometry_msgs-msg:orientation geometry_msgs-msg:pose geometry_msgs-msg:pose))
-      (z2
-       (geometry_msgs-msg:z geometry_msgs-msg:orientation geometry_msgs-msg:pose geometry_msgs-msg:pose)))
-     pose
-    (let
-       ((transform-listener
-          (make-instance 'cl-tf:transform-listener))
-        (tf-point-stamped
-          (cl-tf:make-pose-stamped startFrame 10.0
-                                   (cl-transforms:make-3d-vector x y 0) (cl-transforms:make-quaternion x2 y2 z2 w))))
-        (sleep 5.0) (cl-tf:transform-pose-stamped transform-listener :pose tf-point-stamped :target-frame endFrame))))
+        ((angle-base-link
+           (/
+            (* 180
+               (let
+                   ((diff-pose
+                      (cl-transforms:transform-point
+                       (cl-tf::transform-inv
+                        (cl-tf:make-transform
+                         (cl-tf:make-3d-vector x y z)
+                         (cl-tf:make-quaternion xq yq zq w)))
+                       (cl-tf:make-3d-vector x-goal y-goal z-goal))))
+                 (atan (cl-tf:y diff-pose)
+                       (cl-tf:x diff-pose)))) pi))
+         ;angle-base-link-stop
+         (axis-angle
+           (progn
+             (/
+              (* 180
+                 (multiple-value-bind
+                       (axis angle)
+                     (cl-tf:quaternion->axis-angle
+                      (cl-tf:make-quaternion xq yq zq w))
+                   (nth 1(list axis angle)))) pi))))
+         (print axis-angle) (print angle-base-link)
+      (print (- angle-base-link axis-angle)))))
+      
 
 
 ;; Methods for gripper filled controll sequence (Touch with caution)
@@ -208,13 +229,13 @@
      (roslisp:subscribe
     "/joint_states"
     "sensor_msgs/JointState"
-    #'is-gripper-filled :max-queue-length 1)
+    #'is-gripper-filled :max-queue-length 0)
      (return-from init-gripper-states())))
 
 (defun is-gripper-filled (msg)
   "Callback for init-gripper-states, accepts sensor_msgs/JointState message, saves gripper state into fluents"
    (progn
-     (cram-language:sleep 1)
+     (cram-language:sleep 0.01)
       (roslisp:with-fields
           ((Name (sensor_msgs-msg:Name))
            (Position (sensor_msgs-msg:Position))) msg 
@@ -243,9 +264,6 @@
                          (cram-language:value *gripper-left-state-fluent*) T)))))))
 
 
-(defun vis-init ()
-  (setf *perception-publisher*
-       (roslisp:advertise "/beliefstate/perceive_action" "knowledge_msgs/PerceivedObject")))
 
 ;muss noch überarbeitet werden klappt so noch nicht
 (defun publish-pose (label object_pose)
@@ -255,16 +273,42 @@
                                            (object_label) label
                                            (object_pose) object_pose))))
 
-
 (defun test-right-gripper ()
   (cram-language:top-level
     (cram-language:pursue
-      (cram-language:wait-for *gripper-righ-state-fluent*)
+      (cram-language:wait-for *gripper-left-state-fluent*)
       (cram-language:unwind-protect
            (loop for i from 1 to 1000 do
              (progn
-               (print i)
-               (cram-language:sleep 1)
+               (print *gripper-left-state-fluent*)
+               (cram-language:sleep 0.1)
                ))
         (progn
           (format t "do shit"))))))
+
+
+
+
+
+;;gespeicherte transformation die eventuell noch gebraucht wird.
+      ;;       (transform-listener
+      ;;      (make-instance 'cl-tf:transform-listener))
+      ;;    (tf-pose-stamped
+      ;;      (cl-tf:make-pose-stamped "/base_link" 0.0
+      ;;                               (cl-tf:make-3d-vector x y z)
+      ;;                               (cl-tf:make-quaternion xq yq zq w))))
+      ;;  (sleep 5.0)
+      ;; (let
+      ;;     ((transformed-pose
+      ;;        (cl-tf:transform-pose transform-listener :pose tf-pose-stamped :target-frame "/map")))
+      ;;   (sleep 5.0)
+      ;;   (let
+      ;;       ((axis-angle
+      ;;        (multiple-value-bind (axis angle)
+      ;;            (cl-tf:quaternion->axis-angle
+      ;;             (cl-tf:make-quaternion
+      ;;              (tf:x (tf:orientation transformed-pose))
+      ;;              (tf:y (tf:orientation transformed-pose))
+      ;;              (tf:z (tf:orientation transformed-pose))
+      ;;              (tf:z (tf:orientation transformed-pose)))) (list axis angle)))) (print (nth  1 (axis-angle))))))))
+

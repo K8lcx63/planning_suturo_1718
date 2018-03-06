@@ -1,8 +1,6 @@
 (in-package :planning-move)
 
 
-
-
 (defvar *action-client-base* nil)
 
 
@@ -22,10 +20,17 @@
   (actionlib:call-goal actionclient actiongoal)))))
 
 
+                          
+
+(Defun move-Base-To-Point-Safe (x y z angle)
+  ".."
+  (cram-language:wait-for
+   (move-Base-To-Point 0.3 0.8 0 -90))
+  (if (and (> angle 90) (< angle 270))
+      (move-Base-To-Point x y z 180)
+      (move-Base-To-Point x y z 0)))
 
 
-
-  
 (defun move-Base-To-Point (x y z angle)
   "Moving robot base via nav_pcontroller/move_base. X Y Z are treated as coordinates. angle for Orientation."
   (roslisp:ros-info (move-Base-To-Point)
@@ -46,7 +51,7 @@
                         "Sending actiongoal...") 
       (actionlib:call-goal *action-client-base* actiongoal))))
 
-  
+
 (defun move-Robo-Into-Homeposition ()
    "moving robot into homeposition with frame map"
   (move-Base-To-Point -0.3 1 0 180))
