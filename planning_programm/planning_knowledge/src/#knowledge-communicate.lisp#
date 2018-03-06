@@ -17,7 +17,8 @@
   (roslisp:call-service "/beliefstate/objects_to_pick" 'knowledge_msgs-srv:ObjectsToPick))
 
 
-
+(defun ask-knowledge-z-axis-of (object)
+   (roslisp:call-service "/knowledge_grasp/knowledge_grasp" 'knowledge_msgs-srv:GraspIndividual :object_label object))
 
 
 

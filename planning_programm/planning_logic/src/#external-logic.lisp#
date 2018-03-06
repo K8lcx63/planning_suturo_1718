@@ -291,6 +291,10 @@
           (format t "do shit"))))))
 
 
+(defun pick-The-Object ()
+  (
+
+
 
 
 
