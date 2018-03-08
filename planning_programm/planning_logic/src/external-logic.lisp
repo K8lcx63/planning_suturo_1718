@@ -5,7 +5,6 @@
 
 (defvar *perception-publisher*)
 (defvar *pr2-pose* (cram-language:make-fluent :name :pr2-pose) "current pose of pr2") 
-(defvar *pose-sub* nil "pose ROS subscriber")
 (defvar *gripper-righ-state-fluent* (cram-language:make-fluent))
 (defvar *gripper-left-state-fluent* (cram-language:make-fluent))
 
@@ -184,19 +183,19 @@
   (init-pr2)
   (roslisp:with-fields
       ((x
-        (geometry_msgs-msg:x geometry_msgs-msg:position))
+        (geometry_msgs-msg:x geometry_msgs-msg:position geometry_msgs-msg:pose geometry_msgs-msg:pose))
        (y
-        (geometry_msgs-msg:y geometry_msgs-msg:position))
+        (geometry_msgs-msg:y geometry_msgs-msg:position geometry_msgs-msg:pose geometry_msgs-msg:pose))
        (z
-        (geometry_msgs-msg:z geometry_msgs-msg:position))
+        (geometry_msgs-msg:z geometry_msgs-msg:position geometry_msgs-msg:pose geometry_msgs-msg:pose))
        (xq
-        (geometry_msgs-msg:x geometry_msgs-msg:orientation))
+        (geometry_msgs-msg:x geometry_msgs-msg:orientation geometry_msgs-msg:pose geometry_msgs-msg:pose))
        (yq
-        (geometry_msgs-msg:y geometry_msgs-msg:orientation))
+        (geometry_msgs-msg:y geometry_msgs-msg:orientation geometry_msgs-msg:pose geometry_msgs-msg:pose))
        (zq
-        (geometry_msgs-msg:z geometry_msgs-msg:orientation))
+        (geometry_msgs-msg:z geometry_msgs-msg:orientation geometry_msgs-msg:pose geometry_msgs-msg:pose))
        (w
-        (geometry_msgs-msg:w geometry_msgs-msg:orientation)))
+        (geometry_msgs-msg:w geometry_msgs-msg:orientation geometry_msgs-msg:pose geometry_msgs-msg:pose)))
       (cram-language:value *pr2-pose*)
     (let
         ((angle-base-link
@@ -274,7 +273,7 @@
        (roslisp:advertise "/beliefstate/perceive_action" "knowledge_msgs/PerceivedObject")))
 
 
-;muss noch überarbeitet werden klappt so noch nicht
+
 (defun publish-pose (label object_pose)
   (when *perception-publisher*
     (roslisp:publish *perception-publisher*
@@ -297,27 +296,4 @@
 
 
 
-
-
-;;gespeicherte transformation die eventuell noch gebraucht wird.
-      ;;       (transform-listener
-      ;;      (make-instance 'cl-tf:transform-listener))
-      ;;    (tf-pose-stamped
-      ;;      (cl-tf:make-pose-stamped "/base_link" 0.0
-      ;;                               (cl-tf:make-3d-vector x y z)
-      ;;                               (cl-tf:make-quaternion xq yq zq w))))
-      ;;  (sleep 5.0)
-      ;; (let
-      ;;     ((transformed-pose
-      ;;        (cl-tf:transform-pose transform-listener :pose tf-pose-stamped :target-frame "/map")))
-      ;;   (sleep 5.0)
-      ;;   (let
-      ;;       ((axis-angle
-      ;;        (multiple-value-bind (axis angle)
-      ;;            (cl-tf:quaternion->axis-angle
-      ;;             (cl-tf:make-quaternion
-      ;;              (tf:x (tf:orientation transformed-pose))
-      ;;              (tf:y (tf:orientation transformed-pose))
-      ;;              (tf:z (tf:orientation transformed-pose))
-      ;;              (tf:z (tf:orientation transformed-pose)))) (list axis angle)))) (print (nth  1 (axis-angle))))))))
 

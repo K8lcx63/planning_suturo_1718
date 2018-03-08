@@ -20,6 +20,20 @@
   (actionlib:call-goal actionclient actiongoal)))))
 
 
+(defun move-Torso (x)
+  (let ((actionclient 
+	(actionlib:make-action-client "torso_controller/position_joint_action" "pr2_controllers_msgs/SingleJointPositionAction")))
+  (Loop until
+	(actionlib:wait-for-server actionclient))
+  (let ((actiongoal 
+          (actionlib:make-action-goal actionclient
+            :position x
+            :min_duration 2.0
+            :max_velocity 1.0)))
+    (actionlib:call-goal actionclient actiongoal))))
+
+
+
                           
 
 (Defun move-Base-To-Point-Safe (x y z angle)
@@ -35,7 +49,7 @@
   "Moving robot base via nav_pcontroller/move_base. X Y Z are treated as coordinates. angle for Orientation."
   (roslisp:ros-info (move-Base-To-Point)
                     "before im moving ill make sure that my arms arent in the way!") 
-;  (planning-motion::call-Motion-Move-Arm-Homeposition)
+ (planning-motion::call-Motion-Move-Arm-Homeposition)
   (get-action-client-base)
   (let ((pose-to-drive-to 
           (cl-transforms-stamped:to-msg 
