@@ -5,7 +5,7 @@
 (defvar *marker-id* 10)
 (defvar *transform-listener*)
 
-(defparameter *transform-listener* (make-instance 'cl-tf:transform-listener))
+
 
 (defvar *last-y-border-y-1* 9.0)
 (defvar *last-y-border-y-2* 9.0)
@@ -19,24 +19,25 @@
                           (height (storage_place_height))
                           (position (storage_place_position)))
         landing-zone-message
+      (defparameter *transform-listener* (make-instance 'cl-tf:transform-listener))
       (setf width (- width 0.1))
       (setf height (- height 0.2))
-      (let ((middle-point-landing-zone-pose (fill-landing-zone-horizontally position width height)))
-        (roslisp:with-fields ((x (geometry_msgs-msg:x geometry_msgs-msg:pose))
-                              (y (geometry_msgs-msg:y geometry_msgs-msg:pose))) middle-point-landing-zone-pose
+      ;(let ((middle-point-landing-zone-pose (fill-landing-zone-horizontally position width height)))
+        ;(roslisp:with-fields ((x (geometry_msgs-msg:x geometry_msgs-msg:pose))
+         ;                     (y (geometry_msgs-msg:y geometry_msgs-msg:pose))) middle-point-landing-zone-pose
           (let ((landing-pose-message (planning-knowledge::how-To-Pick-Objects object))
                 (grasp-pose)
                 (grasp-pose-map))
             (setf grasp-pose (cl-tf:from-msg (roslisp:msg-slot-value landing-pose-message 'knowledge_msgs-srv:grasp_pose)))
             
             (setf grasp-pose-map
-                  (cl-tf:transform-pose-stamped *transform-listener* :pose *lisp-pose* :target-frame "map" :use-current-ros-time t))
+                  (cl-tf:transform-pose-stamped *transform-listener* :pose grasp-pose :target-frame "map" :use-current-ros-time t))
             
             (setf grasp-pose-map
                   (cl-tf:copy-pose-stamped grasp-pose-map :origin
                                            (cl-tf:copy-3d-vector
-                                            (cl-tf:origin grasp-pose-map) :x x :y y)))
-            (return-from calculate-landing-zone grasp-pose-map)))))))
+                                            (cl-tf:origin grasp-pose-map) :x 1 :y 1)))
+            (return-from calculate-landing-zone grasp-pose-map)))))
 
 
 (defun fill-landing-zone-horizontally (position width height)
