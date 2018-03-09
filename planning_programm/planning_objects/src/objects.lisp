@@ -1,16 +1,16 @@
 (in-package :planning-objects)
 
-(defvar pose-message)
 (defvar *marker-publisher* nil)
 (defvar *marker-id* 10)
 (defvar *transform-listener*)
-
-
 
 (defvar *last-y-border-y-1* 9.0)
 (defvar *last-y-border-y-2* 9.0)
 (defvar *last-y-border-y-3* 9.0)
 (defvar *last-y-border-y-4* 9.0)
+
+(defparameter *transform-listener* (make-instance 'cl-tf:transform-listener))
+
 
 (defun calculate-landing-zone (object)
   (let ((landing-zone-message
@@ -19,12 +19,11 @@
                           (height (storage_place_height))
                           (position (storage_place_position)))
         landing-zone-message
-      (defparameter *transform-listener* (make-instance 'cl-tf:transform-listener))
       (setf width (- width 0.1))
       (setf height (- height 0.2))
-      ;(let ((middle-point-landing-zone-pose (fill-landing-zone-horizontally position width height)))
-        ;(roslisp:with-fields ((x (geometry_msgs-msg:x geometry_msgs-msg:pose))
-         ;                     (y (geometry_msgs-msg:y geometry_msgs-msg:pose))) middle-point-landing-zone-pose
+      (let ((middle-point-landing-zone-pose (cl-tf:to-msg (fill-landing-zone-horizontally position width height))))
+        (roslisp:with-fields ((exact-landing-x (geometry_msgs-msg:x geometry_msgs-msg:position geometry_msgs-msg:pose))
+                              (exact-landing-y (geometry_msgs-msg:y geometry_msgs-msg:position geometry_msgs-msg:pose))) middle-point-landing-zone-pose
           (let ((landing-pose-message (planning-knowledge::how-To-Pick-Objects object))
                 (grasp-pose)
                 (grasp-pose-map))
@@ -36,8 +35,8 @@
             (setf grasp-pose-map
                   (cl-tf:copy-pose-stamped grasp-pose-map :origin
                                            (cl-tf:copy-3d-vector
-                                            (cl-tf:origin grasp-pose-map) :x 1 :y 1)))
-            (return-from calculate-landing-zone grasp-pose-map)))))
+                                            (cl-tf:origin grasp-pose-map) :x exact-landing-x :y exact-landing-y)))
+            (return-from calculate-landing-zone grasp-pose-map)))))))
 
 
 (defun fill-landing-zone-horizontally (position width height)
@@ -104,9 +103,11 @@
   
            
 ;;(defun check-which-storage-place (y))
+;könnte etwas Redundanz vermindern
 
 ;;(defun clear-all-markers ())
-           
+;nützlich
+
 (defun visualize-landing-zone (landing-zone-pose)
   (vis-init)
   (publish-pose landing-zone-pose *marker-id* 0.1 0.09166666616996129))
