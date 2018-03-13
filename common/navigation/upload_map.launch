@@ -1,0 +1,7 @@
+<launch>
+<node name= "map_server" pkg="map_server" type="map_server" args="/home/rin/catkin_ws/src/planning_suturo_1718/common/navigation/map-2017-11-ease-demo.yaml"/>	
+
+ 
+<include file="/home/rin/catkin_ws/src/planning_suturo_1718/common/navigation/amcl_node.xml" />
+
+</launch>
