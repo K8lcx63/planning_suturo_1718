@@ -26,13 +26,13 @@
 ;Wie greifen?
 
 ;[TRY TO GRAP]
-;Kritischer Abschnit--------------------!!!! Wenn was runterfällt PUBLISH GRIPPER
 ;{
 ;Motion-->GREIF!
 ;Ja--> Greif
-;Nein-->Versuch anders hinzufahren
+;Nein-->Versuch anders hinzufahren -->
 ;}
 
+;Kritischer Abschnit--------------------!!!! Wenn was runterfällt PUBLISH GRIPPER
 ;[ABSTELLEN]
 ;{
 ;Hauke wo soll das Objekt hin? -->Hinfahren (funktion dafür muss noch kommen)
@@ -51,66 +51,51 @@
 
 (defun main ()
   "Main function - Executing and planning robot behaviour on the top level"
-  (roslisp:with-ros-node ("planning_main")
     (roslisp:ros-info (main)
                       "Robotlife seems hard, but lets do this")
-
-    (planning-move::move-Robo-Into-Homeposition)
-    (if (eq T (find-Object 1.6 0))
-             (let
-                 ((n
-                    (roslisp:get-param "object_amount")))                               
-               (loop for amount from 1 to n do 
-                 ;KNOWLEDGE WELCHES OBJEKT IST DAS?>>>>>
-                 (let
-                     ((name
-                        (planning-knowledge::what-object
-                         (planning-logic::list-To-1d-Array
-                          (roslisp:get-param
-                           (aref *my-array* (- amount 1)))))))
-                   ;WEITERGABE AN VISION>>>>>>
-                   (let
-                       ((object_pose_msg
-                          (planning-vision::call-vision-object-pose name amount)))
-                     (roslisp:with-fields
-                         (object_pose) object_pose_msg
-                       (planning-logic::publish-pose name object_pose))
-                     ;what should i grep?>>>>>>
-                   (let
-                       ((list-of-objects
-                          (multiple-value-bind (o1 o2)
-                                        ;hier planning-knowledge::objects-to-pick
-                              (planning-knowledge::objects-to-pick)
-                            (list o1 o2))))
-                     (loop for object from 0 to 1 do
-                                        ;let's grab >>>>>>>>>>>>>>>>
-                       (if (>
-                            (length
-                             (nth object list-of-objects)) 0)
-                                        ;GREIFE DAS OBJECT1 = linker Arm
-                           (let
-                               ((object-to-pick
-                                  (nth object list-of-object)))
-                             (roslisp:with-fields (grasp_pose)
-                                 (planning-knowledge::ask-knowledge-how-to-grab object-to-pick)
-                               (if
-                                (= object 0)
-                                (planning-motion::call-motion-move-arm-to-point grasp_pose object-to-pick 6)
-                                (planning-motion::call-motion-move-arm-to-point grasp_pose object-to-pick 7)))
-                             (print "Kein Objekt zum greifen")))
-
-                     
-                                        ;FAHREN >>>>>>>>>>>>>>>>>>
-                                   (multiple-value-bind
-                                         (left_gripper right_gripper)
-                                       (planning-knowledge::objects-To-Pick)
-                                     (if (eq T (or left_gripper right_gripper))
-                                         ;hier würde noch ein zwischen abschnitt kommen mit der Funktion von Hauke wo das Objekt hinsoll.
-                                         (cram-language:wait-for
-                                          (planning-logic::move-pr2 0.75 1 0)))))))))))))
-                            ;landin zone --> y daten 
-                   
+  (roslisp:with-ros-node ("planning_main")
+  (planning-logic::init-logic)
+  (planning-move::move-Robo-Into-Homeposition-Dummy)
+  (planning-logic::publish-text "Searching for objects")
+  (if (eq T (find-Object 1.6 0))
+      (let
+          ((n
+             (roslisp:get-param "object_amount")))
+        (planning-logic::publish-text "I found at least 1 Object -> starting to classify")
+        (loop for amount from 1 to n do 
+                                        ;KNOWLEDGE WELCHES OBJEKT IST DAS?>>>>>
+          (let
+              ((name
+                 (cram-language:wait-for (planning-knowledge::what-object
+                      (planning-logic::list-To-1d-Array
+                       (roslisp:get-param
+                        (aref *my-array* (- amount 1))))))))
+                                        ;WEITERGABE AN VISION>>>>>>
+            (planning-logic::publish-text "Calling vision to get the pose")
+            (let
+                ((object_pose_msg
+                   (roslisp:with-fields (label) name
+                     (cram-language:wait-for (planning-vision::call-vision-object-pose label (- amount 1))))))
+              (roslisp:with-fields
+                  (object_pose) object_pose_msg
+                (progn
+                  (planning-logic::publish-text "Publishing object-pose")
+                  (roslisp:with-fields (label) name 
+                    (cram-language:wait-for (planning-logic::publish-pose label object_pose))))
+                                        ;what should i grab & do it left arm!
+                
+                (cram-language:wait-for (planning-logic::grab-Object-Left object_pose))
+                (cram-language:wait-for (planning-logic::grab-Object-Right object_pose))
+                
+                ;ablege Part fehlt ab hier
+                ))))))))
                  
+                   
+
+
+
+
+
        
 
 (defun find-Object (x z)
