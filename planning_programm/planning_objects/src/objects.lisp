@@ -27,15 +27,18 @@
           (let ((landing-pose-message (planning-knowledge::how-To-Pick-Objects object))
                 (grasp-pose)
                 (grasp-pose-map))
-            (setf grasp-pose (cl-tf:from-msg (roslisp:msg-slot-value landing-pose-message 'knowledge_msgs-srv:grasp_pose)))
+            (setf grasp-pose
+                  (cl-tf:from-msg
+                   (roslisp:msg-slot-value landing-pose-message 'knowledge_msgs-srv:grasp_pose)))
             
             (setf grasp-pose-map
-                  (cl-tf:transform-pose-stamped *transform-listener* :pose grasp-pose :target-frame "map" :use-current-ros-time t))
-            
+                  (cl-tf:transform-pose-stamped *transform-listener* :pose grasp-pose :target-frame "/map" :use-current-ros-time t :timeout 3))
+
             (setf grasp-pose-map
-                  (cl-tf:copy-pose-stamped grasp-pose-map :origin
-                                           (cl-tf:copy-3d-vector
-                                            (cl-tf:origin grasp-pose-map) :x exact-landing-x :y exact-landing-y)))
+                  (cl-tf:to-msg
+                   (cl-tf:copy-pose-stamped grasp-pose-map :origin
+                                            (cl-tf:copy-3d-vector
+                                             (cl-tf:origin grasp-pose-map) :x exact-landing-x :y exact-landing-y))))
             (return-from calculate-landing-zone grasp-pose-map)))))))
 
 
@@ -117,6 +120,7 @@
         (roslisp:advertise "~location_marker" "visualization_msgs/Marker")))
 
 (defun publish-pose (pose id height width)
+  (setf pose (cl-tf:from-msg pose))
   (let ((point (cl-transforms:origin pose))
         (rot (cl-transforms:orientation pose))
         (current-index 0)
