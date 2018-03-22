@@ -70,6 +70,9 @@
    "moving robot into homeposition with frame map"
   (move-Base-To-Point -0.29 1.12 0 180))
 
+(defun move-Robo-Into-Homeposition-Dummy ()
+   "moving robot into homeposition with frame map"
+  (move-Base-To-Point 0.75 0.7 0 0))
 
 
 

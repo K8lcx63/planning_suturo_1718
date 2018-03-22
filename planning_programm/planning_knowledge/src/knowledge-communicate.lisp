@@ -16,10 +16,16 @@
    (roslisp:call-service "/knowledge_grasp/knowledge_grasp" 'knowledge_msgs-srv:GraspIndividual :object_label object))
 
 (defun ask-knowledge-where-belongs (object)
-    (roslisp:call-service "/storage_place_service/storage_place" 'knowledge_msgs-srv:StoragePlace :object_label object))
+  (roslisp:call-service "/storage_place_service/storage_place" 'knowledge_msgs-srv:StoragePlace :object_label object))
 
 (defun objects-To-Pick ()
-  (roslisp:call-service "/beliefstate/object_to_pick" 'knowledge_msgs-srv:ObjectsToPick))
+  (roslisp:call-service "/beliefstate/objects_to_pick" 'knowledge_msgs-srv:ObjectsToPick))
+
+(Defun how-To-Pick-Objects (object) 
+    (roslisp:call-service "/knowledge_grasp/knowledge_grasp" 'knowledge_msgs-srv:GraspIndividual :object_label object))
+
+(Defun empty-Gripper () 
+    (roslisp:call-service "/beliefstate/gripper_empty" 'knowledge_msgs-srv:EmptyGripper))
 
 
 
@@ -49,5 +55,3 @@
 ;;                 (cpl:fail 'planning-error::knowledge-error :message (format nil "knowledge service failed with: ~a" error_message)))
 ;;               (print point-center-of-object)))))))  
 
-(defun how-To-Pick-Objects (object) 
-    (roslisp:call-service "/knowledge_grasp/knowledge_grasp" 'knowledge_msgs-srv:GraspIndividual :object_label object))
