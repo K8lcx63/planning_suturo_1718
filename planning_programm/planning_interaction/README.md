@@ -9,16 +9,16 @@ to interact with humans in case of some unsolvable Problems, like unreachable ob
 
 To Be Done
 
-## Special dependencies
+### Special dependencies
 
 1. Planning-Move
 2. Planning-Motion
 3. Cram
 4. sound_play
 
-## To be done
+### To be done
 
-1. Generalized function for talking to humans unsing sound_play-package ```diff +in Development```
+1. Generalized function for talking to humans unsing sound_play-package ```in Development```
 2. Method to be called, when Object is unreachable
 3. Method to be called, when Object is unplaceable
 4. Method to be called, when Object fell down
