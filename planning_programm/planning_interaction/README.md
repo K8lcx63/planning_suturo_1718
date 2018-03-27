@@ -23,6 +23,8 @@ To Be Done
 3. Method to be called, when Object is unplaceable
 4. Method to be called, when Object fell down
 5. Method to be called, when unknown deadlock happened
+6. Function to drive to a save position
+7. Function point in direction 
 
 ### Contact
 

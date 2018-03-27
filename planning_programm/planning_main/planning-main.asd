@@ -17,7 +17,8 @@
 	       planning-move
 	       planning-logic
 	       planning-error
-	       planning-objects)
+	       planning-objects
+	       planning-interaction)
   :components
   ((:module "src"
     :components
