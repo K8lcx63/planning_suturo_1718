@@ -18,9 +18,9 @@
 
 (defun disassemble-graspindividual-response (msg)
   (geometry_msgs-msg:y
-          (geometry_msgs-msg:position 
+          (Geometry_msgs-msg:position
            (geometry_msgs-msg:pose 
-            (knowledge_msgs-srv:grasp_pose msg)))))
+            (knowledge_msgs-srv:place_pose msg)))))
 
 (defun transformation-Vision-Point (pose &optional (endFrame "/base_footprint")) 
   "transform a msgs with an optional Frame, default is base_footprint" 
@@ -176,7 +176,7 @@
 (Defun move-pr2 (x y z)
   ".."
   (planning-move::move-base-to-point-safe x y z
-                           (angle-from-pr2-pose-to-point x y z)))
+                           (angle-from-pr2-pose-to-point x y z) 10))
 
 
 
@@ -305,11 +305,26 @@
         (roslisp:advertise "/visualization_marker" "visualization_msgs/Marker")))
 
 
+
 (defun publish-Text (string)
     (roslisp:publish *text-publisher*
                      (roslisp:make-message "visualization_msgs/Marker" (frame_id header) "map"
                                            ns "planning_namespace" id 0
-                                           type 9 action 0 pose (roslisp:make-msg "geometry_msgs/Pose" (position) (roslisp:make-msg "geometry_msgs/Point" (x) 0 (y) 0 (z) 3) (orientation) (roslisp:make-msg "geometry_msgs/Quaternion" (w) 1)) (x scale) 0.2 (y scale) 0.2 (z scale) 0.2 (r color) 0.5 (g color) 0.8 (b color) 1.0 (a color) 1.0 (text) string)))         
+                                           type 9 action 0 pose (roslisp:make-msg "geometry_msgs/Pose" (position) (roslisp:make-msg "geometry_msgs/Point" (x) 0 (y) 0 (z) 3) (orientation) (roslisp:make-msg "geometry_msgs/Quaternion" (w) 1)) (x scale) 0.2 (y scale) 0.2 (z scale) 0.2 (r color) 0.5 (g color) 0.8 (b color) 1.0 (a color) 1.0 (text) string)))
+
+(defun publish-Text-Dummy (string)
+      (roslisp:publish *text-publisher*
+                       (roslisp:make-message "visualization_msgs/Marker"
+                                             (frame_id header) "/map"
+                                             ns "planning_namespace"
+                                             id 0
+                                             type 9
+                                             action 0 pose
+                                             (roslisp:make-msg "geometry_msgs/Pose"
+                                                               (position)
+                                                               (roslisp:make-msg "geometry_msgs/Point" (x) 1.396 (y) 0.472 (z) 101.75) (orientation)
+                                                               (roslisp:make-msg "geometry_msgs/Quaternion" (w) 1)) (x scale) 0.2 (y scale) 0.2 (z scale) 0.2 (r color) 0.5 (g color) 0.8 (b color) 1.0 (a color) 1.0 (text) string)))
+
               
 
 (defun grab-Object-Right ()
@@ -324,7 +339,7 @@
            (eq T right_gripper))
           (progn
             (planning-logic::publish-text "trying to grab now with right arm")
-            (roslisp:with-fields (grasp_pose) (planning-knowledge::how-to-pick-objects object_label_1)
+            (roslisp:with-fields (grasp_pose) (cram-language:wait-for (planning-knowledge::how-to-pick-objects object_label_1))
               (cram-language:wait-for(planning-motion::call-motion-move-arm-to-point grasp_pose object_label_1 6))))
             (planning-logic::publish-text "can't grab the an object with right")))))
 
@@ -340,7 +355,7 @@
                                  (eq T left_gripper))
                                 (progn
                                   (planning-logic::publish-text "trying to grab now with left arm")
-                                  (roslisp:with-fields (grasp_pose) (planning-knowledge::how-to-pick-objects object_label_1)
+                                  (roslisp:with-fields (grasp_pose) (cram-language:wait-for(planning-knowledge::how-to-pick-objects object_label_1))
                                     (cram-language:wait-for(planning-motion::call-motion-move-arm-to-point grasp_pose object_label_1 7))))
                                 (planning-logic::publish-text "can't grab the an object with left")))))
 
