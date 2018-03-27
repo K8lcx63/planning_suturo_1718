@@ -162,7 +162,7 @@
                       (roslisp:get-param (concatenate 'string "color_features"
                                                       (write-to-string amount)))
                       (roslisp:get-param (concatenate 'string "normal_features"
-                                                      (write-to-string amount))))))
+                                                      (write-to-string amount)))))(print "made it"))
 
 (defun init-pr2 ()
   "Subscribes to topics for a pr2 and binds callbacks."
@@ -309,36 +309,47 @@
     (roslisp:publish *text-publisher*
                      (roslisp:make-message "visualization_msgs/Marker" (frame_id header) "map"
                                            ns "planning_namespace" id 0
-                                           type 9 action 0 pose (roslisp:make-msg "geometry_msgs/Pose" (position) (roslisp:make-msg "geometry_msgs/Point" (x) 0 (y) 0 (z) 3) (orientation) (roslisp:make-msg "geometry_msgs/Quaternion" (w) 1)) (x scale) 0.2 (y scale) 0.2 (z scale) 0.2 (r color) 0.5 (g color) 0.8 (b color) 1.0 (a color) 1.0 (text) string)))
+                                           type 9 action 0 pose (roslisp:make-msg "geometry_msgs/Pose" (position) (roslisp:make-msg "geometry_msgs/Point" (x) 0 (y) 0 (z) 3) (orientation) (roslisp:make-msg "geometry_msgs/Quaternion" (w) 1)) (x scale) 0.2 (y scale) 0.2 (z scale) 0.2 (r color) 0.5 (g color) 0.8 (b color) 1.0 (a color) 1.0 (text) string)))         
+              
 
-
-
-
-
-(defun grab-Object-Left (object_pose)
-  (sleep 5.0)
-  (roslisp:with-fields (left_gripper)
-      (cram-language:wait-for(planning-knowledge::empty-gripper))
-    (roslisp:with-fields (object_label_1)
-        (cram-language:wait-for (planning-knowledge::objects-to-pick))
-      (if (and
-           (> (length object_label_1) 0)
-           (eq T left_gripper))
-          (progn
-            (planning-logic::publish-text "trying to grab now with left arm")
-            (cram-language:wait-for(planning-motion::call-motion-move-arm-to-point object_pose object_label_1 7)))
-          (planning-logic::publish-text "can't grab the an object with left")))))
-
-(defun grab-Object-Right (object_pose)
+(defun grab-Object-Right ()
   (sleep 5.0)
   (roslisp:with-fields (right_gripper)
       (cram-language:wait-for(planning-knowledge::empty-gripper))
-    (roslisp:with-fields (object_label_2)
+    (print right_gripper)
+    (roslisp:with-fields (object_label_1)
         (cram-language:wait-for (planning-knowledge::objects-to-pick))
-      (if (and
-           (> (length object_label_2) 0)
+      (print object_label_1)(if (and
+           (> (length object_label_1) 0)
            (eq T right_gripper))
           (progn
             (planning-logic::publish-text "trying to grab now with right arm")
-            (cram-language:wait-for(planning-motion::call-motion-move-arm-to-point object_pose object_label_2 6)))
-          (planning-logic::publish-text "can't grab the an object with left")))))
+            (roslisp:with-fields (grasp_pose) (planning-knowledge::how-to-pick-objects object_label_1)
+              (cram-language:wait-for(planning-motion::call-motion-move-arm-to-point grasp_pose object_label_1 6))))
+            (planning-logic::publish-text "can't grab the an object with right")))))
+
+(defun grab-Object-Left ()
+    (sleep 5.0)
+  (roslisp:with-fields (left_gripper)
+      (cram-language:wait-for(planning-knowledge::empty-gripper))
+    (print left_gripper)
+    (roslisp:with-fields (object_label_1)
+        (cram-language:wait-for (planning-knowledge::objects-to-pick))
+      (print object_label_1)(if (and
+                                 (> (length object_label_1) 0)
+                                 (eq T left_gripper))
+                                (progn
+                                  (planning-logic::publish-text "trying to grab now with left arm")
+                                  (roslisp:with-fields (grasp_pose) (planning-knowledge::how-to-pick-objects object_label_1)
+                                    (cram-language:wait-for(planning-motion::call-motion-move-arm-to-point grasp_pose object_label_1 7))))
+                                (planning-logic::publish-text "can't grab the an object with left")))))
+
+(defun grab-Left-Or-Right ()
+  (roslisp:with-fields (object_label_1)
+      (planning-knowledge::objects-to-pick)
+    (roslisp:with-fields (grasp_pose)
+        (planning-knowledge::how-to-pick-objects object_label_1)
+      (if (= (should-robo-use-left-or-right-arm grasp_pose) 7)
+          (grab-Object-Left)
+          (grab-Object-Right)))))
+                                                                                                                                                              
