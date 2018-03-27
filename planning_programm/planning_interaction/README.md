@@ -7,7 +7,9 @@ to interact with humans in case of some unsolvable Problems, like unreachable ob
 
 ## Usage of interfaces
 
-To Be Done
+##### say (string)
+Uses the sound_play package to let the Robot say the given string. 
+A phonetical text-to-speech interpreter will convert the given String into spoken word.
 
 ### Special dependencies
 
