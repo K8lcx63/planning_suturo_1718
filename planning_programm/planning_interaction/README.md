@@ -18,13 +18,13 @@ To Be Done
 
 ### To be done
 
-1. Generalized function for talking to humans unsing sound_play-package ```in Development```
+1. Generalized function for talking to humans unsing sound_play-package ```done```
 2. Method to be called, when Object is unreachable
 3. Method to be called, when Object is unplaceable
 4. Method to be called, when Object fell down
 5. Method to be called, when unknown deadlock happened
 6. Function to drive to a save position
-7. Function point in direction 
+7. Function point in direction ```in development```
 
 ### Contact
 
