@@ -2,17 +2,13 @@
 
 (defvar *marker-publisher* nil)
 (defvar *marker-id* 10)
-(defvar *transform-listener*)
 
 (defvar *last-y-border-y-1* 9.0)
 (defvar *last-y-border-y-2* 9.0)
 (defvar *last-y-border-y-3* 9.0)
 (defvar *last-y-border-y-4* 9.0)
 
-(defparameter *transform-listener* (make-instance 'cl-tf:transform-listener))
-
-
-(defun calculate-landing-zone (object)
+(defun calculate-landing-zone (object gripper)
   (let ((landing-zone-message
           (planning-knowledge::ask-knowledge-where-belongs object)))
     (roslisp:with-fields ((width (storage_place_width))
@@ -21,26 +17,16 @@
         landing-zone-message
       (setf width (- width 0.1))
       (setf height (- height 0.2))
-      (let ((middle-point-landing-zone-pose (cl-tf:to-msg (fill-landing-zone-horizontally position width height))))
-        (roslisp:with-fields ((exact-landing-x (geometry_msgs-msg:x geometry_msgs-msg:position geometry_msgs-msg:pose))
-                              (exact-landing-y (geometry_msgs-msg:y geometry_msgs-msg:position geometry_msgs-msg:pose))) middle-point-landing-zone-pose
-          (let ((landing-pose-message (planning-knowledge::how-To-Pick-Objects object))
-                (grasp-pose)
-                (grasp-pose-map))
-            (setf grasp-pose
-                  (cl-tf:from-msg
-                   (roslisp:msg-slot-value landing-pose-message 'knowledge_msgs-srv:grasp_pose)))
-            
-            (setf grasp-pose-map
-                  (cl-tf:transform-pose-stamped *transform-listener* :pose grasp-pose :target-frame "/map" :use-current-ros-time t :timeout 3))
-
-            (setf grasp-pose-map
-                  (cl-tf:to-msg
-                   (cl-tf:copy-pose-stamped grasp-pose-map :origin
-                                            (cl-tf:copy-3d-vector
-                                             (cl-tf:origin grasp-pose-map) :x exact-landing-x :y exact-landing-y))))
-            (return-from calculate-landing-zone grasp-pose-map)))))))
-
+      (let ((middle-point-landing-zone-pose
+              (cl-tf:to-msg (fill-landing-zone-horizontally position width height)))
+            (gripper-msg (roslisp:make-message "knowledge_msgs/gripper" :gripper gripper)))
+        (roslisp:with-fields ((exact-landing-x
+                               (geometry_msgs-msg:x geometry_msgs-msg:position geometry_msgs-msg:pose))
+                              (exact-landing-y
+                               (geometry_msgs-msg:y geometry_msgs-msg:position geometry_msgs-msg:pose))) middle-point-landing-zone-pose
+          (let ((landing-pose-message
+                  (planning-knowledge::place-object gripper-msg "/map" exact-landing-x exact-landing-y)))         
+            (return-from calculate-landing-zone landing-pose-message)))))))
 
 (defun fill-landing-zone-horizontally (position width height)
   (cpl:with-failure-handling
@@ -98,8 +84,8 @@
   (setf *last-y-border-y-3* 9.0)
   (setf *last-y-border-y-4* 9.0))
 
-(defun calculate-landing-zone-visualized (object)
-  (let ((landing-zone-pose (calculate-landing-zone object)))
+(defun calculate-landing-zone-visualized (object gripper)
+  (let ((landing-zone-pose (calculate-landing-zone object gripper)))
     (visualize-landing-zone landing-zone-pose)
     (incf *marker-id*)
     (return-from calculate-landing-zone-visualized landing-zone-pose)))
