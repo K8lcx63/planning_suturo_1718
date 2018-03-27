@@ -18,8 +18,8 @@
 (defun ask-knowledge-where-belongs (object)
   (roslisp:call-service "/storage_place_service/storage_place" 'knowledge_msgs-srv:StoragePlace :object_label object))
 
-;(defun place-object (gripper frame-id x-coordinate y-coordinate)
-;  (roslisp:call-service "/place_object/place" 'knowledge_msgs-srv:PlaceObject :gripper gripper :frame_id frame-id :x_coordinate x-coordinate :y_coordinate y-coordinate))
+(defun place-object (gripper frame-id x-coordinate y-coordinate)
+  (roslisp:call-service "/place_object/place" 'knowledge_msgs-srv:PlaceObject :gripper gripper :frame_id frame-id :x_coordinate x-coordinate :y_coordinate y-coordinate))
 
 (defun objects-To-Pick ()
   (roslisp:call-service "/beliefstate/objects_to_pick" 'knowledge_msgs-srv:ObjectsToPick))

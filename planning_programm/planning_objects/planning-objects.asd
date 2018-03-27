@@ -14,6 +14,7 @@
 	       cram-language
 	       planning-error
 	       knowledge_msgs-srv
+	       knowledge_msgs-msg
 	       std_msgs-msg
 	       visualization_msgs-msg)
 
