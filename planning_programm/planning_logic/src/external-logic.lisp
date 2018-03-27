@@ -50,6 +50,17 @@
                          :point tf-point-stamped
                          :target-frame endFrame))
 
+(defun transform-Pose (pose targetframe)
+  "gets a Geometry_msgs/PoseStamped in frame x and outputs geometry_msgs/PoseStamped in targetframe"
+  (let ((pose-transformable (cl-transforms-stamped:from-msg pose)))
+    (let ((transform-listener (make-instance 'cl-tf:transform-listener)))
+      (sleep 5.0)
+      (cl-tf:to-msg 
+       (cl-tf:transform-pose-stamped transform-listener
+                                     :pose pose-transformable
+                                     :target-frame targetframe))))
+  )
+
 ;;muss überarbeitet werden sobald orientation hinzugefügt wurde!
 ;; (defun let-Robo-Try-To-Poke (point-for-motion number-for-arm)
 ;;   "trying to Poke the object, first both arms will be used after that the robot will try different poses."
