@@ -7,9 +7,13 @@ to interact with humans in case of some unsolvable Problems, like unreachable ob
 
 ## Usage of interfaces
 
-##### say (string)
+#### say (string)
 Uses the sound_play package to let the Robot say the given string. 
 A phonetical text-to-speech interpreter will convert the given String into spoken word.
+
+#### get-pointing-pose (pose)
+First Transforms given Point into base-link frame and then gives x-value 
+of given Pose a static x value to ensure that the PR2 is able to Point in this direction.
 
 ### Special dependencies
 
@@ -17,16 +21,17 @@ A phonetical text-to-speech interpreter will convert the given String into spoke
 2. Planning-Motion
 3. Cram
 4. sound_play
+5. Planning-Logic
 
 ### To be done
 
 1. Generalized function for talking to humans unsing sound_play-package ```done```
-2. Method to be called, when Object is unreachable
+2. Method to be called, when Object is unreachable ```in development```
 3. Method to be called, when Object is unplaceable
 4. Method to be called, when Object fell down
 5. Method to be called, when unknown deadlock happened
 6. Function to drive to a save position
-7. Function point in direction ```in development```
+7. Function calculate point in direction ```done```
 
 ### Contact
 
