@@ -66,4 +66,8 @@
     (planning-motion::call-motion-move-arm-to-point pose-to-point "" moving-command)) 
   (say (concatenate 'string "I cannot grasp this object over there. Can you please move the " label  " and shake my Hand?")))
 
+(defun drive-to-human ()
+  (say "Driving to my Human now")
+  )
+
 
