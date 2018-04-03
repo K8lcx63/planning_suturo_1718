@@ -16,6 +16,10 @@
   (init-marker)
 )
 
+(defun square (x)
+  (* x x)
+  )
+
 (defun disassemble-graspindividual-response (msg)
   (geometry_msgs-msg:y
           (Geometry_msgs-msg:position

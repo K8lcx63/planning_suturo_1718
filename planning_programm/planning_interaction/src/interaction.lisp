@@ -1,5 +1,17 @@
 (in-package :planning-interaction)
 
+;; Publisher for publishing calculated magnitude of wrench-force see @calculate-wrench-magnitude
+(defvar *magnitude-publisher*)
+
+;; Publisher for publishing calculated magnitude of wrench-force see @calculate-wrench-magnitude
+(defvar *handshake-publisher*)
+
+;; Storage for Handshake estimation
+(defvar *handshake-estimation* 0)
+
+;; Fluent for stating if handshake is detected or not
+(defvar *handshake-detection* (cram-language:make-fluent))
+
 ;; say (message)
 ;;
 ;; Utilizes sound_play package to play phoenetic string 
@@ -66,8 +78,47 @@
     (planning-motion::call-motion-move-arm-to-point pose-to-point "" moving-command)) 
   (say (concatenate 'string "I cannot grasp this object over there. Can you please move the " label  " and shake my Hand?")))
 
+;; drive-to-human ()
+;;
+;; Drives into a safe position, where he is able to reach a human.
+;; Position is near the wooden Table in the iai Kitchen.
+;;
+;;  
+;; @output  undefined
+
 (defun drive-to-human ()
+  "Drives into a Position where pr2 is able to interact with Human"
   (say "Driving to my Human now")
+  (planning-motion::call-motion-move-arm-homeposition 10)
+  (planning-move::move-base-to-point -0.1566 -0.7442 0 -90)
   )
 
+(defun calculate-wrench-magnitude (msg)
+  (cram-language:sleep 0.01)
+  (let ((magnitude (sqrt 
+                   (+ 
+                    (planning-logic::square (geometry_msgs-msg:x (geometry_msgs-msg:force (geometry_msgs-msg:wrench msg))))
+                    (planning-logic::square (geometry_msgs-msg:y (geometry_msgs-msg:force (geometry_msgs-msg:wrench msg))))
+                    (planning-logic::square (geometry_msgs-msg:z (geometry_msgs-msg:force (geometry_msgs-msg:wrench msg))))))))
+    (when *magnitude-publisher*
+      (roslisp:publish *magnitude-publisher*
+                       (roslisp:make-msg
+                        "std_msgs/Float32"
+                        :data (/ (+ *handshake-estimation* magnitude ) 2))))
+      (setf *handshake-estimation* (/ (+ *handshake-estimation* magnitude ) 2))
+    (if
+     (>= *handshake-estimation* 12)
+     (progn
+       (setf (cram-language:value *handshake-detection*) nil)
+       (roslisp:publish *handshake-publisher* (roslisp:make-msg "std_msgs/Float32" :data 12)))
+     (progn
+           (setf (cram-language:value *handshake-detection*) T)
+           (roslisp:publish *handshake-publisher* (roslisp:make-msg "std_msgs/Float32" :data 0)))
+           )))
 
+(defun init-interaction ()
+  (setf *magnitude-publisher* (roslisp:advertise "/planning_interaction/wrench_force_magnitude" "std_msgs/Float32"))
+  (setf *handshake-publisher* (roslisp:advertise "/planning_interaction/handshake_detection" "std_msgs/Float32"))
+  (roslisp:subscribe "/ft/l_gripper_motor_zeroed" "geometry_msgs/WrenchStamped" #'calculate-wrench-magnitude :max-queue-length 1)
+  (return-from init-interaction())
+  )
