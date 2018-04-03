@@ -49,7 +49,7 @@
                       "Robotlife seems hard, but lets do this")
   ;(roslisp:with-ros-node ("planning_main")
   (planning-logic::init-logic)
-  (planning-move::move-Robo-Into-Homeposition)
+  ;(planning-move::move-Robo-Into-Homeposition)
   (planning-logic::publish-text "Searching for objects")
   (if (eq T (find-Object-Dummy 1.2 0))
       (let
@@ -81,10 +81,10 @@
                   (roslisp:with-fields (label) name 
                     (cram-language:wait-for (planning-logic::publish-pose label object_pose))))))))
         (loop for i from 1 to 2 do
-          (cram-language:wait-for (planning-logic::grab-left-or-right)))
+          (planning-logic::grab-left-or-right)
         (planning-motion::call-motion-move-arm-homeposition 10)
            ;   (planning-logic::move-pr2 0.75 1 0)
-              )))
+              ))))
 
 
 
