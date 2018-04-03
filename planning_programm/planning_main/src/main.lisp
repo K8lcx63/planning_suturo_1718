@@ -59,7 +59,7 @@
         (planning-logic::publish-text "I found at least 1 Object -> starting to classify")
         (loop for amount from 1 to n do
           (print "amount:")(print amount)
-                                        ;KNOWLEDGE WELCHES OBJEKT IST DAS?>>>>>
+                                        ;KNOWLEDGE WELCHES OBJEKT IST DAS?>>>>
           (let
               ((name
                  (planning-knowledge::what-object
@@ -83,7 +83,7 @@
         (loop for i from 1 to 2 do
           (cram-language:wait-for (planning-logic::grab-left-or-right)))
         (planning-motion::call-motion-move-arm-homeposition 10)
-              (planning-logic::move-pr2 0.75 1 0)
+           ;   (planning-logic::move-pr2 0.75 1 0)
               )))
 
 
@@ -112,6 +112,7 @@
 (defun find-Object-Dummy (x z)
   ".."
   (planning-move::move-Head x 0 z)
+  (sleep 5.0)
   (setf *pose-array* (planning-logic::disassemble-vision-call(planning-vision::call-vision-object-clouds)))(return-from find-Object-Dummy T))
 
 
