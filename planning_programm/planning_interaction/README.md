@@ -3,7 +3,7 @@
 ## Purpose 
 
 General purpose of this package is it to establish certain functions, which enable the Pr2 Robot
-to interact with humans in case of some unsolvable Problems, like unreachable objects, unretrievable objects or unplaceable objects. Also the robot can run can use this interactions to solve some deadlocks, like the storageplaces beeing to filled up.
+to interact with humans in case of some unsolvable Problems, like unreachable objects, unretrievable objects or unplaceable objects. Also the robot can use this interactions to solve some deadlocks, like the storageplaces beeing to filled up.
 
 ## Usage of interfaces
 
@@ -32,6 +32,7 @@ of given Pose a static x value to ensure that the PR2 is able to Point in this d
 5. Method to be called, when unknown deadlock happened
 6. Function to drive to a save position
 7. Function calculate point in direction ```done```
+8. Function that identifies handshake as a gesture ```in development```
 
 ### Contact
 
