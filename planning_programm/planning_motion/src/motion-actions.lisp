@@ -12,7 +12,7 @@
         (planning-motion::call-Motion-Move-Arm-To-Point point-center-of-object x)))
   (roslisp:with-fields(successful) result (return-from motion-To-Point successful))))
         
-(defun call-Motion-Move-Arm-Homeposition()
+(defun call-Motion-Move-Arm-Homeposition  (&optional (x 1))
   "Moves robot-arms into home position"
    (roslisp::ros-info "Motion" "getting into home position")
   (cpl:with-retry-counters ((retry-counter 10))
@@ -39,7 +39,7 @@
                                                                             (cl-transforms:make-3d-vector 5.0 3.0 1.2))
                                                   (cl-tf:make-quaternion 1 1 1 1)))))
                   (let ((actiongoal 
-                          (actionlib:make-action-goal actionclient goal_pose xtrans command 1)))
+                          (actionlib:make-action-goal actionclient goal_pose xtrans command x)))
                     (actionlib:call-goal actionclient actiongoal))))))
         (roslisp:with-fields (motion_msgs-msg:status (motion_msgs-msg:movingcommandresult status))
             status-message

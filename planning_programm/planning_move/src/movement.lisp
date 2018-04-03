@@ -36,20 +36,20 @@
 
                           
 
-(Defun move-Base-To-Point-Safe (x y z angle)
+(Defun move-Base-To-Point-Safe (x y z angle &optional (motion 1))
   ".."
   (cram-language:wait-for
-   (move-Base-To-Point 0.2 1.0 0 -90))
+   (move-Base-To-Point 0.15 0.5 0 -90 motion))
   (if (and (> angle 90) (< angle 270))
-      (move-Base-To-Point -0.29 1 0 180)
-      (move-Base-To-Point 0.75 0.8 0 0)))
+      (move-Base-To-Point -0.29 1 0 180 motion)
+      (move-Base-To-Point 0.75 0.8 0 0 motion)))
 
 
-(defun move-Base-To-Point (x y z angle)
+(defun move-Base-To-Point (x y z angle &optional (motion 1))
   "Moving robot base via nav_pcontroller/move_base. X Y Z are treated as coordinates. angle for Orientation."
   (roslisp:ros-info (move-Base-To-Point)
                     "before im moving ill make sure that my arms arent in the way!") 
- (planning-motion::call-Motion-Move-Arm-Homeposition)
+ (planning-motion::call-Motion-Move-Arm-Homeposition motion)
   (get-action-client-base)
   (let ((pose-to-drive-to 
           (cl-transforms-stamped:to-msg 
