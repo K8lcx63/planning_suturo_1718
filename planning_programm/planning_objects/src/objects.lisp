@@ -15,7 +15,7 @@
                           (height (storage_place_height))
                           (position (storage_place_position)))
         landing-zone-message
-      (setf width (- width 0.1))
+      (setf width (- width 0.19))
       (setf height (- height 0.2))
       (let ((middle-point-landing-zone-pose
               (cl-tf:to-msg (fill-landing-zone-horizontally position width height)))
@@ -52,12 +52,12 @@
             (setf last-y-border *last-y-border-y-4*)))
       
       
-      (if (< last-y-border (- y (- width-split 0.08)))
+      (if (<= last-y-border (- y width-split))
           (cpl:fail 'planning-error::objects-error :message "Out of storage space!"))
       (if (= last-y-border 9.0)
           (setf last-y-border (+ y width-split)))
       (let* ((random-height (random height-split))
-             (landing-zone-width (/ width 3.0))
+             (landing-zone-width (/ width 2.0))
              (current-middle-point-x (- x random-height))
              (current-middle-point-y (- last-y-border (/ landing-zone-width 2.0)))
              (landing-zone-pose (cl-tf:make-pose-stamped
@@ -65,7 +65,10 @@
                                               0.0
                                               (cl-transforms:make-3d-vector current-middle-point-x current-middle-point-y z)
                                               (cl-transforms:make-quaternion 0 0 0 1))))
-
+        (print last-y-border)
+        (print y)
+        (print width-split)
+        
         (setf current-y-border (- last-y-border landing-zone-width))
         
         (cond ((>= y (- 1.13063 width-split))
@@ -106,8 +109,8 @@
         (roslisp:advertise "~location_marker" "visualization_msgs/Marker")))
 
 (defun publish-pose (pose id height width)
-  (roslisp:with-fields ((place-pose (knowledge_msgs-srv:place_pose))) pose
-  (setf pose (cl-tf:from-msg place-pose)))
+  ;(roslisp:with-fields ((place-pose (knowledge_msgs-srv:place_pose))) pose
+  ;(setf pose (cl-tf:from-msg place-pose)))
   (let ((point (cl-transforms:origin pose))
         (rot (cl-transforms:orientation pose))
         (current-index 0)
