@@ -106,7 +106,8 @@
         (roslisp:advertise "~location_marker" "visualization_msgs/Marker")))
 
 (defun publish-pose (pose id height width)
-  (setf pose (cl-tf:from-msg pose))
+  (roslisp:with-fields ((place-pose (knowledge_msgs-srv:place_pose))) pose
+  (setf pose (cl-tf:from-msg place-pose)))
   (let ((point (cl-transforms:origin pose))
         (rot (cl-transforms:orientation pose))
         (current-index 0)
@@ -137,7 +138,7 @@
                                              (w orientation pose) (cl-transforms:w rot)
                                              (x scale) height
                                              (y scale) width
-                                             (z scale) 0.02
+                                             (z scale) 0.1
                                              (r color) red
                                              (g color) green
                                              (b color) blue
