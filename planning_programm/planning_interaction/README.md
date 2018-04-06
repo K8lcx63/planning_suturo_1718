@@ -29,6 +29,8 @@ and fills the \*handshake-detection\*-fluent with nil - when a handshake motion 
 Initializes this package, and gets all needed publishers and subscribers ready.
 Also this starts up the handshake detection in the background. 
 
+Loops till robot\_wrist\_ft\_tools is running
+
 
 ### Special dependencies
 
@@ -37,6 +39,7 @@ Also this starts up the handshake detection in the background.
 3. Cram
 4. sound_play
 5. Planning-Logic
+6. Robot\_wrist\_ft\_tools
 
 ### To be done
 

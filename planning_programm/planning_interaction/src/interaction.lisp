@@ -3,8 +3,11 @@
 ;; Publisher for publishing calculated magnitude of wrench-force see @calculate-wrench-magnitude
 (defvar *magnitude-publisher*)
 
-;; Publisher for publishing calculated magnitude of wrench-force see @calculate-wrench-magnitude
+;; Publisher for publishing a 15 when handshake is detected
 (defvar *handshake-publisher*)
+
+;; Actionclient for sound-play text-to-speak action
+(defvar *sound-play-actionclient*)
 
 ;; Fluent for stating if handshake is detected or not
 (defvar *handshake-detection* (cram-language:make-fluent))
@@ -22,19 +25,15 @@
 
 (defun say (message)
   "Uses sound_play service to let the pr2 say a string out loud"
-  (let
-      ((actionclient
-         (actionlib:make-action-client "/sound_play" "sound_play/SoundRequestAction")))
     (let
         ((actiongoal
-      (actionlib:make-action-goal actionclient sound_request 
+      (actionlib:make-action-goal *sound-play-actionclient* sound_request 
         (roslisp:make-msg "sound_play/SoundRequest"
                           :sound -3
                           :command 1
                           :arg message
                           :arg2 ""))))
-      (actionlib:wait-for-server actionclient)
-      (actionlib:call-goal actionclient actiongoal))))
+      (actionlib:call-goal *sound-play-actionclient* actiongoal)))
 
 
 
@@ -150,6 +149,19 @@
 (defun init-interaction ()
   (setf *magnitude-publisher* (roslisp:advertise "/planning_interaction/wrench_force_magnitude" "std_msgs/Float32"))
   (setf *handshake-publisher* (roslisp:advertise "/planning_interaction/handshake_detection" "std_msgs/Float32"))
-  (roslisp:subscribe "/ft/l_gripper_motor_zeroed" "geometry_msgs/WrenchStamped" #'calculate-wrench-magnitude :max-queue-length 1)
+  (setf *sound-play-actionclient* (actionlib:make-action-client "/sound_play" "sound_play/SoundRequestAction"))
+  (loop until (actionlib:wait-for-server *sound-play-actionclient* 5.0)
+        do (roslisp:ros-info "init-interaction" "sound_play node has not been started correctly. Please use roslaunch sound_play soundplay_node.py"))
+  (roslisp:ros-info "init-interaction" "Sound_play action initialized")
+  (let ((zeroed-sub (roslisp:subscribe "/ft/l_gripper_motor_zeroed" "geometry_msgs/WrenchStamped" #'calculate-wrench-magnitude :max-queue-length 1)))
+  (loop while (not
+               (roslisp:msg-slot-value
+                (roslisp:msg-slot-value zeroed-sub :subscription)
+                :publisher-connections))
+        do
+           (roslisp:ros-info "init-interaction" "Topic /ft/l_gripper_motor_zeroed is empty. Please startup the robot_wrist_ft_tools package.")
+           (sleep 5)
+           ))
+  (roslisp:ros-info "init-interaction" "Everything has been started correctly. Package is running, and ready to use.")
   (return-from init-interaction())
   )
