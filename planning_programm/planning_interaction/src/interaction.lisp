@@ -6,11 +6,11 @@
 ;; Publisher for publishing calculated magnitude of wrench-force see @calculate-wrench-magnitude
 (defvar *handshake-publisher*)
 
-;; Storage for Handshake estimation
-(defvar *handshake-estimation* 0)
-
 ;; Fluent for stating if handshake is detected or not
 (defvar *handshake-detection* (cram-language:make-fluent))
+
+
+
 
 ;; say (message)
 ;;
@@ -18,6 +18,7 @@
 ;;  
 ;; @input   string message - the message to speak out loud 
 ;; @output  sound_play-msg:SoundRequestResult - information about played sound
+
 
 (defun say (message)
   "Uses sound_play service to let the pr2 say a string out loud"
@@ -34,6 +35,7 @@
                           :arg2 ""))))
       (actionlib:wait-for-server actionclient)
       (actionlib:call-goal actionclient actiongoal))))
+
 
 
 
@@ -78,6 +80,9 @@
     (planning-motion::call-motion-move-arm-to-point pose-to-point "" moving-command)) 
   (say (concatenate 'string "I cannot grasp this object over there. Can you please move the " label  " and shake my Hand?")))
 
+
+
+
 ;; drive-to-human ()
 ;;
 ;; Drives into a safe position, where he is able to reach a human.
@@ -86,12 +91,27 @@
 ;;  
 ;; @output  undefined
 
+
 (defun drive-to-human ()
   "Drives into a Position where pr2 is able to interact with Human"
   (say "Driving to my Human now")
   (planning-motion::call-motion-move-arm-homeposition 10)
   (planning-move::move-base-to-point -0.1566 -0.7442 0 -90)
   )
+
+
+
+
+;; calculate-wrench-magnitude (msg)
+;;
+;; Calculates magnitude of the forcevectors given by the force-, and torque-sensors on the
+;; Pr2's right gripper. It filles a fluent with nil and Publishes a 15 on the ... topic
+;; when a Handshake is detected at the right gripper.
+;;
+;;
+;; @input   geometry_msgs/WrenchStamped - The message containing the wrist sensory data with force and torque
+;; @output  undefined
+
 
 (defun calculate-wrench-magnitude (msg)
   (cram-language:sleep 0.01)
@@ -104,17 +124,28 @@
       (roslisp:publish *magnitude-publisher*
                        (roslisp:make-msg
                         "std_msgs/Float32"
-                        :data (/ (+ *handshake-estimation* magnitude ) 2))))
-      (setf *handshake-estimation* (/ (+ *handshake-estimation* magnitude ) 2))
+                        :data magnitude)))
     (if
-     (>= *handshake-estimation* 12)
+     (>= magnitude 15)
      (progn
        (setf (cram-language:value *handshake-detection*) nil)
-       (roslisp:publish *handshake-publisher* (roslisp:make-msg "std_msgs/Float32" :data 12)))
+       (roslisp:publish *handshake-publisher* (roslisp:make-msg "std_msgs/Float32" :data 15)))
      (progn
            (setf (cram-language:value *handshake-detection*) T)
            (roslisp:publish *handshake-publisher* (roslisp:make-msg "std_msgs/Float32" :data 0)))
            )))
+
+
+
+
+;; init-interaction()
+;;
+;; Initialization of all required components for this package.
+;; Contains all publishers and subscribers. 
+;;
+;; 
+;; @output  undefined
+
 
 (defun init-interaction ()
   (setf *magnitude-publisher* (roslisp:advertise "/planning_interaction/wrench_force_magnitude" "std_msgs/Float32"))

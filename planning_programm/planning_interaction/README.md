@@ -16,7 +16,19 @@ First Transforms given Point into base-link frame and then gives x-value
 of given Pose a static x value to ensure that the PR2 is able to Point in this direction.
 
 #### drive-to-human ()
-Drives to a position near the wooden table near
+Drives to a position near the wooden table at the right side of the IAI-Kitchen
+
+#### calculate-wrench-magnitude (msg)
+Calculates the magnitude of the given geometry_msgs/WrenchStamped message, containing 
+the force-vector of the force/torque sensor at the wrist of the Pr2-Robot.
+This function publishes a float32 '15' on the topic '/planning\_interaction/handshake\_detection'
+and fills the \*handshake-detection\*-fluent with nil - when a handshake motion is detected.
+*will probably get renamed later on*
+
+#### init-interaction()
+Initializes this package, and gets all needed publishers and subscribers ready.
+Also this starts up the handshake detection in the background. 
+
 
 ### Special dependencies
 
@@ -33,9 +45,9 @@ Drives to a position near the wooden table near
 3. Method to be called, when Object is unplaceable
 4. Method to be called, when Object fell down
 5. Method to be called, when unknown deadlock happened
-6. Function to drive to a save position
+6. Function to drive to a save position ```done```
 7. Function calculate point in direction ```done```
-8. Function that identifies handshake as a gesture ```in development```
+8. Function that identifies handshake as a gesture ```done```
 
 ### Contact
 
