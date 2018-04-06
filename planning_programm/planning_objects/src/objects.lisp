@@ -8,7 +8,19 @@
 (defvar *last-y-border-y-3* 9.0)
 (defvar *last-y-border-y-4* 9.0)
 
+(defvar *current-object-label*)
+
+(defvar *object-label-1-lz-1* nil)
+(defvar *object-label-2-lz-1* nil)
+(defvar *object-label-1-lz-2* nil)
+(defvar *object-label-2-lz-2* nil)
+(defvar *object-label-1-lz-3* nil)
+(defvar *object-label-2-lz-3* nil)
+(defvar *object-label-1-lz-4* nil)
+(defvar *object-label-2-lz-4* nil)
+
 (defun calculate-landing-zone (object gripper)
+  (setf *current-object-label* object)
   (let ((landing-zone-message
           (planning-knowledge::ask-knowledge-where-belongs object)))
     (roslisp:with-fields ((width (storage_place_width))
@@ -43,13 +55,29 @@
           (height-split (/ height 2.0)))
 
       (cond ((>= y (- 1.13063 width-split))
-             (setf last-y-border *last-y-border-y-1*))
+             (progn
+               (setf last-y-border *last-y-border-y-1*)
+               (if *object-label-1-lz-1*
+                   (setf *object-label-1-lz-1* *current-object-label*)
+                   (setf *object-label-2-lz-1* *current-object-label*))))
             ((>= y (- 0.75563 width-split))
-             (setf last-y-border *last-y-border-y-2*))
+             (progn
+               (setf last-y-border *last-y-border-y-2*)
+               (if *object-label-1-lz-2*
+                   (setf *object-label-1-lz-2* *current-object-label*)
+                   (setf *object-label-2-lz-2* *current-object-label*))))
             ((>= y (- 0.38063 width-split))
-             (setf last-y-border *last-y-border-y-3*))
+             (progn
+               (setf last-y-border *last-y-border-y-3*)
+               (if *object-label-1-lz-3*
+                   (setf *object-label-1-lz-3* *current-object-label*)
+                   (setf *object-label-2-lz-3* *current-object-label*))))
             ((>= y (- 0.00563 width-split))
-            (setf last-y-border *last-y-border-y-4*)))
+             (progn
+               (setf last-y-border *last-y-border-y-4*)
+               (if *object-label-1-lz-4*
+                   (setf *object-label-1-lz-4* *current-object-label*)
+                   (setf *object-label-2-lz-4* *current-object-label*)))))
       
       
       (if (<= last-y-border (- y width-split))
@@ -59,15 +87,15 @@
       (let* ((random-height (random height-split))
              (landing-zone-width (/ width 2.0))
              (current-middle-point-x (- x random-height))
-             (current-middle-point-y (- last-y-border (/ landing-zone-width 2.0)))
+             (current-middle-point-y (- (- last-y-border (/ landing-zone-width 2.0)) 0.05))
              (landing-zone-pose (cl-tf:make-pose-stamped
                                               "/map"
                                               0.0
                                               (cl-transforms:make-3d-vector current-middle-point-x current-middle-point-y z)
                                               (cl-transforms:make-quaternion 0 0 0 1))))
-        (print last-y-border)
-        (print y)
-        (print width-split)
+        ;(print last-y-border)
+        ;(print y)
+        ;(print width-split)
         
         (setf current-y-border (- last-y-border landing-zone-width))
         
