@@ -77,7 +77,18 @@
   (let ((pose-to-point
           (get-pointing-pose pose)))
     (planning-motion::call-motion-move-arm-to-point pose-to-point "" moving-command)) 
-  (say (concatenate 'string "I cannot grasp this object over there. Can you please move the " label  " and shake my Hand?")))
+  (say (concatenate 'string "I cannot grasp this Object over there. Can you please move the " label  " and shake my Hand?"))
+  (cram-language:top-level
+    (cram-language:pursue
+      (cram-language:unwind-protect
+           (cram-language:wait-for *handshake-detection*)
+        (print *handshake-detection*)
+        (say "Thanks Human, i will try again now")
+        (sleep 5)
+        )
+      )
+    )
+  )
 
 
 
@@ -113,7 +124,7 @@
 
 
 (defun calculate-wrench-magnitude (msg)
-  (cram-language:sleep 0.01)
+  (cram-language:sleep 0.5)
   (let ((magnitude (sqrt 
                    (+ 
                     (planning-logic::square (geometry_msgs-msg:x (geometry_msgs-msg:force (geometry_msgs-msg:wrench msg))))
@@ -127,12 +138,12 @@
     (if
      (>= magnitude 15)
      (progn
-       (setf (cram-language:value *handshake-detection*) nil)
+       (setf (cram-language:value *handshake-detection*) T)
        (roslisp:publish *handshake-publisher* (roslisp:make-msg "std_msgs/Float32" :data 15)))
      (progn
-           (setf (cram-language:value *handshake-detection*) T)
-           (roslisp:publish *handshake-publisher* (roslisp:make-msg "std_msgs/Float32" :data 0)))
-           )))
+       (setf (cram-language:value *handshake-detection*) nil)
+       (roslisp:publish *handshake-publisher* (roslisp:make-msg "std_msgs/Float32" :data 0)))
+     )))
 
 
 
