@@ -17,7 +17,9 @@
 	       planning-move
 	       planning-logic
 	       planning-error
-	       planning-objects)
+	       planning-objects
+	       knowledge_msgs-msg
+	       gazebo_msgs-msg)
   :components
   ((:module "src"
     :components

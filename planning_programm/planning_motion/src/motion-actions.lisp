@@ -93,3 +93,4 @@
                 (3 (roslisp::ros-error "Motion" "Unmanageble error occured in motion!")
                  (cpl:fail 'planning-error::motion-error :message "Unmanageable error occured in motion!")))))))
 
+

@@ -7,7 +7,6 @@
                                  :initial-contents
                                  '("features1" "features2" "features3" "features4" "features5" "features6" "features7" "features8" "features9" "features10")))
 
-
 ;MAINFUNKTION~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ;>>LOOP<<
 
@@ -118,5 +117,3 @@
 
 
 
-
-             

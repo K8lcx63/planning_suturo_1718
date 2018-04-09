@@ -22,5 +22,7 @@
   <buildtool_depend>cram-language</buildtool_depend>
   <buildtool_depend>planning_logic</buildtool_depend>
   <buildtool_depend>planning_objects</buildtool_depend>
+  <buildtool_depend>knowledge_msgs</buildtool_depend>
+  <buildtool_depend>gazebo_msgs</buildtool_depend>
 
 </package>
