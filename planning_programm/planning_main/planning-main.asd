@@ -18,6 +18,8 @@
 	       planning-logic
 	       planning-error
 	       planning-objects
+	       planning-interaction)
+	       planning-objects
 	       knowledge_msgs-msg
 	       gazebo_msgs-msg)
   :components

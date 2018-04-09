@@ -2,3 +2,5 @@
 *.*~
 
 *.fasl
+
+common/navigation/upload_map\.launch
