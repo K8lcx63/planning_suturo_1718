@@ -41,47 +41,96 @@
             (return-from calculate-landing-zone landing-pose-message)))))))
 
 (defun fill-landing-zone-horizontally (position width height)
-  (cpl:with-failure-handling
-        ((cpl:simple-plan-failure (error-object)
-           (format t "An error happened: ~a~%" error-object)
-           (roslisp:ros-error "Objects" "Out of storage space!")))
-  (roslisp:with-fields ((x (geometry_msgs-msg:x geometry_msgs-msg:point))
-                        (y (geometry_msgs-msg:y geometry_msgs-msg:point))
-                        (z (geometry_msgs-msg:z geometry_msgs-msg:point)))
-      position
-    (let ((last-y-border)
-          (current-y-border)
-          (width-split (/ width 2.0))
-          (height-split (/ height 2.0)))
+  ;(cpl:with-failure-handling
+   ;   ((cpl:simple-plan-failure 
+         ;(format t "An error happened: ~a~%" error-object)
+    ;     (roslisp:ros-warn "Objects" "Out of storage space!"))
+       ;;hier knowledge nach einer Schiebepose fragen
+       
+       ;(planning-motion::call-motion-move-arm-to-point (position *current-object-label* 6))
+       ;)
+    (roslisp:with-fields ((x (geometry_msgs-msg:x geometry_msgs-msg:point))
+                          (y (geometry_msgs-msg:y geometry_msgs-msg:point))
+                          (z (geometry_msgs-msg:z geometry_msgs-msg:point)))
+          position
+        (let ((last-y-border)
+              (current-y-border)
+              (width-split (/ width 2.0))
+              (height-split (/ height 2.0))
+              (current-storage-place-number))
+          
 
-      (cond ((>= y (- 1.13063 width-split))
-             (progn
-               (setf last-y-border *last-y-border-y-1*)
-               (if *object-label-1-lz-1*
-                   (setf *object-label-1-lz-1* *current-object-label*)
-                   (setf *object-label-2-lz-1* *current-object-label*))))
-            ((>= y (- 0.75563 width-split))
-             (progn
-               (setf last-y-border *last-y-border-y-2*)
-               (if *object-label-1-lz-2*
-                   (setf *object-label-1-lz-2* *current-object-label*)
-                   (setf *object-label-2-lz-2* *current-object-label*))))
-            ((>= y (- 0.38063 width-split))
-             (progn
-               (setf last-y-border *last-y-border-y-3*)
-               (if *object-label-1-lz-3*
-                   (setf *object-label-1-lz-3* *current-object-label*)
-                   (setf *object-label-2-lz-3* *current-object-label*))))
-            ((>= y (- 0.00563 width-split))
-             (progn
-               (setf last-y-border *last-y-border-y-4*)
-               (if *object-label-1-lz-4*
-                   (setf *object-label-1-lz-4* *current-object-label*)
-                   (setf *object-label-2-lz-4* *current-object-label*)))))
+      
+          (cond ((>= y (- 1.13063 width-split))
+                 (progn
+                   (setf last-y-border *last-y-border-y-1*)
+                   (setf current-storage-place-number 1)))
+                ((>= y (- 0.75563 width-split))
+                 (progn
+                   (setf last-y-border *last-y-border-y-2*)
+                   (setf current-storage-place-number 2)))
+                ((>= y (- 0.38063 width-split))
+                 (progn
+                   (setf last-y-border *last-y-border-y-3*)
+                   (setf current-storage-place-number 3)))
+                ((>= y (- 0.00563 width-split))
+                 (progn
+                   (setf last-y-border *last-y-border-y-4*)
+                   (setf current-storage-place-number 4))))
       
       
       (if (<= last-y-border (- y width-split))
-          (cpl:fail 'planning-error::objects-error :message "Out of storage space!"))
+          (progn
+          ;(cpl:fail 'planning-error::objects-error :message "Out of storage space!"))
+
+;hier knowledge nach schiebepose fragen und position ersetzen
+            ;position ist jetzt einfach der storageplace auf tischhöhe KOLLISION!?!?
+            
+            (case current-storage-place-number
+              (1
+               (planning-motion::call-motion-move-arm-to-point position *object-label-1-lz-1* 6)
+               (planning-motion::call-motion-move-arm-to-point position *object-label-2-lz-1* 6)
+
+                                        ;abfrage ob motion successfull war??
+               (setf *last-y-border-y-1* 9.0))
+              (2
+               (planning-motion::call-motion-move-arm-to-point position *object-label-1-lz-2* 6)
+               (planning-motion::call-motion-move-arm-to-point position *object-label-2-lz-2* 6)
+               (setf *last-y-border-y-2* 9.0))
+              (3
+               (planning-motion::call-motion-move-arm-to-point position *object-label-1-lz-3* 6)
+               (planning-motion::call-motion-move-arm-to-point position *object-label-2-lz-3* 6)
+               (setf *last-y-border-y-3* 9.0))
+              (4
+               (planning-motion::call-motion-move-arm-to-point position *object-label-1-lz-4* 6)
+               (planning-motion::call-motion-move-arm-to-point position *object-label-2-lz-4* 6)
+               (setf *last-y-border-y-4* 9.0)))
+
+
+            ;achtung das ist eine endlosschleife wenn es schief geht
+            (fill-landing-zone-horizontally position width height)))
+            
+
+
+          
+          
+          (cond ((= current-storage-place-number 1)
+                 (if *object-label-1-lz-1*
+                     (setf *object-label-1-lz-1* *current-object-label*)
+                     (setf *object-label-2-lz-1* *current-object-label*)))
+                ((= current-storage-place-number 2)
+                 (if *object-label-1-lz-2*
+                     (setf *object-label-1-lz-2* *current-object-label*)
+                     (setf *object-label-2-lz-2* *current-object-label*)))
+                ((= current-storage-place-number 3)
+                 (if *object-label-1-lz-3*
+                     (setf *object-label-1-lz-3* *current-object-label*)
+                     (setf *object-label-2-lz-3* *current-object-label*)))
+                ((= current-storage-place-number 4)
+                 (if *object-label-1-lz-4*
+                     (setf *object-label-1-lz-4* *current-object-label*)
+                     (setf *object-label-2-lz-4* *current-object-label*))))
+      
       (if (= last-y-border 9.0)
           (setf last-y-border (+ y width-split)))
       (let* ((random-height (random height-split))
@@ -107,7 +156,7 @@
                (setf *last-y-border-y-3* current-y-border))
               ((>= y (- 0.00563 width-split))
                (setf *last-y-border-y-4* current-y-border)))
-        (return-from fill-landing-zone-horizontally landing-zone-pose))))))
+        (return-from fill-landing-zone-horizontally landing-zone-pose)))))
 
 (defun clear-all-landing-zones ()
   (setf *last-y-border-y-1* 9.0)
