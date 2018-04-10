@@ -5,6 +5,7 @@
 
 (defvar *perception-publisher*)
 (defvar *text-publisher*)
+(defvar *model-publisher*)
 (defvar *pr2-pose* (cram-language:make-fluent :name :pr2-pose) "current pose of pr2") 
 (defvar *gripper-righ-state-fluent* (cram-language:make-fluent))
 (defvar *gripper-left-state-fluent* (cram-language:make-fluent))
@@ -14,6 +15,7 @@
   (init-gripper-states)
   (init-pr2)
   (init-marker)
+  (init-model-publisher)
   )
 
 (defun square (x)
@@ -334,6 +336,11 @@
   (setf *text-publisher* 
         (roslisp:advertise "/visualization_marker" "visualization_msgs/Marker")))
 
+(defun init-Model-Publisher ()
+  (setf *model-publisher*
+        (roslisp:advertise "/gazebo/set_model_state" "gazebo_msgs/ModelState")))
+
+
 
 
 (defun publish-Text (string)
@@ -342,20 +349,22 @@
                                          ns "planning_namespace" id 0
                                          type 9 action 0 pose (roslisp:make-msg "geometry_msgs/Pose" (position) (roslisp:make-msg "geometry_msgs/Point" (x) 0 (y) 0 (z) 3) (orientation) (roslisp:make-msg "geometry_msgs/Quaternion" (w) 1)) (x scale) 0.2 (y scale) 0.2 (z scale) 0.2 (r color) 0.5 (g color) 0.8 (b color) 1.0 (a color) 1.0 (text) string)))
 
-(defun publish-Text-Dummy (string)
-  (roslisp:publish *text-publisher*
-                   (roslisp:make-message "visualization_msgs/Marker"
-                                         (frame_id header) "/map"
-                                         ns "planning_namespace"
-                                         id 0
-                                         type 9
-                                         action 0 pose
-                                         (roslisp:make-msg "geometry_msgs/Pose"
-                                                           (position)
-                                                           (roslisp:make-msg "geometry_msgs/Point" (x) 1.396 (y) 0.472 (z) 101.75) (orientation)
-                                                           (roslisp:make-msg "geometry_msgs/Quaternion" (w) 1)) (x scale) 0.2 (y scale) 0.2 (z scale) 0.2 (r color) 0.5 (g color) 0.8 (b color) 1.0 (a color) 1.0 (text) string)))
+(defun publish-Model-Pose (string)
+  (roslisp:publish *model-publisher*
+                   (roslisp:make-message "gazebo_msgs/ModelState"
+                                         model_name string
+                                         pose (roslisp:make-msg "geometry_msgs/Pose"
+                                                                (position)
+                                                                (roslisp:make-msg "geometry_msgs/Point"
+                                                                                  (x) -0.8
+                                                                                  (y) 1
+                                                                                  (z) 0.9500)
+                                                                (orientation)
+                                                                (roslisp:make-msg "geometry_msgs/Quaternion"))
+                                         twist (roslisp:make-msg "geometry_msgs/Twist"))))
 
-
+  
+                                                           
 
 (defun grab-Object-Right ()
   (sleep 5.0)

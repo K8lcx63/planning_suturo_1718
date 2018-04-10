@@ -101,3 +101,4 @@
       (actionlib:make-action-goal actionclient position position effort effort gripper gripper)))
       (actionlib:wait-for-server actionclient 5.0)
       (actionlib:call-goal actionclient actiongoal))))
+

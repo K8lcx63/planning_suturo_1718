@@ -14,11 +14,15 @@
 	       planning-motion
 	       planning-vision
 	       planning-knowledge
-	       planning-move
-	       planning-logic
+	       planning-motion
 	       planning-error
+	       cram-language
+               planning-logic
 	       planning-objects
-	       planning-interaction)
+	       knowledge_msgs-msg
+	       gazebo_msgs-msg
+   	       planning-interaction
+	       planning-objects)
   :components
   ((:module "src"
     :components
