@@ -31,6 +31,11 @@ Also this starts up the handshake detection in the background.
 
 Loops till robot\_wrist\_ft\_tools is running
 
+#### decide-gripper(moving-command)
+Because Motion decided to uses terrible magic numbers in theyre services, thinks are like this.
+All actions for moving the arms do have magic numbers for which gripper to use. All actions for the right arm are noted with an even number, while all actions for the left arm are noted with an uneven number.
+
+On the contrary, the magic numbers for the gripper-opening and gripper-closing are vise-versa. So this need to be calculated for some reason.
 
 ### Special dependencies
 
