@@ -92,21 +92,24 @@
                (planning-motion::call-motion-move-arm-to-point position *object-label-2-lz-1* 6)
 
                                         ;abfrage ob motion successfull war??
-               (setf *last-y-border-y-1* 9.0))
+               (setf *last-y-border-y-1* 9.0)
+               (setf last-y-border *last-y-border-y-1*))
               (2
                (planning-motion::call-motion-move-arm-to-point position *object-label-1-lz-2* 6)
                (planning-motion::call-motion-move-arm-to-point position *object-label-2-lz-2* 6)
-               (setf *last-y-border-y-2* 9.0))
+               (setf *last-y-border-y-2* 9.0)
+               (setf last-y-border *last-y-border-y-2*))
               (3
                (planning-motion::call-motion-move-arm-to-point position *object-label-1-lz-3* 6)
                (planning-motion::call-motion-move-arm-to-point position *object-label-2-lz-3* 6)
-               (setf *last-y-border-y-3* 9.0))
+               (setf *last-y-border-y-3* 9.0)
+               (setf last-y-border *last-y-border-y-3*))
               (4
                (planning-motion::call-motion-move-arm-to-point position *object-label-1-lz-4* 6)
                (planning-motion::call-motion-move-arm-to-point position *object-label-2-lz-4* 6)
-               (setf *last-y-border-y-4* 9.0)))
+               (setf *last-y-border-y-4* 9.0)
+               (setf last-y-border *last-y-border-y-4*)))
 
-            ;man sollte hier noch überprüfen ob das objekt wirklich verschoben wurde
             ))
             
 
