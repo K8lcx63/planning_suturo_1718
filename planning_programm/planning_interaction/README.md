@@ -7,6 +7,28 @@ to interact with humans in case of some unsolvable Problems, like unreachable ob
 
 ## Usage of interfaces
 
+### __Start this first__
+
+#### init-interaction()
+Initializes this package, and gets all needed publishers and subscribers ready.
+Also this starts up the handshake detection in the background. 
+
+Loops till all needed 3rd-party packages are running.
+
+### Core features
+
+#### ask-human-to-move-object()
+
+!! CORE-FUNCTION !! 
+
++++ UNDER TESTING +++
+
+Points at certain object which robot is not able to grasp for some reason.
+Opens up gripper and asks human to put the named object in his gripper. 
+Closes his gripper 5 seconds after handshake with human, and is able to continue normally.
+
+### Safely usable Methods
+
 #### say (string)
 Uses the sound_play package to let the Robot say the given string. 
 A phonetical text-to-speech interpreter will convert the given String into spoken word.
@@ -25,12 +47,13 @@ This function publishes a float32 '15' on the topic '/planning\_interaction/hand
 and fills the \*handshake-detection\*-fluent with nil - when a handshake motion is detected.
 *will probably get renamed later on*
 
-#### init-interaction()
-Initializes this package, and gets all needed publishers and subscribers ready.
-Also this starts up the handshake detection in the background. 
 
-Loops till robot\_wrist\_ft\_tools is running
 
+#### decide-gripper(moving-command)
+Because Motion decided to uses terrible magic numbers in theyre services, thinks are like this.
+All actions for moving the arms do have magic numbers for which gripper to use. All actions for the right arm are noted with an even number, while all actions for the left arm are noted with an uneven number.
+
+On the contrary, the magic numbers for the gripper-opening and gripper-closing are vise-versa. So this need to be calculated for some reason.
 
 ### Special dependencies
 

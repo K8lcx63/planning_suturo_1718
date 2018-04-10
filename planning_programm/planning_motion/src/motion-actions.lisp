@@ -104,3 +104,11 @@
                 (let ((actiongoal
                         (actionlib:make-action-goal actionclient goal_pose point-center-of-object command x grasped_object_label label )))
                   (actionlib:call-goal actionclient actiongoal))))
+(defun toggle-gripper (effort &optional (gripper 1) (position 0.008))
+  "Uses sound_play service to let the pr2 say a string out loud"
+  (let ((actionclient (actionlib:make-action-client "/gripper" "motion_msgs/GripperAction")))
+    (let
+        ((actiongoal
+      (actionlib:make-action-goal actionclient position position force effort gripper gripper)))
+      (actionlib:wait-for-server actionclient 5.0)
+      (actionlib:call-goal actionclient actiongoal))))

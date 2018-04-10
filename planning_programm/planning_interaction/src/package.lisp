@@ -6,5 +6,6 @@
   (:export
    :init-interaction
    :say
+   :decide-gripper
    :ask-human-to-move-object))
 
