@@ -12,6 +12,9 @@
 ;; Fluent for stating if handshake is detected or not
 (defvar *handshake-detection* (cram-language:make-fluent))
 
+;; Configurable Positions for open and closed gripper
+(defvar *open-gripper-pos* 0.060)
+(defvar *closed-gripper-pos* 0.006)
 
 
 
@@ -53,7 +56,7 @@
                           (roslisp:modify-message-copy pose-in-baselink
                                (geometry_msgs-msg:x
                                 geometry_msgs-msg:position
-                                geometry_msgs-msg:pose) 2)))
+                                geometry_msgs-msg:pose) 0.5)))
 
 
 
@@ -61,14 +64,14 @@
 ;; ask-human-to-move-robot(pose label moving-command)
 ;;
 ;; Interacts with Human if Object is not reachable. Drives into Homeposition
-;; Points at Object. Says String and then waits for Human to move Object and
-;; shake his hand
+;; Points at Object. Says String and then waits for Human to put Object into his hand and
+;; shake his left gripper
 ;;
 ;; +++ UNDER CONSTRUCTION +++
 ;;  
 ;; @input   geometry_msgs/PoseStamped pose - pose of unreachable object
 ;; @input   string label                   - label of object as String (e.g. "Ja Milch")
-;; @input   int moving-command             - 2 for left, 3 for right arm. Default is 3
+;; @input   int moving-command             - 2 for right, 3 for left arm. Default is 3
 ;; @output  undefined
 
 
@@ -78,17 +81,36 @@
           (get-pointing-pose pose)))
     (planning-motion::call-motion-move-arm-to-point pose-to-point "" moving-command)) 
   (say (concatenate 'string "I cannot grasp this Object over there. Can you please move the " label  " and shake my Hand?"))
+  (planning-motion::toggle-gripper 20.0 (decide-gripper moving-command) *open-gripper-pos*)
   (cram-language:top-level
     (cram-language:pursue
       (cram-language:unwind-protect
            (cram-language:wait-for *handshake-detection*)
         (print *handshake-detection*)
-        (say "Thanks Human, i will try again now")
+        (say "Thanks Human, i will grasp the Object now. Please be carefull.")
         (sleep 5)
+        (planning-motion::toggle-gripper 20.0 (decide-gripper moving-command) *closed-gripper-pos*)
         )
       )
     )
   )
+
+
+
+
+;; decide-gripper(moving-command)
+;;
+;; little function that translates motions terrible magic numbers from move-to-point action
+;; to open/close gripper action. Resolves Motions terrible choice of actionnaming
+;;
+;; @input  int moving-command - Motions identifier for right or left gripper in moving-action
+;; @output int gripper        - Motions identifier for right or left gripper in gripper-action
+
+
+(defun decide-gripper(moving-command)
+  (if (= (rem moving-command 2) 0)
+      (return-from decide-gripper 2)
+      (return-from decide-gripper 1)))
 
 
 
@@ -105,7 +127,6 @@
 (defun drive-to-human ()
   "Drives into a Position where pr2 is able to interact with Human"
   (say "Driving to my Human now")
-  (planning-motion::call-motion-move-arm-homeposition 10)
   (planning-move::move-base-to-point -0.1566 -0.7442 0 -90)
   )
 
