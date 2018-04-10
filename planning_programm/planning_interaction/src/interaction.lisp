@@ -13,7 +13,7 @@
 (defvar *handshake-detection* (cram-language:make-fluent))
 
 ;; Configurable Positions for open and closed gripper
-(defvar *open-gripper-pos* 0.060)
+(defvar *open-gripper-pos* 0.090)
 (defvar *closed-gripper-pos* 0.006)
 
 
@@ -56,7 +56,11 @@
                           (roslisp:modify-message-copy pose-in-baselink
                                (geometry_msgs-msg:x
                                 geometry_msgs-msg:position
-                                geometry_msgs-msg:pose) 0.5)))
+                                geometry_msgs-msg:pose) 0.5
+                                (geometry_msgs-msg:orientation
+                                 geometry_msgs-msg:pose)
+                                 (roslisp:make-msg "geometry_msgs/quaternion" :x 0 :y 0 :z 0 :w 1)))
+  )
 
 
 
@@ -66,8 +70,6 @@
 ;; Interacts with Human if Object is not reachable. Drives into Homeposition
 ;; Points at Object. Says String and then waits for Human to put Object into his hand and
 ;; shake his left gripper
-;;
-;; +++ UNDER CONSTRUCTION +++
 ;;  
 ;; @input   geometry_msgs/PoseStamped pose - pose of unreachable object
 ;; @input   string label                   - label of object as String (e.g. "Ja Milch")

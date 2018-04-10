@@ -98,7 +98,7 @@
   (let ((actionclient (actionlib:make-action-client "/gripper" "motion_msgs/GripperAction")))
     (let
         ((actiongoal
-      (actionlib:make-action-goal actionclient position position effort effort gripper gripper)))
+      (actionlib:make-action-goal actionclient position position force effort gripper gripper)))
       (actionlib:wait-for-server actionclient 5.0)
       (actionlib:call-goal actionclient actiongoal))))
 
