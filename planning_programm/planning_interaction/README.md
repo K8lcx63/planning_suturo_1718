@@ -7,7 +7,7 @@ to interact with humans in case of some unsolvable Problems, like unreachable ob
 
 ## Usage of interfaces
 
-### first to start
+__### Start this first__
 
 #### init-interaction()
 Initializes this package, and gets all needed publishers and subscribers ready.
