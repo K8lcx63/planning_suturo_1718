@@ -10,6 +10,7 @@
            (format t "An error happened: ~a~%" error-object)
            (roslisp::ros-info "Motion" "Trying to solve error.")
                                         ;Here is the place for solutions to the problem!
+           ;fahren z.B hier
            (cpl:do-retry retry-counter
              (format t "Now retrying~%")
              (roslisp::ros-info "Motion" "Now retrying ...")
@@ -58,10 +59,10 @@
 
 
 
-(Defun call-Motion-Move-Arm-To-Point (point-center-of-object label &optional (x 3))
+(Defun call-Motion-Move-Arm-To-Point (point-center-of-object label &optional (x 3) (force 15))
   "Moves choosen robot-arm (optional parameter) to the point-center-of-object (default right arm 3=right, 2=left)"
   (roslisp::ros-info "Motion" "moving arm to point")
-  (cpl:with-retry-counters ((retry-counter 10))
+  (cpl:with-retry-counters ((retry-counter 4))
     (cpl:with-failure-handling
         (((or cpl:simple-plan-failure planning-error::motion-error)(error-object)
            (format t "An error happened: ~a~%" error-object)
@@ -80,7 +81,7 @@
                 (loop until
                       (actionlib:wait-for-server actionclient))
                 (let ((actiongoal
-                        (actionlib:make-action-goal actionclient goal_pose point-center-of-object command x grasped_object_label label)))
+                        (actionlib:make-action-goal actionclient goal_pose point-center-of-object command x force force grasped_object_label label)))
                   (actionlib:call-goal actionclient actiongoal))))
              (roslisp:with-fields (motion_msgs-msg:status (motion_msgs-msg:movingcommandresult status))
             status-message
@@ -93,4 +94,13 @@
                 (3 (roslisp::ros-error "Motion" "Unmanageble error occured in motion!")
                  (cpl:fail 'planning-error::motion-error :message "Unmanageable error occured in motion!")))))))
 
-
+(Defun call-Motion-Move-Arm-To-Point-Dummy (point-center-of-object label &optional (x 3))
+  "Moves choosen robot-arm (optional parameter) to the point-center-of-object (default right arm 3=right, 2=left)"
+  (roslisp::ros-info "Motion" "moving arm to point")
+              (let ((actionclient 
+                      (actionlib:make-action-client "/moving" "motion_msgs/MovingCommandAction")))
+                (loop until
+                      (actionlib:wait-for-server actionclient))
+                (let ((actiongoal
+                        (actionlib:make-action-goal actionclient goal_pose point-center-of-object command x grasped_object_label label )))
+                  (actionlib:call-goal actionclient actiongoal))))
