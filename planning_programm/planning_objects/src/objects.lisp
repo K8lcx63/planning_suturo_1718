@@ -106,9 +106,8 @@
                (planning-motion::call-motion-move-arm-to-point position *object-label-2-lz-4* 6)
                (setf *last-y-border-y-4* 9.0)))
 
-
-            ;achtung das ist eine endlosschleife wenn es schief geht
-            (fill-landing-zone-horizontally position width height)))
+            ;man sollte hier noch überprüfen ob das objekt wirklich verschoben wurde
+            ))
             
 
 
