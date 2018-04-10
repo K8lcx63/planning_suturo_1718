@@ -1,6 +1,6 @@
 (in-package :planning-error)
 
-(define-condition custom-error (error) ((message :initarg :message :initform "" :reader message))
+(define-condition custom-error (cpl:simple-plan-failure) ((message :initarg :message :initform "" :reader message))
   (:documentation "any error"))
 
 (define-condition vision-error (custom-error) ()
