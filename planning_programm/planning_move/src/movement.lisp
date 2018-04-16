@@ -4,6 +4,7 @@
 (defvar *action-client-base* nil)
 
 
+
 (defun move-Head (x y z)
   "Moving robot head via head_traj_controller/point_head_action. X Y Z are treated as coordinates."
   (let ((actionclient 
@@ -21,8 +22,10 @@
 
 
 (defun move-Torso (x)
+  "Moving robot torso via torso_controller/position_joint_action. 2 is for up and 0 for down. You'll need to interrupt by yourself in the simulation"
   (let ((actionclient 
-          (actionlib:make-action-client "torso_controller/position_joint_action" "pr2_controllers_msgs/SingleJointPositionAction")))
+          (actionlib:make-action-client "torso_controller/position_joint_action"
+                                        "pr2_controllers_msgs/SingleJointPositionAction")))
     (Loop until
           (actionlib:wait-for-server actionclient))
     (let ((actiongoal 
@@ -32,36 +35,9 @@
               :max_velocity 1.0)))
       (actionlib:call-goal actionclient actiongoal))))
 
-
-
-
-
-(Defun move-Base-To-Point-Safe (x y z angle &optional (motion 1))
-  (cram-language:wait-for
-   (move-Base-To-Point 0.15 0.5 0 -90 motion))
-  (if
-   (and
-    (> angle 90)
-    (< angle 270))
-   (move-Base-To-Point -0.29 1 0 180 motion)
-   (move-Base-To-Point 0.75 0.8 0 0 motion)))
-
-(defun move-Base (x y z angle &optional (motion 1))
-   (roslisp:with-fields
-      ((pr2-x
-        (geometry_msgs-msg:x
-         geometry_msgs-msg:position
-         geometry_msgs-msg:pose
-         geometry_msgs-msg:pose)))
-      (cram-language:value planning-logic::*pr2-pose*)
-    (if (and (< pr2-x 0) (> x 0))
-        (move-base-to-point 0.15 0.5 0 -90)
-        (if (and (> pr2-x 0) (< x 0))
-             (move-base-to-point 0.15 0.5 0 -90)))))
-
-
-(defmethod move-Base-To-Point (x y z angle &optional (motion 1))
-  "Moving robot base via nav_pcontroller/move_base. X Y Z are treated as coordinates. angle for Orientation."
+                                        ;Errorhandling is missing -V
+(defmethod move-Base-To-Point (x y z angle  &optional (motion 1))
+  "Moving robot base via nav_pcontroller/move_base. X Y Z are treated as coordinates. Angle for Orientation."
   (planning-motion::call-Motion-Move-Arm-Homeposition motion)
   (get-action-client-base)
   (let ((pose-to-drive-to 
@@ -75,40 +51,26 @@
 
 
 
-(defmethod move-Base-To-Point :before (x y z angle &optional (motion 1))
+(defmethod move-Base-To-Point :before (x y z angle  &optional (motion 1))
+  "before method for move-Base-To-Point"
   (roslisp:ros-info (move-Base-To-Point)
                     "robo is starting to move..."))
-        
-        
 
-(defmethod move-Base-To-Point :after (x y z angle &optional (motion 1))
+
+
+(defmethod move-Base-To-Point :after (x y z angle &optional motion)
+  "after method for move-Base-To-Point"
   (roslisp:ros-info (move-Base-To-Point)
                     "robo is done moving."))
 
 
 (defgeneric quaternion (x y z angle))
 
-(defmethod quaternion ((x Number) (y Number) (z Number) (angle Number)) 
+(defmethod quaternion ((x Number) (y Number) (z Number) (angle integer))
+  "method for the orientation only income are Numbers and for angle integer"
   (cl-transforms:axis-angle->quaternion
    (cl-transforms:make-3d-vector 0 0 1)
    (/ (* angle pi) 180)))
-
-
-
-
-
-(defun init-Robo-Moving ()
-  "initialize all what's needed for the Robo to "
-  (planning-motion::call-Motion-Move-Arm-Homeposition)
-  (get-Action-Client-Base)
-  (roslisp:ros-info (init-Robo-Moving)
-                    "robo is starting to move...")
-  (let ((positions-x (make-array '(4)  
-                                 :initial-contents '(0.0 0.1 0.2 0.0)))) 
-    (loop for i across positions-x do
-      (move-Base-To-Point i 0 0 0)))
-  (roslisp:ros-info (init-Robo-Moving)
-                    "robo is ready..."))
 
 
 
@@ -134,4 +96,16 @@
 
 
 
-       
+;will probably deleted -V
+(defun move-Base-To-Point-Safe (x y z angle &optional (motion 1))
+  (cram-language:wait-for
+   (move-Base-To-Point 0.15 0.5 0 -90 motion))
+  (if
+   (and
+    (> angle 90)
+    (< angle 270))
+   (move-Base-To-Point -0.29 1 0 180 motion)
+   (move-Base-To-Point 0.75 0.8 0 0 motion))
+  (print x)
+  (print y)
+  (print z))

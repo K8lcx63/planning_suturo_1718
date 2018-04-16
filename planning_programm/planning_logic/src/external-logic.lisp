@@ -6,7 +6,7 @@
 (defvar *perception-publisher*)
 (defvar *text-publisher*)
 (defvar *model-publisher*)
-(defvar *pr2-pose* (cram-language:make-fluent :name :pr2-pose) "current pose of pr2") 
+(defvar *pr2-pose* (cram-language:make-fluent :name :pr2-pose) nil)
 (defvar *gripper-righ-state-fluent* (cram-language:make-fluent))
 (defvar *gripper-left-state-fluent* (cram-language:make-fluent))
 
@@ -67,19 +67,8 @@
                                      :target-frame targetframe))))
   )
 
-;;muss überarbeitet werden sobald orientation hinzugefügt wurde!
-;; (defun let-Robo-Try-To-Poke (point-for-motion number-for-arm)
-;;   "trying to Poke the object, first both arms will be used after that the robot will try different poses."
-;;   (roslisp:ros-info (let-Robo-Try-To-Poke)
-;;                     "trying to poke the object now...")
-;;   (if (not(eq T (planning-motion::motion-To-Point point-for-motion number-for-arm)))
-;;       (progn
-;;         (if (/= 2 number-for-arm)
-;;             (planning-motion::motion-To-Point point-for-motion 2)
-;;             (planning-motion::motion-To-Point point-for-motion 3)))))
 
 
-                                        ;das klappt jetzt muss aber angepeasst werden auf motion grab und in der doku
 (defun try-To-Grab-Different-Location(x y z)
   "trying to grab the object now again with different location.."
   (roslisp:ros-info (try-To-Poke-Different-Location)
@@ -316,19 +305,6 @@
           (read-char))))))
 
 
-;; (cram-language:top-level
-;;            (let ((loop-Finished nil))
-;;              (cram-language:pursue
-;;                (cram-language:wait-for planning-logic::*gripper-left-state-fluent*)
-;;                (progn
-;;                  (loop for i from 1 to 1000 do
-;;                  (progn
-;;                    (print i)
-;;                    (cram-language:sleep 1.0)
-;;                    )) 
-;;                (setf loop-Finished T)))
-;;              (unless loop-Finished 
-;;                (cpl:fail "hello"))))
 
 
 
@@ -382,8 +358,8 @@
                                                                 (roslisp:make-msg "geometry_msgs/Quaternion"))
                                          twist (roslisp:make-msg "geometry_msgs/Twist"))))
 
-  
-                                                           
+
+
 
 (defun grab-Object-Right ()
   (sleep 5.0)
@@ -476,3 +452,48 @@
            (grab-Object-Left)
            (grab-Object-Right))))))
 
+
+
+(defun move-Base (x y z angle &optional (motion 1))
+  (roslisp:with-fields
+      ((pr2-x
+        (geometry_msgs-msg:x
+         geometry_msgs-msg:position
+         geometry_msgs-msg:pose
+         geometry_msgs-msg:pose)))
+      (cram-language:value planning-logic:*pr2-pose*)
+    (if (and (< pr2-x 0) (> x 0))
+        (planning-move::move-base-to-point 0.15 0.5 0 -90)
+        (if (and (> pr2-x 0) (< x 0))
+            (planning-move::move-base-to-point 0.15 0.5 0 -90))))
+  (planning-move::move-base-to-point x y z angle motion))
+
+
+
+;;muss überarbeitet werden sobald orientation hinzugefügt wurde!
+;; (defun let-Robo-Try-To-Poke (point-for-motion number-for-arm)
+;;   "trying to Poke the object, first both arms will be used after that the robot will try different poses."
+;;   (roslisp:ros-info (let-Robo-Try-To-Poke)
+;;                     "trying to poke the object now...")
+;;   (if (not(eq T (planning-motion::motion-To-Point point-for-motion number-for-arm)))
+;;       (progn
+;;         (if (/= 2 number-for-arm)
+;;             (planning-motion::motion-To-Point point-for-motion 2)
+;;             (planning-motion::motion-To-Point point-for-motion 3)))))
+
+
+
+
+;; (cram-language:top-level
+;;            (let ((loop-Finished nil))
+;;              (cram-language:pursue
+;;                (cram-language:wait-for planning-logic::*gripper-left-state-fluent*)
+;;                (progn
+;;                  (loop for i from 1 to 1000 do
+;;                  (progn
+;;                    (print i)
+;;                    (cram-language:sleep 1.0)
+;;                    )) 
+;;                (setf loop-Finished T)))
+;;              (unless loop-Finished 
+;;                (cpl:fail "hello"))))

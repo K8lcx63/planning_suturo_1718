@@ -9,18 +9,15 @@
         (((or cpl:simple-plan-failure planning-error::motion-error) (error-object)
            (format t "An error happened: ~a~%" error-object)
            (roslisp::ros-info "Motion" "Trying to solve error.")
-                                        ;Here is the place for solutions to the problem!
+           ;Here is the place for solutions to the problem!
            ;fahren z.B hier
            (cpl:do-retry retry-counter
              (format t "Now retrying~%")
              (roslisp::ros-info "Motion" "Now retrying ...")
-             (cpl:retry))
-
+             (cpl:retry)) 
            (format t "Reached maximum amount of retries. Now propagating the failure up.~%")
            (roslisp::ros-error "Motion" "Reached maximum amount of retries. Now propagating the failure up.~%")
          (return-from call-Motion-Move-Arm-Homeposition status-message)))
-
-      
       (setf status-message
               (let ((actionclient
                       (actionlib:make-action-client "/moving" "motion_msgs/MovingCommandAction")))
@@ -94,21 +91,4 @@
                 (3 (roslisp::ros-error "Motion" "Unmanageble error occured in motion!")
                  (cpl:fail 'planning-error::motion-error :message "Unmanageable error occured in motion!")))))))
 
-(Defun call-Motion-Move-Arm-To-Point-Dummy (point-center-of-object label &optional (x 3))
-  "Moves choosen robot-arm (optional parameter) to the point-center-of-object (default right arm 3=right, 2=left)"
-  (roslisp::ros-info "Motion" "moving arm to point")
-              (let ((actionclient 
-                      (actionlib:make-action-client "/moving" "motion_msgs/MovingCommandAction")))
-                (loop until
-                      (actionlib:wait-for-server actionclient))
-                (let ((actiongoal
-                        (actionlib:make-action-goal actionclient goal_pose point-center-of-object command x grasped_object_label label )))
-                  (actionlib:call-goal actionclient actiongoal))))
-(defun toggle-gripper (effort &optional (gripper 1) (position 0.008))
-  "Uses sound_play service to let the pr2 say a string out loud"
-  (let ((actionclient (actionlib:make-action-client "/gripper" "motion_msgs/GripperAction")))
-    (let
-        ((actiongoal
-      (actionlib:make-action-goal actionclient position position force effort gripper gripper)))
-      (actionlib:wait-for-server actionclient 5.0)
-      (actionlib:call-goal actionclient actiongoal))))
+
