@@ -22,7 +22,7 @@
   (roslisp:call-service "/place_object/place" 'knowledge_msgs-srv:PlaceObject :gripper gripper :frame_id frame-id :x_coordinate x-coordinate :y_coordinate y-coordinate))
 
 (defun objects-To-Pick ()
-  (cram-language:wait-for (roslisp:call-service "/beliefstate/objects_to_pick" 'knowledge_msgs-srv:ObjectsToPick)))
+  (roslisp:call-service "/beliefstate/objects_to_pick" 'knowledge_msgs-srv:ObjectsToPick))
 
 (Defun how-To-Pick-Objects (object) 
     (roslisp:call-service "/knowledge_grasp/knowledge_grasp" 'knowledge_msgs-srv:GraspIndividual :object_label object))
