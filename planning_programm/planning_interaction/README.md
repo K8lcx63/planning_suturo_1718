@@ -47,18 +47,20 @@ driving position.
 Uses the sound_play package to let the Robot say the given string. 
 A phonetical text-to-speech interpreter will convert the given String into spoken word.
 
-#### get-pointing-pose (pose)
-
-- tested vaguely
-
-First Transforms given Point into base-link frame and then gives x-value 
-of given Pose a static x value to ensure that the PR2 is able to Point in this direction.
-
 #### drive-to-human ()
 
 - tested nicely
 
 Drives to a position near the wooden table at the right side of the IAI-Kitchen
+
+#### decide-gripper(moving-command)
+
+- tested nicely
+
+Because Motion decided to uses terrible magic numbers in theyre services, thinks are like this.
+All actions for moving the arms do have magic numbers for which gripper to use. All actions for the right arm are noted with an even number, while all actions for the left arm are noted with an uneven number.
+
+On the contrary, the magic numbers for the gripper-opening and gripper-closing are vise-versa. So this need to be calculated for some reason.
 
 ### Safety methods (not usable publicly)
 
@@ -72,15 +74,13 @@ This function publishes a float32 '15' on the topic '/planning\_interaction/hand
 and fills the \*handshake-detection\*-fluent with nil - when a handshake motion is detected.
 *will probably get renamed later on*
 
+#### get-pointing-pose (pose)
 
-#### decide-gripper(moving-command)
+- tested vaguely
 
-- tested nicely
+First Transforms given Point into base-link frame and then gives x-value 
+of given Pose a static x value to ensure that the PR2 is able to Point in this direction.
 
-Because Motion decided to uses terrible magic numbers in theyre services, thinks are like this.
-All actions for moving the arms do have magic numbers for which gripper to use. All actions for the right arm are noted with an even number, while all actions for the left arm are noted with an uneven number.
-
-On the contrary, the magic numbers for the gripper-opening and gripper-closing are vise-versa. So this need to be calculated for some reason.
 
 ### Special dependencies
 
