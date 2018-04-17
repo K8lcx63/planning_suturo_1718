@@ -418,7 +418,7 @@
        (if
         (eq T left_gripper)
         (progn
-          (planning-logic::publish-text "trying to grab now with right arm")
+          (planning-logic::publish-text "trying to grab now with left arm")
           (roslisp:with-fields (grasp_pose)
               (cram-language:wait-for
                (planning-knowledge::how-to-pick-objects object_label_1))
@@ -430,7 +430,7 @@
            (planning-knowledge::empty-gripper)
          (if (eq T right_gripper)
              (progn
-               (planning-logic::publish-text "trying to grab now with left arm")
+               (planning-logic::publish-text "trying to grab now with right arm")
                (roslisp:with-fields (grasp_pose)
                    (cram-language:wait-for
                     (planning-knowledge::how-to-pick-objects object_label_1))
@@ -441,6 +441,7 @@
 
 
 (defun grab-Left-Or-Right ()
+  (sleep 5.0)
   (roslisp:with-fields (object_label_1)
       (planning-knowledge::objects-to-pick)
     (if
@@ -467,6 +468,48 @@
         (if (and (> pr2-x 0) (< x 0))
             (planning-move::move-base-to-point 0.15 0.5 0 -90))))
   (planning-move::move-base-to-point x y z angle motion))
+
+
+
+
+(defun transformation-Pose-Stamped (pose &optional (endFrame "/base_footprint")) 
+  "transform a msgs with an optional Frame, default is base_footprint" 
+  (roslisp:with-fields 
+      ((startFrame 
+        (STD_msgs-msg:frame_id geometry_msgs-msg:header)) 
+       (x 
+        (geometry_msgs-msg:x geometry_msgs-msg:position geometry_msgs-msg:pose)) 
+       (y 
+        (geometry_msgs-msg:y geometry_msgs-msg:position  geometry_msgs-msg:pose)) 
+       (z 
+        (geometry_msgs-msg:z geometry_msgs-msg:position geometry_msgs-msg:pose))
+       (w
+        (geometry_msgs-msg:w geometry_msgs-msg:orientation geometry_msgs-msg:pose))
+       (xo
+        (geometry_msgs-msg:x geometry_msgs-msg:orientation geometry_msgs-msg:pose))
+       (yo
+        (geometry_msgs-msg:x geometry_msgs-msg:orientation geometry_msgs-msg:pose))
+       (zo
+        (geometry_msgs-msg:z geometry_msgs-msg:orientation geometry_msgs-msg:pose))) 
+      pose 
+    (let 
+        ((transform-listener 
+           (make-instance 'cl-tf:transform-listener)) 
+         (tf-point-stamped 
+           (cl-tf:make-pose-stamped startFrame 0.0 
+                                    (cl-transforms:make-3d-vector x y z)(cl-transforms:make-quaternion xo yo zo w)))) 
+      (catch-Transformation-Pose-Stamped transform-listener tf-point-stamped endFrame))))
+
+(defun catch-Transformation-Pose-Stamped (transform-listener tf-point-stamped endFrame)
+  "transform-listener catch transformation (helpfunction)"
+  (sleep 5.0)
+           (cl-tf:transform-pose-stamped transform-listener
+                                         :pose tf-point-stamped
+                         :target-frame endFrame))
+
+
+
+
 
 
 
