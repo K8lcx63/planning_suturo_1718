@@ -17,7 +17,7 @@
 (defvar *closed-gripper-pos* 0.006)
 
 ;; Configurable position for gripper holding object out to human
-(defvar *holding-pose*
+(defvar *holding-pose-right*
   (roslisp:make-msg "geometry_msgs/PoseStamped" 
                     (geometry_msgs-msg:z geometry_msgs-msg:position geometry_msgs-msg:pose) 1
                     (geometry_msgs-msg:x geometry_msgs-msg:position geometry_msgs-msg:pose) 0.5
@@ -26,7 +26,7 @@
                     (std_msgs-msg:frame_id std_msgs-msg:header) "/base_link"))
 
 ;; Configurable position for left gripper, if right is filled. to let human shake hand
-(defvar *substitution-pose*
+(defvar *holding-pose-left*
   (roslisp:make-msg "geometry_msgs/PoseStamped" 
                     (geometry_msgs-msg:z geometry_msgs-msg:position geometry_msgs-msg:pose) 1
                     (geometry_msgs-msg:x geometry_msgs-msg:position geometry_msgs-msg:pose) 0.5
@@ -127,14 +127,14 @@
 
 
 (defun ask-human-to-take-object (label &optional (moving-command 3))
-  (planning-motion::call-motion-move-arm-homeposition) 
+  (planning-motion::call-motion-move-arm-homeposition 10) 
   (say (concatenate 'string "I can not place the " label  " in my gripper. Will ask human."))
   (drive-to-human)
   (if (= moving-command 3)
-      (planning-motion::call-motion-move-arm-to-point *holding-pose* label moving-command)
+      (planning-motion::call-motion-move-arm-to-point *holding-pose-right* label 2)
       (progn
-        (planning-motion::call-motion-move-arm-to-point *substitution-pose* label 3)
-        (planning-motion::call-motion-move-arm-to-point *holding-pose* label 2)))
+        (planning-motion::call-motion-move-arm-to-point *holding-pose-left* label 3)
+        (planning-motion::call-motion-move-arm-to-point *holding-pose-right* label 2)))
   (say (concatenate 'string "Hello human! I am very sorry to say that i can not place the " label " in my gripper. Can you please take it and shake my right hand?"))
   (cram-language:top-level
     (cram-language:pursue
@@ -145,7 +145,7 @@
         (sleep 5)
         (planning-motion::toggle-gripper 20.0 (decide-gripper moving-command) *open-gripper-pos*)
         (sleep 5)
-        (planning-motion::call-motion-move-arm-homeposition)
+        (planning-motion::call-motion-move-arm-homeposition 10)
         )
       )
     )
