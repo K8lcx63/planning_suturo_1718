@@ -20,7 +20,7 @@
 (defvar *holding-pose-right*
   (roslisp:make-msg "geometry_msgs/PoseStamped" 
                     (geometry_msgs-msg:z geometry_msgs-msg:position geometry_msgs-msg:pose) 1
-                    (geometry_msgs-msg:x geometry_msgs-msg:position geometry_msgs-msg:pose) 0.5
+                    (geometry_msgs-msg:x geometry_msgs-msg:position geometry_msgs-msg:pose) 0.7
                     (geometry_msgs-msg:w geometry_msgs-msg:orientation geometry_msgs-msg:pose) 1
                     (geometry_msgs-msg:y geometry_msgs-msg:position geometry_msgs-msg:pose) -0.3
                     (std_msgs-msg:frame_id std_msgs-msg:header) "/base_link"))
@@ -29,7 +29,7 @@
 (defvar *holding-pose-left*
   (roslisp:make-msg "geometry_msgs/PoseStamped" 
                     (geometry_msgs-msg:z geometry_msgs-msg:position geometry_msgs-msg:pose) 1
-                    (geometry_msgs-msg:x geometry_msgs-msg:position geometry_msgs-msg:pose) 0.5
+                    (geometry_msgs-msg:x geometry_msgs-msg:position geometry_msgs-msg:pose) 0.7
                     (geometry_msgs-msg:y geometry_msgs-msg:position geometry_msgs-msg:pose) 0.3
                     (geometry_msgs-msg:w geometry_msgs-msg:orientation geometry_msgs-msg:pose) 1
                     (std_msgs-msg:frame_id std_msgs-msg:header) "/base_link"))
@@ -127,7 +127,7 @@
   (say (concatenate 'string "I can not place the " label  " in my gripper. Will ask human."))
   (drive-to-human)
   (if (= moving-command 3)
-      (planning-motion::call-motion-move-arm-to-point *holding-pose-right* label 2)
+      (planning-motion::call-motion-move-arm-to-point *holding-pose-left* label 3)
       (progn
         (planning-motion::call-motion-move-arm-to-point *holding-pose-left* label 3)
         (planning-motion::call-motion-move-arm-to-point *holding-pose-right* label 2)))
@@ -186,7 +186,7 @@
 (defun drive-to-human ()
   "Drives into a Position where pr2 is able to interact with Human"
   (say "Driving to my Human now")
-  (planning-move::move-base-to-point -0.1566 -0.7442 0 -90)
+  (planning-move::move-base-to-point -0.1566 -0.7442 0 -90 10)
   )
 
 
