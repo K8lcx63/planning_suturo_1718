@@ -20,16 +20,17 @@
 (defvar *holding-pose*
   (roslisp:make-msg "geometry_msgs/PoseStamped" 
                     (geometry_msgs-msg:z geometry_msgs-msg:position geometry_msgs-msg:pose) 1
-                    (geometry_msgs-msg:x geometry_msgs-msg:position geometry_msgs-msg:pose) 1
+                    (geometry_msgs-msg:x geometry_msgs-msg:position geometry_msgs-msg:pose) 0.5
                     (geometry_msgs-msg:w geometry_msgs-msg:orientation geometry_msgs-msg:pose) 1
+                    (geometry_msgs-msg:y geometry_msgs-msg:position geometry_msgs-msg:pose) -0.3
                     (std_msgs-msg:frame_id std_msgs-msg:header) "/base_link"))
 
 ;; Configurable position for left gripper, if right is filled. to let human shake hand
 (defvar *substitution-pose*
   (roslisp:make-msg "geometry_msgs/PoseStamped" 
                     (geometry_msgs-msg:z geometry_msgs-msg:position geometry_msgs-msg:pose) 1
-                    (geometry_msgs-msg:x geometry_msgs-msg:position geometry_msgs-msg:pose) 1
-                    (geometry_msgs-msg:y geometry_msgs-msg:position geometry_msgs-msg:pose) 0.5
+                    (geometry_msgs-msg:x geometry_msgs-msg:position geometry_msgs-msg:pose) 0.5
+                    (geometry_msgs-msg:y geometry_msgs-msg:position geometry_msgs-msg:pose) 0.3
                     (geometry_msgs-msg:w geometry_msgs-msg:orientation geometry_msgs-msg:pose) 1
                     (std_msgs-msg:frame_id std_msgs-msg:header) "/base_link"))
 
