@@ -8,8 +8,7 @@
 (defun move-Head (x y z)
   "Moving robot head via head_traj_controller/point_head_action. X Y Z are treated as coordinates."
   (let ((actionclient 
-          (actionlib:make-action-client "head_traj_controller/point_head_action"
-                                        "pr2_controllers_msgs/PointHeadAction")))
+          (actionlib:make-action-client "head_traj_controller/point_head_action" "pr2_controllers_msgs/PointHeadAction")))
     (loop until
           (actionlib:wait-for-server actionclient))
     (let ((point-to-look-at 
@@ -24,8 +23,7 @@
 (defun move-Torso (x)
   "Moving robot torso via torso_controller/position_joint_action. 2 is for up and 0 for down. You'll need to interrupt by yourself in the simulation"
   (let ((actionclient 
-          (actionlib:make-action-client "torso_controller/position_joint_action"
-                                        "pr2_controllers_msgs/SingleJointPositionAction")))
+          (actionlib:make-action-client "torso_controller/position_joint_action" "pr2_controllers_msgs/SingleJointPositionAction")))
     (Loop until
           (actionlib:wait-for-server actionclient))
     (let ((actiongoal 
