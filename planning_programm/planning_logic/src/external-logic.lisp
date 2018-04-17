@@ -6,7 +6,7 @@
 (defvar *perception-publisher*)
 (defvar *text-publisher*)
 (defvar *model-publisher*)
-(defvar *pr2-pose* (cram-language:make-fluent :name :pr2-pose) "current pose of pr2") 
+(defvar *pr2-pose* (cram-language:make-fluent :name :pr2-pose) nil)
 (defvar *gripper-righ-state-fluent* (cram-language:make-fluent))
 (defvar *gripper-left-state-fluent* (cram-language:make-fluent))
 
@@ -67,19 +67,8 @@
                                      :target-frame targetframe))))
   )
 
-;;muss überarbeitet werden sobald orientation hinzugefügt wurde!
-;; (defun let-Robo-Try-To-Poke (point-for-motion number-for-arm)
-;;   "trying to Poke the object, first both arms will be used after that the robot will try different poses."
-;;   (roslisp:ros-info (let-Robo-Try-To-Poke)
-;;                     "trying to poke the object now...")
-;;   (if (not(eq T (planning-motion::motion-To-Point point-for-motion number-for-arm)))
-;;       (progn
-;;         (if (/= 2 number-for-arm)
-;;             (planning-motion::motion-To-Point point-for-motion 2)
-;;             (planning-motion::motion-To-Point point-for-motion 3)))))
 
 
-                                        ;das klappt jetzt muss aber angepeasst werden auf motion grab und in der doku
 (defun try-To-Grab-Different-Location(x y z)
   "trying to grab the object now again with different location.."
   (roslisp:ros-info (try-To-Poke-Different-Location)
@@ -316,19 +305,6 @@
           (read-char))))))
 
 
-;; (cram-language:top-level
-;;            (let ((loop-Finished nil))
-;;              (cram-language:pursue
-;;                (cram-language:wait-for planning-logic::*gripper-left-state-fluent*)
-;;                (progn
-;;                  (loop for i from 1 to 1000 do
-;;                  (progn
-;;                    (print i)
-;;                    (cram-language:sleep 1.0)
-;;                    )) 
-;;                (setf loop-Finished T)))
-;;              (unless loop-Finished 
-;;                (cpl:fail "hello"))))
 
 
 
@@ -346,8 +322,27 @@
 (defun publish-Text (string)
   (roslisp:publish *text-publisher*
                    (roslisp:make-message "visualization_msgs/Marker" (frame_id header) "map"
-                                         ns "planning_namespace" id 0
-                                         type 9 action 0 pose (roslisp:make-msg "geometry_msgs/Pose" (position) (roslisp:make-msg "geometry_msgs/Point" (x) 0 (y) 0 (z) 3) (orientation) (roslisp:make-msg "geometry_msgs/Quaternion" (w) 1)) (x scale) 0.2 (y scale) 0.2 (z scale) 0.2 (r color) 0.5 (g color) 0.8 (b color) 1.0 (a color) 1.0 (text) string)))
+                                         ns "planning_namespace"
+                                         id 0
+                                         type 9
+                                         action 0
+                                         pose (roslisp:make-msg "geometry_msgs/Pose"
+                                                                (position)
+                                                                (roslisp:make-msg "geometry_msgs/Point"
+                                                                                  (x) 0
+                                                                                  (y) 0
+                                                                                  (z) 3)
+                                                                (orientation)
+                                                                (roslisp:make-msg "geometry_msgs/Quaternion"
+                                                                                  (w) 1))
+                                         (x scale) 0.2
+                                         (y scale) 0.2
+                                         (z scale) 0.2
+                                         (r color) 0.5
+                                         (g color) 0.8
+                                         (b color) 1.0
+                                         (a color) 1.0
+                                         (text) string)))
 
 (defun publish-Model-Pose (string)
   (roslisp:publish *model-publisher*
@@ -363,67 +358,185 @@
                                                                 (roslisp:make-msg "geometry_msgs/Quaternion"))
                                          twist (roslisp:make-msg "geometry_msgs/Twist"))))
 
-  
-                                                           
+
+
 
 (defun grab-Object-Right ()
   (sleep 5.0)
   (roslisp:with-fields (right_gripper)
-      (cram-language:wait-for(planning-knowledge::empty-gripper))
+      (cram-language:wait-for
+       (planning-knowledge::empty-gripper))
     (print right_gripper)
     (roslisp:with-fields (object_label_1)
-        (cram-language:wait-for (planning-knowledge::objects-to-pick))
+        (cram-language:wait-for
+         (planning-knowledge::objects-to-pick))
       (print object_label_1)
       (if
-       (> (length object_label_1) 0)
-       (if (eq T right_gripper)
-           (progn
-             (planning-logic::publish-text "trying to grab now with right arm")
-             (roslisp:with-fields (grasp_pose) (cram-language:wait-for (planning-knowledge::how-to-pick-objects object_label_1))
-               (cram-language:wait-for(planning-motion::call-motion-move-arm-to-point grasp_pose object_label_1 6))))
-           (planning-logic::publish-text "can't grab the an object with right"))
-       (roslisp:with-fields (left_gripper) (planning-knowledge::empty-gripper)
-         (if (eq T left_gripper)
-             (progn
-               (planning-logic::publish-text "trying to grab now with left arm")
-               (roslisp:with-fields (grasp_pose) (cram-language:wait-for (planning-knowledge::how-to-pick-objects object_label_1))
-                 (cram-language:wait-for(planning-motion::call-motion-move-arm-to-point grasp_pose object_label_1 7))))
-             (planning-logic::publish-text "can't grab the object with left")))))))
+       (>
+        (length object_label_1) 0)
+       (if
+        (eq T right_gripper)
+        (progn
+          (planning-logic::publish-text "trying to grab now with right arm")
+          (roslisp:with-fields (grasp_pose)
+              (cram-language:wait-for
+               (planning-knowledge::how-to-pick-objects object_label_1))
+            (cram-language:wait-for
+             (planning-motion::call-motion-move-arm-to-point grasp_pose object_label_1 6))
+            (planning-motion::call-motion-move-arm-homeposition 11)))
+        (planning-logic::publish-text "can't grab the an object with right"))
+       (roslisp:with-fields (left_gripper)
+           (planning-knowledge::empty-gripper)
+         (if
+          (eq T left_gripper)
+          (progn
+            (planning-logic::publish-text "trying to grab now with left arm")
+            (roslisp:with-fields (grasp_pose)
+                (cram-language:wait-for
+                 (planning-knowledge::how-to-pick-objects object_label_1))
+              (cram-language:wait-for
+               (planning-motion::call-motion-move-arm-to-point grasp_pose object_label_1 7))
+              (planning-motion::call-motion-move-arm-homeposition 12)))
+          (planning-logic::publish-text "can't grab the object with left")))))))
 
 
 
 (defun grab-Object-Left ()
   (sleep 5.0)
   (roslisp:with-fields (left_gripper)
-      (cram-language:wait-for(planning-knowledge::empty-gripper))
+      (cram-language:wait-for
+       (planning-knowledge::empty-gripper))
     (print left_gripper)
-    (roslisp:with-fields (object_label_1)
-        (cram-language:wait-for (planning-knowledge::objects-to-pick))
+    (roslisp:with-fields
+        (object_label_1)
+        (cram-language:wait-for
+         (planning-knowledge::objects-to-pick))
       (print object_label_1)
       (if
-       (> (length object_label_1) 0)
-       (if (eq T left_gripper)
-           (progn
-             (planning-logic::publish-text "trying to grab now with right arm")
-             (roslisp:with-fields (grasp_pose) (cram-language:wait-for (planning-knowledge::how-to-pick-objects object_label_1))
-               (cram-language:wait-for(planning-motion::call-motion-move-arm-to-point grasp_pose object_label_1 7))))
-           (planning-logic::publish-text "can't grab the an object with right"))
-       (roslisp:with-fields (right_gripper) (planning-knowledge::empty-gripper)
+       (>
+        (length object_label_1) 0)
+       (if
+        (eq T left_gripper)
+        (progn
+          (planning-logic::publish-text "trying to grab now with left arm")
+          (roslisp:with-fields (grasp_pose)
+              (cram-language:wait-for
+               (planning-knowledge::how-to-pick-objects object_label_1))
+            (cram-language:wait-for
+             (planning-motion::call-motion-move-arm-to-point grasp_pose object_label_1 7))
+            (planning-motion::call-motion-move-arm-homeposition 12)))
+        (planning-logic::publish-text "can't grab the an object with right"))
+       (roslisp:with-fields (right_gripper)
+           (planning-knowledge::empty-gripper)
          (if (eq T right_gripper)
              (progn
-               (planning-logic::publish-text "trying to grab now with left arm")
-               (roslisp:with-fields (grasp_pose) (cram-language:wait-for (planning-knowledge::how-to-pick-objects object_label_1))
-                 (cram-language:wait-for(planning-motion::call-motion-move-arm-to-point grasp_pose object_label_1 6))))
+               (planning-logic::publish-text "trying to grab now with right arm")
+               (roslisp:with-fields (grasp_pose)
+                   (cram-language:wait-for
+                    (planning-knowledge::how-to-pick-objects object_label_1))
+                 (cram-language:wait-for
+                  (planning-motion::call-motion-move-arm-to-point grasp_pose object_label_1 6))
+                 (planning-motion::call-motion-move-arm-homeposition 11)))
              (planning-logic::publish-text "can't grab the object with left")))))))
 
 
 (defun grab-Left-Or-Right ()
+  (sleep 5.0)
   (roslisp:with-fields (object_label_1)
       (planning-knowledge::objects-to-pick)
-    (if (> (length object_label_1) 0)
-        (roslisp:with-fields (grasp_pose)
-            (planning-knowledge::how-to-pick-objects object_label_1)
-          (if (= (should-robo-use-left-or-right-arm grasp_pose) 7)
-              (grab-Object-Left)
-              (grab-Object-Right))))))
+    (if
+     (> (length object_label_1) 0)
+     (roslisp:with-fields (grasp_pose)
+         (planning-knowledge::how-to-pick-objects object_label_1)
+       (if (=
+            (should-robo-use-left-or-right-arm grasp_pose) 7)
+           (grab-Object-Left)
+           (grab-Object-Right))))))
 
+
+
+(defun move-Base (x y z angle &optional (motion 1))
+  (roslisp:with-fields
+      ((pr2-x
+        (geometry_msgs-msg:x
+         geometry_msgs-msg:position
+         geometry_msgs-msg:pose
+         geometry_msgs-msg:pose)))
+      (cram-language:value planning-logic:*pr2-pose*)
+    (if (and (< pr2-x 0) (> x 0))
+        (planning-move::move-base-to-point 0.15 0.5 0 -90)
+        (if (and (> pr2-x 0) (< x 0))
+            (planning-move::move-base-to-point 0.15 0.5 0 -90))))
+  (planning-move::move-base-to-point x y z angle motion))
+
+
+
+
+(defun transformation-Pose-Stamped (pose &optional (endFrame "/base_footprint")) 
+  "transform a msgs with an optional Frame, default is base_footprint" 
+  (roslisp:with-fields 
+      ((startFrame 
+        (STD_msgs-msg:frame_id geometry_msgs-msg:header)) 
+       (x 
+        (geometry_msgs-msg:x geometry_msgs-msg:position geometry_msgs-msg:pose)) 
+       (y 
+        (geometry_msgs-msg:y geometry_msgs-msg:position  geometry_msgs-msg:pose)) 
+       (z 
+        (geometry_msgs-msg:z geometry_msgs-msg:position geometry_msgs-msg:pose))
+       (w
+        (geometry_msgs-msg:w geometry_msgs-msg:orientation geometry_msgs-msg:pose))
+       (xo
+        (geometry_msgs-msg:x geometry_msgs-msg:orientation geometry_msgs-msg:pose))
+       (yo
+        (geometry_msgs-msg:x geometry_msgs-msg:orientation geometry_msgs-msg:pose))
+       (zo
+        (geometry_msgs-msg:z geometry_msgs-msg:orientation geometry_msgs-msg:pose))) 
+      pose 
+    (let 
+        ((transform-listener 
+           (make-instance 'cl-tf:transform-listener)) 
+         (tf-point-stamped 
+           (cl-tf:make-pose-stamped startFrame 0.0 
+                                    (cl-transforms:make-3d-vector x y z)(cl-transforms:make-quaternion xo yo zo w)))) 
+      (catch-Transformation-Pose-Stamped transform-listener tf-point-stamped endFrame))))
+
+(defun catch-Transformation-Pose-Stamped (transform-listener tf-point-stamped endFrame)
+  "transform-listener catch transformation (helpfunction)"
+  (sleep 5.0)
+           (cl-tf:transform-pose-stamped transform-listener
+                                         :pose tf-point-stamped
+                         :target-frame endFrame))
+
+
+
+
+
+
+
+;;muss überarbeitet werden sobald orientation hinzugefügt wurde!
+;; (defun let-Robo-Try-To-Poke (point-for-motion number-for-arm)
+;;   "trying to Poke the object, first both arms will be used after that the robot will try different poses."
+;;   (roslisp:ros-info (let-Robo-Try-To-Poke)
+;;                     "trying to poke the object now...")
+;;   (if (not(eq T (planning-motion::motion-To-Point point-for-motion number-for-arm)))
+;;       (progn
+;;         (if (/= 2 number-for-arm)
+;;             (planning-motion::motion-To-Point point-for-motion 2)
+;;             (planning-motion::motion-To-Point point-for-motion 3)))))
+
+
+
+
+;; (cram-language:top-level
+;;            (let ((loop-Finished nil))
+;;              (cram-language:pursue
+;;                (cram-language:wait-for planning-logic::*gripper-left-state-fluent*)
+;;                (progn
+;;                  (loop for i from 1 to 1000 do
+;;                  (progn
+;;                    (print i)
+;;                    (cram-language:sleep 1.0)
+;;                    )) 
+;;                (setf loop-Finished T)))
+;;              (unless loop-Finished 
+;;                (cpl:fail "hello"))))
