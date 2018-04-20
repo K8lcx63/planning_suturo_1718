@@ -92,8 +92,6 @@
   *action-client-base*)
 
 
-
-
 ;will probably deleted -V
 (defun move-Base-To-Point-Safe (x y z angle &optional (motion 1))
   (cram-language:wait-for
@@ -107,3 +105,6 @@
   (print x)
   (print y)
   (print z))
+
+
+

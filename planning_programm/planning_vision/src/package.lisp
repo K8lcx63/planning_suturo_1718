@@ -2,5 +2,9 @@
 
 
 (defpackage planning-vision
-  (:use #:common-lisp))
+  (:use #:common-lisp)
+  (:export
+   :call-Vision-Object-Clouds
+   :check-Points-Is-Equal
+   :call-Vision-Object-pose)
 
