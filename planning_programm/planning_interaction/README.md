@@ -2,8 +2,19 @@
 
 ## Purpose 
 
-General purpose of this package is it to establish certain functions, which enable the Pr2 Robot
-to interact with humans in case of some unsolvable Problems, like unreachable objects, unretrievable objects or unplaceable objects. Also the robot can use this interactions to solve some deadlocks, like the storageplaces beeing to filled up.
+Robot life is hard.
+Even if the general purpose of intelligent robots is, that they should navigate their way through a multitude of quests. The futurevision is that robots should tend to find a solution for themselfes, regarding any issue.
+
+But as for humans, sometimes help of another beeing is needed. In this case the help of a human. 
+Robots ar limited in sizes, capabilities and knowledge of the world and are still not as adaptable as a human beeing. I developed this package to help resolve unsolvable issues, to help developers and robots to aquire even more knowledge and skill of the real world.
+
+General purpose of this package is to establish certain functions, which enable the Pr2 Robot
+to interact with humans in case of some unsolvable Problems, like unreachable objects, unretrievable objects or unplaceable objects. 
+Also the robot can use this interactions to solve multiple deadlocks that could occur when interacting with the real world.
+
+In most cases, interaction with humans is only attempted when the robot finds no other solution. It is heavily advised, that the human waits till the robot actively calls for help.
+
+In all cases the interaction is endet, after the human gave a handshake to the left pr2 gripper.
 
 ## Usage of interfaces
 
@@ -40,7 +51,7 @@ driving position.
 
 ### Safely usable Methods
 
-#### say (string)
+#### say ()
 
 - tested nicely
 
@@ -53,7 +64,7 @@ A phonetical text-to-speech interpreter will convert the given String into spoke
 
 Drives to a position near the wooden table at the right side of the IAI-Kitchen
 
-#### decide-gripper(moving-command)
+#### decide-gripper()
 
 - tested nicely
 
@@ -61,6 +72,17 @@ Because Motion decided to uses terrible magic numbers in theyre services, thinks
 All actions for moving the arms do have magic numbers for which gripper to use. All actions for the right arm are noted with an even number, while all actions for the left arm are noted with an uneven number.
 
 On the contrary, the magic numbers for the gripper-opening and gripper-closing are vise-versa. So this need to be calculated for some reason.
+
+#### wait-for-handshake ()
+
+- untested 
+
+Stops everything the robot is doing and waits till handshake gesture is detected.
+Can be given a function with parameters, to be called when handshake was detected. 
+Given function will be called ins safe enviroment. Parameters for function can either be given in 
+a list of parameters like this: '+ '(1 2 3 4 5) or as a single parameter like this 'print "Handshake detected".
+Can be used for unknown deadlocks, if errormessage is edited.
+This function is as generic as it gets.
 
 ### Safety methods (not usable publicly)
 
@@ -96,12 +118,15 @@ of given Pose a static x value to ensure that the PR2 is able to Point in this d
 1. Generalized function for talking to humans unsing sound_play-package ```done```
 2. Method to be called, when Object is unreachable ```done```
 3. Method to be called, when Object is unplaceable ```done```
-4. Method to be called, when Object fell down ```in development```
-5. Method to be called, when unknown deadlock happened 
+4. Method to be called, when Object fell down ```done```
+5. Method to be called, when unknown deadlock happened ```done```
 6. Function to drive to a save position ```done```
 7. Function calculate point in direction ```done```
 8. Function that identifies handshake as a gesture ```done```
 9. First testing cycle ```done```
+10. Second testing cycle ```ìn Development```
+11. Integration into Main ```in Development```
+12. Live testing ```last step```
 
 ### Contact
 

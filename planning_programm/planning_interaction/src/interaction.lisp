@@ -215,7 +215,7 @@
 
 
 
-;; wait-for-handshake ()
+;; wait-for-handshake (&optional func args errormsg)
 ;;
 ;; Generalized function for a simple wait for a handshake
 ;;
@@ -280,7 +280,7 @@
 ;; calculate-wrench-magnitude (msg)
 ;;
 ;; Calculates magnitude of the forcevectors given by the force-, and torque-sensors on the
-;; Pr2's right gripper. It filles a fluent with nil and Publishes a 15 on the ... topic
+;; Pr2's right gripper. It filles a fluent with nil and Publishes a 15 on the /planning_interaction/handshake_detection topic
 ;; when a Handshake is detected at the right gripper.
 ;;
 ;;

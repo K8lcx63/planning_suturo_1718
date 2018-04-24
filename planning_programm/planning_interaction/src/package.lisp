@@ -9,5 +9,6 @@
    :ask-human-to-move-object   
    :say
    :decide-gripper
-   :drive-to-human))
+   :drive-to-human
+   :wait-for-handshake))
 
