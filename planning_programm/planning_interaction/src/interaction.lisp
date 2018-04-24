@@ -86,28 +86,28 @@
 ;; @input   geometry_msgs/PoseStamped pose - pose of unreachable object
 ;; @input   string label                   - label of object as String (e.g. "Ja Milch")
 ;; @input   int moving-command             - 2 for right, 3 for left arm. Default is 3
+;; @input   string statement               - Statement to be made about object
+;; @input   string statement2              - Statement to be made after object label is spoken
 ;; @output  undefined
 
-
-(defun ask-human-to-move-object (pose label &optional (moving-command 3))
+(defun ask-human-to-move-object (pose label &optional
+                                              (moving-command 3)
+                                              (statement "I cannot grasp the Object over there. Can you please move the")
+                                              (statement2 " and shake my hand?"))
   (planning-motion::call-motion-move-arm-homeposition)
   (let ((pose-to-point
           (get-pointing-pose pose)))
     (planning-motion::call-motion-move-arm-to-point pose-to-point "" moving-command)) 
-  (say (concatenate 'string "I cannot grasp this Object over there. Can you please move the " label  " and shake my Hand?"))
+  (say (concatenate 'string statement label statement2))
   (planning-motion::toggle-gripper 20.0 (decide-gripper moving-command) *open-gripper-pos*)
   (cram-language:top-level
     (cram-language:pursue
       (cram-language:unwind-protect
            (cram-language:wait-for *handshake-detection*)
-        (print *handshake-detection*)
         (say "Thanks Human, i will grasp the Object now. Please be carefull.")
         (sleep 5)
-        (planning-motion::toggle-gripper 20.0 (decide-gripper moving-command) *closed-gripper-pos*)
-        )
-      )
-    )
-  )
+        (planning-motion::toggle-gripper 20.0 (decide-gripper moving-command) *closed-gripper-pos*)))))
+
 
 
 ;; ask-human-to-take-object(label moving-command)
@@ -214,6 +214,38 @@
 
 
 
+
+;; wait-for-handshake (&optional func args errormsg)
+;;
+;; Generalized function for a simple wait for a handshake
+;;
+;; @input  symbol func     - function to be called in safe wrapper
+;; @input  list/atom args  - list of arguments or single one
+;; @input  string errormsg - message to be said when method is called
+;; @output undefined
+;;
+;; EXAMPLE USE
+;; ---------------------------------------------------------
+;; (wait-for-handshake)
+;; (wait-for-handshake '+ '(1 2 3))
+;; (wait-for-handshake 'print "Handshake detected")
+;; (wait-for-handshake 'say "Hello" "This is an error")
+
+(defun wait-for-handshake (&optional
+                             (func 'print)
+                             (args "Handshake detected")
+                             (errormsg "Human, i will wait now. Please shake my left gripper when you are ready"))
+  (say errormsg)
+  (cram-language:top-level
+    (cram-language:pursue
+      (cram-language:unwind-protect 
+           (cram-language:wait-for *handshake-detection*)
+        (if (listp args)
+            (apply func args)
+            (funcall func args))))))
+
+
+
 ;; ########################
 ;; ## Private for safety ##
 ;; ########################
@@ -248,7 +280,7 @@
 ;; calculate-wrench-magnitude (msg)
 ;;
 ;; Calculates magnitude of the forcevectors given by the force-, and torque-sensors on the
-;; Pr2's right gripper. It filles a fluent with nil and Publishes a 15 on the ... topic
+;; Pr2's right gripper. It filles a fluent with nil and Publishes a 15 on the /planning_interaction/handshake_detection topic
 ;; when a Handshake is detected at the right gripper.
 ;;
 ;;
