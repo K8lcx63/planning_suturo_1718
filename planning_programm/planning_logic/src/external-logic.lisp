@@ -64,30 +64,26 @@
       (cl-tf:to-msg 
        (cl-tf:transform-pose-stamped transform-listener
                                      :pose pose-transformable
-                                     :target-frame targetframe))))
-  )
+                                     :target-frame targetframe)))) )
 
 
 
-(defun try-To-Grab-Different-Location(x y z)
-  "trying to grab the object now again with different location.."
-  (roslisp:ros-info (try-To-Poke-Different-Location)
-                    "trying to grab the object now again with different location..")
-  (let ((position (make-array '(3)  
-                              :initial-contents '(1.123 1.5 0.57)))) 
+(defun try-To-Grab-Different-Location(x y z w pose label command)
+  "trying to grab the object now, with different locations and orientations."
+  (let ((position (make-array '(5)  
+                              :initial-contents '(0 0.10 0.15 -0.10 -0.15)))) 
     (loop for ya across position do
-      (planning-move::move-Base-To-Point x ya z 180)
-      (let ((rotation (make-array '(3)  
-                                  :initial-contents '(0 -10 10))))
+      (planning-move:move-Base-To-Point x (+ ya y) z w)
+      (let ((rotation (make-array '(5)  
+                                  :initial-contents '(0 10 20 -10 -20))))
         (loop for r across rotation do
           (progn
             (cram-language:wait-for
-             (planning-move::move-Base-To-Point x (+ y ya) z (+ r 180)))
+             (planning-move:move-Base-To-Point x (+ y ya) z (+ w r)))
             (if
              (eq 1
-                 (planning-motion::call-motion-move-arm-homeposition))
-             (print r)
-             (return-from try-To-Grab-Different-Location "nooo"))))))))
+                 (planning-motion:call-motion-move-arm-to-point pose label command))
+             (return-from try-To-Grab-Different-Location nil))))))))
 
 
 
@@ -141,17 +137,7 @@
   (make-array (length list)
               :initial-contents list))
 
-;;fliegt raus sobald motion auf pose stamped ist.
-(defun disassemble-Pose-Msg-To-Point-Stamped (pose-array amount)
-  "making pose_stamped to point_stamped"
-  (roslisp:with-fields
-      ((header1
-        (geometry_msgs-msg:header))
-       (point1
-        (geometry_msgs-msg:position
-         geometry_msgs-msg:pose)))
-      (aref pose-array amount)
-    (return-from disassemble-Pose-Msg-To-Point-Stamped (roslisp:make-msg "geometry_msgs/pointstamped" (header) header1 (point) point1))))
+
 
 
 (defun set-Params-Features (normal-s color-s normal-e color-e amount)
@@ -382,7 +368,7 @@
               (cram-language:wait-for
                (planning-knowledge::how-to-pick-objects object_label_1))
             (cram-language:wait-for
-             (planning-motion::call-motion-move-arm-to-point grasp_pose object_label_1 6))
+             (planning-logic:try-to-grab-different-location 0.29 1 0 180 grasp_pose object_label_1 6))
             (planning-motion::call-motion-move-arm-homeposition 11)))
         (planning-logic::publish-text "can't grab the an object with right"))
        (roslisp:with-fields (left_gripper)
@@ -395,7 +381,7 @@
                 (cram-language:wait-for
                  (planning-knowledge::how-to-pick-objects object_label_1))
               (cram-language:wait-for
-               (planning-motion::call-motion-move-arm-to-point grasp_pose object_label_1 7))
+               (planning-logic:try-to-grab-different-location 0.29 1 0 180 grasp_pose object_label_1 7))
               (planning-motion::call-motion-move-arm-homeposition 12)))
           (planning-logic::publish-text "can't grab the object with left")))))))
 
@@ -423,7 +409,7 @@
               (cram-language:wait-for
                (planning-knowledge::how-to-pick-objects object_label_1))
             (cram-language:wait-for
-             (planning-motion::call-motion-move-arm-to-point grasp_pose object_label_1 7))
+             (planning-logic:try-to-grab-different-location 0.29 1 0 180 grasp_pose object_label_1 7))
             (planning-motion::call-motion-move-arm-homeposition 12)))
         (planning-logic::publish-text "can't grab the an object with right"))
        (roslisp:with-fields (right_gripper)
@@ -435,7 +421,7 @@
                    (cram-language:wait-for
                     (planning-knowledge::how-to-pick-objects object_label_1))
                  (cram-language:wait-for
-                  (planning-motion::call-motion-move-arm-to-point grasp_pose object_label_1 6))
+                  (planning-logic:try-to-grab-different-location 0.29 1 0 180 grasp_pose object_label_1 6))
                  (planning-motion::call-motion-move-arm-homeposition 11)))
              (planning-logic::publish-text "can't grab the object with left")))))))
 
@@ -462,7 +448,7 @@
          geometry_msgs-msg:position
          geometry_msgs-msg:pose
          geometry_msgs-msg:pose)))
-      (cram-language:value planning-logic:*pr2-pose*)
+      (cram-language:value *pr2-pose*)
     (if (and (< pr2-x 0) (> x 0))
         (planning-move::move-base-to-point 0.15 0.5 0 -90)
         (if (and (> pr2-x 0) (< x 0))
@@ -508,21 +494,16 @@
                          :target-frame endFrame))
 
 
+(defun distance (x-a y-a x-b y-b)
+  "calctulating the distance between 2 vectors"
+  (sqrt
+   (+
+    (expt
+     (- x-a x-b) 2)
+    (expt
+     (- y-a y-b) 2))))
 
 
-
-
-
-;;muss überarbeitet werden sobald orientation hinzugefügt wurde!
-;; (defun let-Robo-Try-To-Poke (point-for-motion number-for-arm)
-;;   "trying to Poke the object, first both arms will be used after that the robot will try different poses."
-;;   (roslisp:ros-info (let-Robo-Try-To-Poke)
-;;                     "trying to poke the object now...")
-;;   (if (not(eq T (planning-motion::motion-To-Point point-for-motion number-for-arm)))
-;;       (progn
-;;         (if (/= 2 number-for-arm)
-;;             (planning-motion::motion-To-Point point-for-motion 2)
-;;             (planning-motion::motion-To-Point point-for-motion 3)))))
 
 
 
