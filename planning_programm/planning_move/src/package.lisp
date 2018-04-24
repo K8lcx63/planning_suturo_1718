@@ -2,5 +2,8 @@
 
 
 (defpackage planning-move
-  (:use #:common-lisp))
-
+  (:use #:common-lisp)
+  (:export
+   :move-Head
+   :move-Torso
+   :move-Base-To-Point))

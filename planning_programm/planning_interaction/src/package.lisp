@@ -4,8 +4,11 @@
 (defpackage planning-interaction
   (:use #:common-lisp)
   (:export
-   :init-interaction
+   :init-interaction 
+   :ask-human-to-take-object
+   :ask-human-to-move-object   
    :say
    :decide-gripper
-   :ask-human-to-move-object))
+   :drive-to-human
+   :wait-for-handshake))
 

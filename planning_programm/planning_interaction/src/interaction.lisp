@@ -20,7 +20,7 @@
 (defvar *holding-pose-right*
   (roslisp:make-msg "geometry_msgs/PoseStamped" 
                     (geometry_msgs-msg:z geometry_msgs-msg:position geometry_msgs-msg:pose) 1
-                    (geometry_msgs-msg:x geometry_msgs-msg:position geometry_msgs-msg:pose) 0.5
+                    (geometry_msgs-msg:x geometry_msgs-msg:position geometry_msgs-msg:pose) 0.7
                     (geometry_msgs-msg:w geometry_msgs-msg:orientation geometry_msgs-msg:pose) 1
                     (geometry_msgs-msg:y geometry_msgs-msg:position geometry_msgs-msg:pose) -0.3
                     (std_msgs-msg:frame_id std_msgs-msg:header) "/base_link"))
@@ -29,55 +29,51 @@
 (defvar *holding-pose-left*
   (roslisp:make-msg "geometry_msgs/PoseStamped" 
                     (geometry_msgs-msg:z geometry_msgs-msg:position geometry_msgs-msg:pose) 1
-                    (geometry_msgs-msg:x geometry_msgs-msg:position geometry_msgs-msg:pose) 0.5
+                    (geometry_msgs-msg:x geometry_msgs-msg:position geometry_msgs-msg:pose) 0.7
                     (geometry_msgs-msg:y geometry_msgs-msg:position geometry_msgs-msg:pose) 0.3
                     (geometry_msgs-msg:w geometry_msgs-msg:orientation geometry_msgs-msg:pose) 1
                     (std_msgs-msg:frame_id std_msgs-msg:header) "/base_link"))
 
-;; say (message)
+
+;; ##########################
+;; ###   INITIALIZATION   ###
+;; ##########################
+
+
+;; init-interaction()
 ;;
-;; Utilizes sound_play package to play phoenetic string 
-;;  
-;; @input   string message - the message to speak out loud 
-;; @output  sound_play-msg:SoundRequestResult - information about played sound
-
-
-(defun say (message)
-  "Uses sound_play service to let the pr2 say a string out loud"
-    (let
-        ((actiongoal
-      (actionlib:make-action-goal *sound-play-actionclient* sound_request 
-        (roslisp:make-msg "sound_play/SoundRequest"
-                          :sound -3
-                          :command 1
-                          :arg message
-                          :arg2 ""))))
-      (actionlib:call-goal *sound-play-actionclient* actiongoal)))
-
-
-
-
-;; get-pointing-pose (pose)
+;; Initialization of all required components for this package.
+;; Contains all publishers and subscribers. 
 ;;
-;; Points at a pose the pr2 cant reach. Uses static x-value to ensure that theres a kinematic solution
-;; to Point at this position.
-;;  
-;; @input   geometry_msgs/PoseStamped pose  - unreachable Pose to Point at
-;; @output  geometry_msgs/PoseStamped       - reachable Pose to Point at
+;; 
+;; @output  undefined
 
 
-(defun get-pointing-pose (pose)
-  "Calculates pointing pose for given pose. Will be used to let the Pr2 use his Gripper to point at this pos"
-  (let ((pose-in-baselink (planning-logic::transform-pose pose "base_link")))
-                          (roslisp:modify-message-copy pose-in-baselink
-                               (geometry_msgs-msg:x
-                                geometry_msgs-msg:position
-                                geometry_msgs-msg:pose) 0.5
-                                (geometry_msgs-msg:orientation
-                                 geometry_msgs-msg:pose)
-                                 (roslisp:make-msg "geometry_msgs/quaternion" :x 0 :y 0 :z 0 :w 1)))
+(defun init-interaction ()
+  (setf *magnitude-publisher* (roslisp:advertise "/planning_interaction/wrench_force_magnitude" "std_msgs/Float32"))
+  (setf *handshake-publisher* (roslisp:advertise "/planning_interaction/handshake_detection" "std_msgs/Float32"))
+  (setf *sound-play-actionclient* (actionlib:make-action-client "/sound_play" "sound_play/SoundRequestAction"))
+  (loop until (actionlib:wait-for-server *sound-play-actionclient* 5.0)
+        do (roslisp:ros-info "init-interaction" "sound_play node has not been started correctly. Please use roslaunch sound_play soundplay_node.py"))
+  (roslisp:ros-info "init-interaction" "Sound_play action initialized")
+  (let ((zeroed-sub (roslisp:subscribe "/ft/l_gripper_motor_zeroed" "geometry_msgs/WrenchStamped" #'calculate-wrench-magnitude :max-queue-length 1)))
+  (loop while (not
+               (roslisp:msg-slot-value
+                (roslisp:msg-slot-value zeroed-sub :subscription)
+                :publisher-connections))
+        do
+           (roslisp:ros-info "init-interaction" "Topic /ft/l_gripper_motor_zeroed is empty. Please startup the robot_wrist_ft_tools package.")
+           (sleep 5)
+           ))
+  (roslisp:ros-info "init-interaction" "Everything has been started correctly. Package is running, and ready to use.")
+  (return-from init-interaction())
   )
 
+
+
+;; ####################
+;; ## Core-Functions ##
+;; ####################
 
 
 
@@ -90,28 +86,28 @@
 ;; @input   geometry_msgs/PoseStamped pose - pose of unreachable object
 ;; @input   string label                   - label of object as String (e.g. "Ja Milch")
 ;; @input   int moving-command             - 2 for right, 3 for left arm. Default is 3
+;; @input   string statement               - Statement to be made about object
+;; @input   string statement2              - Statement to be made after object label is spoken
 ;; @output  undefined
 
-
-(defun ask-human-to-move-object (pose label &optional (moving-command 3))
-  (planning-motion::call-motion-move-arm-homeposition)
+(defun ask-human-to-move-object (pose label &optional
+                                              (moving-command 3)
+                                              (statement "I cannot grasp the Object over there. Can you please move the")
+                                              (statement2 " and shake my hand?"))
+  (planning-motion::call-motion-move-arm-homeposition 10)
   (let ((pose-to-point
           (get-pointing-pose pose)))
     (planning-motion::call-motion-move-arm-to-point pose-to-point "" moving-command)) 
-  (say (concatenate 'string "I cannot grasp this Object over there. Can you please move the " label  " and shake my Hand?"))
+  (say (concatenate 'string statement label statement2))
   (planning-motion::toggle-gripper 20.0 (decide-gripper moving-command) *open-gripper-pos*)
   (cram-language:top-level
     (cram-language:pursue
       (cram-language:unwind-protect
            (cram-language:wait-for *handshake-detection*)
-        (print *handshake-detection*)
         (say "Thanks Human, i will grasp the Object now. Please be carefull.")
         (sleep 5)
-        (planning-motion::toggle-gripper 20.0 (decide-gripper moving-command) *closed-gripper-pos*)
-        )
-      )
-    )
-  )
+        (planning-motion::toggle-gripper 20.0 (decide-gripper moving-command) *closed-gripper-pos*)))))
+
 
 
 ;; ask-human-to-take-object(label moving-command)
@@ -131,7 +127,7 @@
   (say (concatenate 'string "I can not place the " label  " in my gripper. Will ask human."))
   (drive-to-human)
   (if (= moving-command 3)
-      (planning-motion::call-motion-move-arm-to-point *holding-pose-right* label 2)
+      (planning-motion::call-motion-move-arm-to-point *holding-pose-left* label 3)
       (progn
         (planning-motion::call-motion-move-arm-to-point *holding-pose-left* label 3)
         (planning-motion::call-motion-move-arm-to-point *holding-pose-right* label 2)))
@@ -150,6 +146,15 @@
       )
     )
   )
+
+
+
+
+
+;; ###########################
+;; ## Public used functions ##
+;; ###########################
+
 
 
 ;; decide-gripper(moving-command)
@@ -181,8 +186,93 @@
 (defun drive-to-human ()
   "Drives into a Position where pr2 is able to interact with Human"
   (say "Driving to my Human now")
-  (planning-move::move-base-to-point -0.1566 -0.7442 0 -90)
+  (planning-move::move-base-to-point -0.1566 -0.7442 0 -90 10)
   )
+
+
+
+
+;; say (message)
+;;
+;; Utilizes sound_play package to play phoenetic string 
+;;  
+;; @input   string message - the message to speak out loud 
+;; @output  sound_play-msg:SoundRequestResult - information about played sound
+
+
+(defun say (message)
+  "Uses sound_play service to let the pr2 say a string out loud"
+    (let
+        ((actiongoal
+      (actionlib:make-action-goal *sound-play-actionclient* sound_request 
+        (roslisp:make-msg "sound_play/SoundRequest"
+                          :sound -3
+                          :command 1
+                          :arg message
+                          :arg2 ""))))
+      (actionlib:call-goal *sound-play-actionclient* actiongoal)))
+
+
+
+
+;; wait-for-handshake (&optional func args errormsg)
+;;
+;; Generalized function for a simple wait for a handshake
+;;
+;; @input  symbol func     - function to be called in safe wrapper
+;; @input  list/atom args  - list of arguments or single one
+;; @input  string errormsg - message to be said when method is called
+;; @output undefined
+;;
+;; EXAMPLE USE
+;; ---------------------------------------------------------
+;; (wait-for-handshake)
+;; (wait-for-handshake '+ '(1 2 3))
+;; (wait-for-handshake 'print "Handshake detected")
+;; (wait-for-handshake 'say "Hello" "This is an error")
+
+(defun wait-for-handshake (&optional
+                             (func 'print)
+                             (args "Handshake detected")
+                             (errormsg "Human, i will wait now. Please shake my left gripper when you are ready"))
+  (say errormsg)
+  (cram-language:top-level
+    (cram-language:pursue
+      (cram-language:unwind-protect 
+           (cram-language:wait-for *handshake-detection*)
+        (if (listp args)
+            (apply func args)
+            (funcall func args))))))
+
+
+
+;; ########################
+;; ## Private for safety ##
+;; ########################
+
+
+
+;; get-pointing-pose (pose)
+;;
+;; Points at a pose the pr2 cant reach. Uses static x-value to ensure that theres a kinematic solution
+;; to Point at this position.
+;;  
+;; @input   geometry_msgs/PoseStamped pose  - unreachable Pose to Point at
+;; @output  geometry_msgs/PoseStamped       - reachable Pose to Point at
+
+
+(defun get-pointing-pose (pose)
+  "Calculates pointing pose for given pose. Will be used to let the Pr2 use his Gripper to point at this pos"
+  (let ((pose-in-baselink (planning-logic::transform-pose pose "base_link")))
+                          (roslisp:modify-message-copy pose-in-baselink
+                               (geometry_msgs-msg:x
+                                geometry_msgs-msg:position
+                                geometry_msgs-msg:pose) 0.5
+                                (geometry_msgs-msg:orientation
+                                 geometry_msgs-msg:pose)
+                                 (roslisp:make-msg "geometry_msgs/quaternion" :x 0 :y 0 :z 0 :w 1)))
+  )
+
 
 
 
@@ -190,7 +280,7 @@
 ;; calculate-wrench-magnitude (msg)
 ;;
 ;; Calculates magnitude of the forcevectors given by the force-, and torque-sensors on the
-;; Pr2's right gripper. It filles a fluent with nil and Publishes a 15 on the ... topic
+;; Pr2's right gripper. It filles a fluent with nil and Publishes a 15 on the /planning_interaction/handshake_detection topic
 ;; when a Handshake is detected at the right gripper.
 ;;
 ;;
@@ -221,33 +311,3 @@
      )))
 
 
-
-
-;; init-interaction()
-;;
-;; Initialization of all required components for this package.
-;; Contains all publishers and subscribers. 
-;;
-;; 
-;; @output  undefined
-
-
-(defun init-interaction ()
-  (setf *magnitude-publisher* (roslisp:advertise "/planning_interaction/wrench_force_magnitude" "std_msgs/Float32"))
-  (setf *handshake-publisher* (roslisp:advertise "/planning_interaction/handshake_detection" "std_msgs/Float32"))
-  (setf *sound-play-actionclient* (actionlib:make-action-client "/sound_play" "sound_play/SoundRequestAction"))
-  (loop until (actionlib:wait-for-server *sound-play-actionclient* 5.0)
-        do (roslisp:ros-info "init-interaction" "sound_play node has not been started correctly. Please use roslaunch sound_play soundplay_node.py"))
-  (roslisp:ros-info "init-interaction" "Sound_play action initialized")
-  (let ((zeroed-sub (roslisp:subscribe "/ft/l_gripper_motor_zeroed" "geometry_msgs/WrenchStamped" #'calculate-wrench-magnitude :max-queue-length 1)))
-  (loop while (not
-               (roslisp:msg-slot-value
-                (roslisp:msg-slot-value zeroed-sub :subscription)
-                :publisher-connections))
-        do
-           (roslisp:ros-info "init-interaction" "Topic /ft/l_gripper_motor_zeroed is empty. Please startup the robot_wrist_ft_tools package.")
-           (sleep 5)
-           ))
-  (roslisp:ros-info "init-interaction" "Everything has been started correctly. Package is running, and ready to use.")
-  (return-from init-interaction())
-  )
