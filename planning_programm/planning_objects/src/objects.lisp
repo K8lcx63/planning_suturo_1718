@@ -146,30 +146,30 @@
               (1
                (setf push-pose (planning-knowledge::push-object *object-label-1-lz-1*))
                ;vorher gripper öffnen?
-               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-1-lz-1* 6)
+               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-1-lz-1* 4)
                ;vielleicht erst wieder in die home position
                (setf push-pose (planning-knowledge::push-object *object-label-2-lz-1*))
-               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-1* 6)
+               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-1* 4)
 
                                         ;abfrage ob motion successfull war??
                (setf *last-y-border-y-1* 9.0))
               (2
                (setf push-pose (planning-knowledge::push-object *object-label-1-lz-2*))
-               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-1-lz-2* 6)
+               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-1-lz-2* 4)
                (setf push-pose (planning-knowledge::push-object *object-label-2-lz-2*))
-               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-2* 6)
+               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-2* 4)
                (setf *last-y-border-y-2* 9.0))
               (3
                (setf push-pose (planning-knowledge::push-object *object-label-1-lz-3*))
-               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-1-lz-3* 6)
+               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-1-lz-3* 4)
                (setf push-pose (planning-knowledge::push-object *object-label-2-lz-3*))
-               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-3* 6)
+               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-3* 4)
                (setf *last-y-border-y-3* 9.0))
               (4
                (setf push-pose (planning-knowledge::push-object *object-label-1-lz-4*))
-               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-1-lz-4* 6)
+               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-1-lz-4* 4)
                (setf push-pose (planning-knowledge::push-object *object-label-2-lz-4*))
-               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-4* 6)
+               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-4* 4)
                (setf *last-y-border-y-4* 9.0)))
 
               (setf *storage-place-capacity* "storage-place-empty")))
