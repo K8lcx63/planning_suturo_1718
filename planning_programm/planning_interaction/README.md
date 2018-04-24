@@ -84,6 +84,8 @@ a list of parameters like this: '+ '(1 2 3 4 5) or as a single parameter like th
 Can be used for unknown deadlocks, if errormessage is edited.
 This function is as generic as it gets.
 
+top-level functions can not be nested yet.
+
 ### Safety methods (not usable publicly)
 
 #### calculate-wrench-magnitude (msg)
@@ -103,6 +105,7 @@ and fills the \*handshake-detection\*-fluent with nil - when a handshake motion 
 First Transforms given Point into base-link frame and then gives x-value 
 of given Pose a static x value to ensure that the PR2 is able to Point in this direction.
 
+Does not point exactly at object yet.
 
 ### Special dependencies
 
