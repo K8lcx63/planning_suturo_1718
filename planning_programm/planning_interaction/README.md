@@ -2,7 +2,8 @@
 
 ## Purpose 
 
-Robot life is hard.
+######Robot life is hard.
+
 Even if the general purpose of intelligent robots is, that they should navigate their way through a multitude of quests. The future should be, that robots will tend to find a solution for themselfes, regarding any issue.
 
 But as for humans, sometimes help of another beeing is needed. In this case the help of a human. 
@@ -75,7 +76,7 @@ On the contrary, the magic numbers for the gripper-opening and gripper-closing a
 
 #### wait-for-handshake ()
 
-- untested 
+- tested nicely
 
 Stops everything the robot is doing and waits till handshake gesture is detected.
 Can be given a function with parameters, to be called when handshake was detected. 
@@ -127,9 +128,14 @@ Does not point exactly at object yet.
 7. Function calculate point in direction ```done```
 8. Function that identifies handshake as a gesture ```done```
 9. First testing cycle ```done```
-10. Second testing cycle ```ìn Development```
+10. Second testing cycle ```done```
 11. Integration into Main ```in Development```
 12. Live testing ```last step```
+
+#### B-B-B-BONUS!!
+13. Point at the object to pick (for real now)
+14. Change texttospeech voice on Robot
+15. Rework all variable and method naming
 
 ### Contact
 
