@@ -3,10 +3,10 @@
 ## Purpose 
 
 Robot life is hard.
-Even if the general purpose of intelligent robots is, that they should navigate their way through a multitude of quests. The futurevision is that robots should tend to find a solution for themselfes, regarding any issue.
+Even if the general purpose of intelligent robots is, that they should navigate their way through a multitude of quests. The future should be, that robots will tend to find a solution for themselfes, regarding any issue.
 
 But as for humans, sometimes help of another beeing is needed. In this case the help of a human. 
-Robots ar limited in sizes, capabilities and knowledge of the world and are still not as adaptable as a human beeing. I developed this package to help resolve unsolvable issues, to help developers and robots to aquire even more knowledge and skill of the real world.
+Robots are limited in sizes, capabilities and knowledge of the world and are still not as adaptable as a human beeing. I developed this package to help resolve unsolvable issues, to help developers and robots aquire even more knowledge and skill of the real world.
 
 General purpose of this package is to establish certain functions, which enable the Pr2 Robot
 to interact with humans in case of some unsolvable Problems, like unreachable objects, unretrievable objects or unplaceable objects. 
