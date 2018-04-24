@@ -160,12 +160,12 @@
                                                             :position (roslisp:make-msg "geometry_msgs/Point"
                                                                                 :x 1.358
                                                                                 :y 0.376
-                                                                                :z 1.15)
+                                                                                :z 0.95)
                                                             :orientation (roslisp:make-msg "geometry_msgs/Quaternion"
                                                                                            :x 0.0
                                                                                            :y 0.0
                                                                                            :z 0.0
-                                                                                           :w 0.1)))))
+                                                                                           :w 1.0)))))
 
               ;knowledge service benutzen um herauszufinden welcher gripper frei ist zum pushen
               
@@ -188,9 +188,9 @@
                (setf *last-y-border-y-2* 9.0))
               (3
                ;(setf push-pose (planning-knowledge::push-object *object-label-1-lz-3*))
-               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-1-lz-3* 6)
+               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-1-lz-3* 4)
                ;(setf push-pose (planning-knowledge::push-object *object-label-2-lz-3*))
-               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-3* 6)
+               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-3* 4)
                (setf *last-y-border-y-3* 9.0))
               (4
                ;(setf push-pose (planning-knowledge::push-object *object-label-1-lz-4*))
