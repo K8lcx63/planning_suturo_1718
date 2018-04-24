@@ -94,7 +94,7 @@
                                               (moving-command 3)
                                               (statement "I cannot grasp the Object over there. Can you please move the")
                                               (statement2 " and shake my hand?"))
-  (planning-motion::call-motion-move-arm-homeposition)
+  (planning-motion::call-motion-move-arm-homeposition 10)
   (let ((pose-to-point
           (get-pointing-pose pose)))
     (planning-motion::call-motion-move-arm-to-point pose-to-point "" moving-command)) 
