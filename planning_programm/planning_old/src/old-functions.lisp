@@ -98,3 +98,17 @@
               (<= dz delta))
              (print t)
              (print nil))))))
+
+
+
+;;fliegt raus sobald motion auf pose stamped ist.
+(defun disassemble-Pose-Msg-To-Point-Stamped (pose-array amount)
+  "making pose_stamped to point_stamped"
+  (roslisp:with-fields
+      ((header1
+        (geometry_msgs-msg:header))
+       (point1
+        (geometry_msgs-msg:position
+         geometry_msgs-msg:pose)))
+      (aref pose-array amount)
+    (return-from disassemble-Pose-Msg-To-Point-Stamped (roslisp:make-msg "geometry_msgs/pointstamped" (header) header1 (point) point1))))

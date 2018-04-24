@@ -112,7 +112,9 @@
   ".."
   (planning-move::move-Head x 0 z)
   (sleep 5.0)
-  (setf *pose-array* (planning-logic::disassemble-vision-call(planning-vision::call-vision-object-clouds)))(return-from find-Object-Dummy T))
+  (setf *pose-array*
+        (planning-logic::disassemble-vision-call(planning-vision::call-vision-object-clouds)))
+  (return-from find-Object-Dummy T))
 
 
 
