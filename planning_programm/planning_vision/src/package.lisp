@@ -6,5 +6,5 @@
   (:export
    :call-Vision-Object-Clouds
    :check-Points-Is-Equal
-   :call-Vision-Object-pose)
+   :call-Vision-Object-pose))
 

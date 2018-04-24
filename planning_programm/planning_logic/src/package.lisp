@@ -21,5 +21,6 @@
    :publish-Model-Pose
    :grab-Left-Or-Right
    :move-Base
-   :transformation-Pose-Stamped))
+   :transformation-Pose-Stamped
+   :*PR2-POSE*))
 
