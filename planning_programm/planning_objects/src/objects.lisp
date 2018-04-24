@@ -41,7 +41,21 @@
                               (exact-landing-y
                                (geometry_msgs-msg:y geometry_msgs-msg:position geometry_msgs-msg:pose))) middle-point-landing-zone-pose
           (let ((landing-pose-message
-                  (planning-knowledge::place-object gripper-msg "/map" exact-landing-x exact-landing-y)))
+                  (roslisp:make-msg "geometry_msgs/PoseStamped"
+                                    :header (roslisp:make-msg "std_msgs/Header"
+                                                              :frame_id "/map")
+                                    :pose (roslisp:make-msg "geometry_msgs/Pose"
+                                                            :position (roslisp:make-msg "geometry_msgs/Point"
+                                                                                :x 1.358
+                                                                                :y 0.376
+                                                                                :z 0.987)
+                                                            :orientation (roslisp:make-msg "geometry_msgs/Quaternion"
+                                                                                           :x 0.0
+                                                                                           :y 0.707
+                                                                                           :z 0.0
+                                                                                           :w 0.707)))
+                  ;(planning-knowledge::place-object gripper-msg "/map" exact-landing-x exact-landing-y)
+                  ))
             (return-from calculate-landing-zone (list landing-pose-message *storage-place-capacity*))))))))
 
 (defun fill-landing-zone-horizontally (position width height)
@@ -138,37 +152,50 @@
 (defun push-object ()
 ;hier knowledge nach schiebepose fragen und position ersetzen
 
-            (let (push-pose)
+            (let ((push-pose
+                                    (roslisp:make-msg "geometry_msgs/PoseStamped"
+                                    :header (roslisp:make-msg "std_msgs/Header"
+                                                              :frame_id "/map")
+                                    :pose (roslisp:make-msg "geometry_msgs/Pose"
+                                                            :position (roslisp:make-msg "geometry_msgs/Point"
+                                                                                :x 1.358
+                                                                                :y 0.376
+                                                                                :z 1.15)
+                                                            :orientation (roslisp:make-msg "geometry_msgs/Quaternion"
+                                                                                           :x 0.0
+                                                                                           :y 0.0
+                                                                                           :z 0.0
+                                                                                           :w 0.1)))))
 
               ;knowledge service benutzen um herauszufinden welcher gripper frei ist zum pushen
               
             (case *current-storage-place-number*
               (1
-               (setf push-pose (planning-knowledge::push-object *object-label-1-lz-1*))
+               ;(setf push-pose (planning-knowledge::push-object *object-label-1-lz-1*))
                ;vorher gripper öffnen?
                (planning-motion::call-motion-move-arm-to-point push-pose *object-label-1-lz-1* 6)
                ;vielleicht erst wieder in die home position
-               (setf push-pose (planning-knowledge::push-object *object-label-2-lz-1*))
+               ;(setf push-pose (planning-knowledge::push-object *object-label-2-lz-1*))
                (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-1* 6)
 
                                         ;abfrage ob motion successfull war??
                (setf *last-y-border-y-1* 9.0))
               (2
-               (setf push-pose (planning-knowledge::push-object *object-label-1-lz-2*))
+               ;(setf push-pose (planning-knowledge::push-object *object-label-1-lz-2*))
                (planning-motion::call-motion-move-arm-to-point push-pose *object-label-1-lz-2* 6)
-               (setf push-pose (planning-knowledge::push-object *object-label-2-lz-2*))
+               ;(setf push-pose (planning-knowledge::push-object *object-label-2-lz-2*))
                (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-2* 6)
                (setf *last-y-border-y-2* 9.0))
               (3
-               (setf push-pose (planning-knowledge::push-object *object-label-1-lz-3*))
+               ;(setf push-pose (planning-knowledge::push-object *object-label-1-lz-3*))
                (planning-motion::call-motion-move-arm-to-point push-pose *object-label-1-lz-3* 6)
-               (setf push-pose (planning-knowledge::push-object *object-label-2-lz-3*))
+               ;(setf push-pose (planning-knowledge::push-object *object-label-2-lz-3*))
                (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-3* 6)
                (setf *last-y-border-y-3* 9.0))
               (4
-               (setf push-pose (planning-knowledge::push-object *object-label-1-lz-4*))
+               ;(setf push-pose (planning-knowledge::push-object *object-label-1-lz-4*))
                (planning-motion::call-motion-move-arm-to-point push-pose *object-label-1-lz-4* 6)
-               (setf push-pose (planning-knowledge::push-object *object-label-2-lz-4*))
+               ;(setf push-pose (planning-knowledge::push-object *object-label-2-lz-4*))
                (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-4* 6)
                (setf *last-y-border-y-4* 9.0)))
 
