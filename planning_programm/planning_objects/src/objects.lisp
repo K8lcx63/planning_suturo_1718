@@ -19,6 +19,10 @@
 (defvar *object-label-1-lz-4* nil)
 (defvar *object-label-2-lz-4* nil)
 
+(defvar *current-storage-place-number*)
+
+(defvar *storage-place-capacity* "storage-place-empty")
+
 (defun calculate-landing-zone (object gripper)
   (setf *current-object-label* object)
   (let ((landing-zone-message
@@ -37,8 +41,8 @@
                               (exact-landing-y
                                (geometry_msgs-msg:y geometry_msgs-msg:position geometry_msgs-msg:pose))) middle-point-landing-zone-pose
           (let ((landing-pose-message
-                  (planning-knowledge::place-object gripper-msg "/map" exact-landing-x exact-landing-y)))         
-            (return-from calculate-landing-zone landing-pose-message)))))))
+                  (planning-knowledge::place-object gripper-msg "/map" exact-landing-x exact-landing-y)))
+            (return-from calculate-landing-zone (list landing-pose-message *storage-place-capacity*))))))))
 
 (defun fill-landing-zone-horizontally (position width height)
   ;(cpl:with-failure-handlingy
@@ -56,93 +60,50 @@
         (let ((last-y-border)
               (current-y-border)
               (width-split (/ width 2.0))
-              (height-split (/ height 2.0))
-              (current-storage-place-number))
+              (height-split (/ height 2.0)))
           
 
       
           (cond ((>= y (- 1.13063 width-split))
                  (progn
                    (setf last-y-border *last-y-border-y-1*)
-                   (setf current-storage-place-number 1)))
+                   (setf *current-storage-place-number* 1)))
                 ((>= y (- 0.75563 width-split))
                  (progn
                    (setf last-y-border *last-y-border-y-2*)
-                   (setf current-storage-place-number 2)))
+                   (setf *current-storage-place-number* 2)))
                 ((>= y (- 0.38063 width-split))
                  (progn
                    (setf last-y-border *last-y-border-y-3*)
-                   (setf current-storage-place-number 3)))
+                   (setf *current-storage-place-number* 3)))
                 ((>= y (- 0.00563 width-split))
                  (progn
                    (setf last-y-border *last-y-border-y-4*)
-                   (setf current-storage-place-number 4))))
+                   (setf *current-storage-place-number* 4))))
       
-      
+
+          ;+ 0.11 um beim zweiten objekt mitzuteilen das jetzt kein platz mehr ist
       (if (<= last-y-border (+ (- y width-split) 0.11))
-          (progn
-          ;(cpl:fail 'planning-error::objects-error :message "Out of storage space!"))
-
-;hier knowledge nach schiebepose fragen und position ersetzen
-            ;position ist jetzt einfach der storageplace auf tischhöhe KOLLISION!?!?
-
-            (let (push-pose)
-
-              ;knowledge service benutzen um herauszufinden welcher gripper frei ist zum pushen
-              
-            (case current-storage-place-number
-              (1
-               (setf push-pose (planning-knowledge::push-object *object-label-1-lz-1*))
-               ;vorher gripper öffnen?
-               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-1-lz-1* 6)
-               ;vielleicht erst wieder in die home position
-               (setf push-pose (planning-knowledge::push-object *object-label-2-lz-1*))
-               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-1* 6)
-
-                                        ;abfrage ob motion successfull war??
-               (setf *last-y-border-y-1* 9.0)
-               (setf last-y-border *last-y-border-y-1*))
-              (2
-               (setf push-pose (planning-knowledge::push-object *object-label-1-lz-2*))
-               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-1-lz-2* 6)
-               (setf push-pose (planning-knowledge::push-object *object-label-2-lz-2*))
-               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-2* 6)
-               (setf *last-y-border-y-2* 9.0)
-               (setf last-y-border *last-y-border-y-2*))
-              (3
-               (setf push-pose (planning-knowledge::push-object *object-label-1-lz-3*))
-               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-1-lz-3* 6)
-               (setf push-pose (planning-knowledge::push-object *object-label-2-lz-3*))
-               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-3* 6)
-               (setf *last-y-border-y-3* 9.0)
-               (setf last-y-border *last-y-border-y-3*))
-              (4
-               (setf push-pose (planning-knowledge::push-object *object-label-1-lz-4*))
-               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-1-lz-4* 6)
-               (setf push-pose (planning-knowledge::push-object *object-label-2-lz-4*))
-               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-4* 6)
-               (setf *last-y-border-y-4* 9.0)
-               (setf last-y-border *last-y-border-y-4*)))
-
-            )))
+(setf *storage-place-capacity* "storage-place-full")
+          )
             
 
 
           
           
-          (cond ((= current-storage-place-number 1)
+          (cond ((= *current-storage-place-number* 1)
                  (if (not *object-label-1-lz-1*)
                      (setf *object-label-1-lz-1* *current-object-label*)
                      (setf *object-label-2-lz-1* *current-object-label*)))
-                ((= current-storage-place-number 2)
+                ((= *current-storage-place-number* 2)
                  (if (not *object-label-1-lz-2*)
                      (setf *object-label-1-lz-2* *current-object-label*)
                      (setf *object-label-2-lz-2* *current-object-label*)))
-                ((= current-storage-place-number 3)
+                ((= *current-storage-place-number* 3)
                  (if (not *object-label-1-lz-3*)
                      (setf *object-label-1-lz-3* *current-object-label*)
                      (setf *object-label-2-lz-3* *current-object-label*)))
-                ((= current-storage-place-number 4)
+                ((= *current-storage-place-number* 4)
                  (if (not *object-label-1-lz-4*)
                      (setf *object-label-1-lz-4* *current-object-label*)
                      (setf *object-label-2-lz-4* *current-object-label*))))
@@ -173,6 +134,45 @@
               ((>= y (- 0.00563 width-split))
                (setf *last-y-border-y-4* current-y-border)))
         (return-from fill-landing-zone-horizontally landing-zone-pose)))))
+
+(defun push-object ()
+;hier knowledge nach schiebepose fragen und position ersetzen
+
+            (let (push-pose)
+
+              ;knowledge service benutzen um herauszufinden welcher gripper frei ist zum pushen
+              
+            (case *current-storage-place-number*
+              (1
+               (setf push-pose (planning-knowledge::push-object *object-label-1-lz-1*))
+               ;vorher gripper öffnen?
+               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-1-lz-1* 4)
+               ;vielleicht erst wieder in die home position
+               (setf push-pose (planning-knowledge::push-object *object-label-2-lz-1*))
+               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-1* 4)
+
+                                        ;abfrage ob motion successfull war??
+               (setf *last-y-border-y-1* 9.0))
+              (2
+               (setf push-pose (planning-knowledge::push-object *object-label-1-lz-2*))
+               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-1-lz-2* 4)
+               (setf push-pose (planning-knowledge::push-object *object-label-2-lz-2*))
+               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-2* 4)
+               (setf *last-y-border-y-2* 9.0))
+              (3
+               (setf push-pose (planning-knowledge::push-object *object-label-1-lz-3*))
+               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-1-lz-3* 4)
+               (setf push-pose (planning-knowledge::push-object *object-label-2-lz-3*))
+               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-3* 4)
+               (setf *last-y-border-y-3* 9.0))
+              (4
+               (setf push-pose (planning-knowledge::push-object *object-label-1-lz-4*))
+               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-1-lz-4* 4)
+               (setf push-pose (planning-knowledge::push-object *object-label-2-lz-4*))
+               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-4* 4)
+               (setf *last-y-border-y-4* 9.0)))
+
+              (setf *storage-place-capacity* "storage-place-empty")))
 
 (defun clear-all-landing-zones ()
   (setf *last-y-border-y-1* 9.0)
