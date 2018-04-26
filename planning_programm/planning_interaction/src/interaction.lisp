@@ -236,13 +236,12 @@
                              (args "Handshake detected")
                              (errormsg "Human, i will wait now. Please shake my left gripper when you are ready"))
   (say errormsg)
-  (cram-language:top-level
     (cram-language:pursue
       (cram-language:unwind-protect 
            (cram-language:wait-for *handshake-detection*)
         (if (listp args)
             (apply func args)
-            (funcall func args))))))
+            (funcall func args)))))
 
 
 

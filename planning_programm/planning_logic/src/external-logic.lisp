@@ -2,7 +2,6 @@
 
 (defvar *joint-states* 0)
 (defvar *pose* nil)
-
 (defvar *perception-publisher*)
 (defvar *text-publisher*)
 (defvar *model-publisher*)
@@ -15,8 +14,7 @@
   (init-gripper-states)
   (init-pr2)
   (init-marker)
-  (init-model-publisher)
-  )
+  (init-model-publisher))
 
 (defun square (x)
   (* x x)
@@ -28,8 +26,10 @@
     (geometry_msgs-msg:pose 
      (knowledge_msgs-srv:place_pose msg)))))
 
+;@param: pose, amount und optional endFrame
+;@return: a transformed point-stamped
 (defun transformation-Vision-Point (pose &optional (endFrame "/base_footprint")) 
-  "transform a msgs with an optional Frame, default is base_footprint" 
+  "transform a poseStamped-msg with an optional Frame, default is base_footprint, to a pointStamped" 
   (roslisp:with-fields 
       ((startFrame 
         (STD_msgs-msg:frame_id geometry_msgs-msg:header)) 
@@ -47,6 +47,8 @@
            (cl-tf:make-point-stamped startFrame 0.0 
                                      (cl-transforms:make-3d-vector x y z)))) 
       (catch-Transformation transform-listener tf-point-stamped endFrame)))) 
+
+
 
 
 (defun catch-Transformation (transform-listener tf-point-stamped endFrame)
@@ -67,7 +69,12 @@
                                      :target-frame targetframe)))) )
 
 
+;; Beschreibung: Die Funktion l ̈asst den Roboter
+;; anhand vorgegebener Positionen seine Drehung sowie seine
+;; Position  ändern, wenn er ein Objekt nicht erreichen kann.
 
+;; @param: point-for-motion number-for-arm
+;; @return: T oder Nil
 (defun try-To-Grab-Different-Location(x y z w pose label command)
   "trying to grab the object now, with different locations and orientations."
   (let ((position (make-array '(5)  
@@ -81,7 +88,7 @@
             (cram-language:wait-for
              (planning-move:move-Base-To-Point x (+ y ya) z (+ w r)))
             (if
-             (eq 1
+             (eq 2
                  (planning-motion:call-motion-move-arm-to-point pose label command))
              (return-from try-To-Grab-Different-Location nil))))))))
 
@@ -98,6 +105,13 @@
             (return-from should-Robo-Use-Left-Or-Right-Arm 7)
             (return-from should-Robo-Use-Left-Or-Right-Arm 6))))))
 
+
+;; Beschreibung: Extrahiert alle Informationen aus der
+;; Visioncloud und speichert normal_features, color_features,
+;; object_amount und object_pose auf dem Parameterserver.
+
+;; @param: visionclouds
+;; @return: object_pose
 (defun disassemble-Vision-Call (visionclouds)
   "dissamble the whole vision-msg, setting new params onto param server"
   (roslisp:with-fields
@@ -139,7 +153,13 @@
 
 
 
+;; Beschreibung: Eine Hilfsfunktion f ̈ur die Funktion disassemble-Vision-Call,
+;; um aus normal_features und color_features konkateniert ein features-X zu
+;; erstellen. (Knowledge ben ̈otigt ein Array in dem zuerst color_features
+;; vorkommen und direkt im Anschluss normal_features)
 
+;; @param: normal-s color-s normal-e color-e amount
+;; @return: Nil
 (defun set-Params-Features (normal-s color-s normal-e color-e amount)
   "soon"
   (roslisp:set-param (concatenate 'string "normal_features"
@@ -165,17 +185,18 @@
   (setf (cram-language:value *pr2-pose*) msg))
 
 
-(Defun move-pr2 (x y z)
-  ".."
-  (planning-move::move-base-to-point-safe x y z
-                                          (angle-from-pr2-pose-to-point x y z) 10))
 
 
+;; Beschreibung: Die Funktion arbeitet mit Hilfe des Packets Cram-Language um
+;; einen Winkel zu berechnen, wie der Pr2 sich aus der aktuellen Position
+;; in der Welt drehen muss, damit er einen gegebenen Punkt erreichen kann.
+;; Da der Roboter sich in dem Frame "map" bewegt, muss der Winkel noch mit der
+;; aktuellen Orientierung des Pr2 subtrahiert werden, so dass am Ende
+;; ein Winkel resultiert der in dem Frame "map" funktioniert.
 
-
-
+;; @param: x-goal y-goal z-goal
+;; @return: angle
 (defun angle-From-Pr2-Pose-To-Point (x-goal y-goal z-goal)
-  ""
   (init-pr2)
   (roslisp:with-fields
       ((x
@@ -506,18 +527,3 @@
 
 
 
-
-
-;; (cram-language:top-level
-;;            (let ((loop-Finished nil))
-;;              (cram-language:pursue
-;;                (cram-language:wait-for planning-logic::*gripper-left-state-fluent*)
-;;                (progn
-;;                  (loop for i from 1 to 1000 do
-;;                  (progn
-;;                    (print i)
-;;                    (cram-language:sleep 1.0)
-;;                    )) 
-;;                (setf loop-Finished T)))
-;;              (unless loop-Finished 
-;;                (cpl:fail "hello"))))
