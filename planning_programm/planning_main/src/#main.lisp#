@@ -82,9 +82,12 @@
         (loop for i from 1 to 2 do
           (planning-logic::grab-left-or-right)
         (planning-motion::call-motion-move-arm-homeposition 10)
-           ;(planning-logic::move-pr2 0.75 1 0)
+        ;hier muss noch eine logik rein die entscheidet wie viele gripper grade benutzt werden soll
+        (planning-interaction::check-gripper "errormsgs" 'planning-logic:move-pr2 '(0.75 1 0 0) 0 0)
               ))))
 
+  
+(planning-interaction:wait-for-handshake 'planning-move:move-base-to-point '(-0.29 1 0 180) "error KEVIN HELP ME PLS"
 
 
        
@@ -112,7 +115,9 @@
   ".."
   (planning-move::move-Head x 0 z)
   (sleep 5.0)
-  (setf *pose-array* (planning-logic::disassemble-vision-call(planning-vision::call-vision-object-clouds)))(return-from find-Object-Dummy T))
+  (setf *pose-array*
+        (planning-logic::disassemble-vision-call(planning-vision::call-vision-object-clouds)))
+  (return-from find-Object-Dummy T))
 
 
 
