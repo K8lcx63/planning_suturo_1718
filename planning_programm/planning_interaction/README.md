@@ -87,6 +87,14 @@ This function is as generic as it gets.
 
 top-level functions can not be nested yet.
 
+
+#### check-gripper()
+
+- untested
+
+Can be given a function to run simultaniously with the other gripper checkup functions.
+If given bits for each grippers are set, they will interrupt the given function when grippers are empty (e.g when an object falls out of the gripper.
+
 ### Safety methods (not usable publicly)
 
 #### calculate-wrench-magnitude (msg)
