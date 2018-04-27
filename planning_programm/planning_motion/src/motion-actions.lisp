@@ -32,7 +32,7 @@
                   (let ((actiongoal
                           (actionlib:make-action-goal actionclient goal_pose xtrans command x)))
                      (actionlib:call-goal actionclient actiongoal)))))
-           (roslisp:with-fields (motion_msgs-msg:status (motion_msgs-msg:movingcommandresult) status)
+           (roslisp:with-fields (motion_msgs-msg:status)
             status-message
           (case motion_msgs-msg:status
             (0 (roslisp::ros-info "Motion" "Successfully moved into home position."))
@@ -42,18 +42,6 @@
              (cpl:fail 'planning-error::motion-error :message "Path to goal is obstructed."))
             (3 (roslisp::ros-error "Motion" "Unmanageble error occured in motion!")
              (cpl:fail 'planning-error::motion-error :message "Unmanageable error occured in motion!")))))))
-    
-
-
-
-
-
-
-
-
-
-
-
 
 
 (Defun call-Motion-Move-Arm-To-Point (point-center-of-object label &optional (x 3) (force 15))
@@ -80,7 +68,7 @@
                 (let ((actiongoal
                         (actionlib:make-action-goal actionclient goal_pose point-center-of-object command x force force grasped_object_label label)))
                   (actionlib:call-goal actionclient actiongoal))))
-             (roslisp:with-fields (motion_msgs-msg:status (motion_msgs-msg:movingcommandresult status))
+      (roslisp:with-fields (motion_msgs-msg:status)
             status-message
               (case motion_msgs-msg:status
                 (0 (roslisp::ros-info "Motion" "Successfully moved into position."))
