@@ -85,12 +85,13 @@
 ;;  
 ;; @input   geometry_msgs/PoseStamped pose - pose of unreachable object
 ;; @input   string label                   - label of object as String (e.g. "Ja Milch")
+;; @input   float32 force                  - force to gripp with
 ;; @input   int moving-command             - 2 for right, 3 for left arm. Default is 3
 ;; @input   string statement               - Statement to be made about object
 ;; @input   string statement2              - Statement to be made after object label is spoken
 ;; @output  undefined
 
-(defun ask-human-to-move-object (pose label &optional
+(defun ask-human-to-move-object (pose label force &optional
                                               (moving-command 3)
                                               (statement "I cannot grasp the Object over there. Can you please move the")
                                               (statement2 " and shake my hand?"))
@@ -99,14 +100,14 @@
           (get-pointing-pose pose)))
     (planning-motion::call-motion-move-arm-to-point pose-to-point "" moving-command)) 
   (say (concatenate 'string statement label statement2))
-  (planning-motion::toggle-gripper 20.0 (decide-gripper moving-command) *open-gripper-pos*)
+  (planning-motion::toggle-gripper force (decide-gripper moving-command) *open-gripper-pos*)
   (cram-language:top-level
     (cram-language:pursue
       (cram-language:unwind-protect
            (cram-language:wait-for *handshake-detection*)
         (say "Thanks Human, i will grasp the Object now. Please be carefull.")
         (sleep 5)
-        (planning-motion::toggle-gripper 20.0 (decide-gripper moving-command) *closed-gripper-pos*)))))
+        (planning-motion::toggle-gripper force (decide-gripper moving-command) *closed-gripper-pos*)))))
 
 
 
@@ -155,7 +156,30 @@
 ;; ## Public used functions ##
 ;; ###########################
 
+;; check-gripper(func args r l)
+;;
+;; Checks gripper function against given function
+;; If gripper looses object, given function is disturbed
+;;
+;; @input  string errormsg - string to print if error occured
+;; @input  function func   - function to be executed in pursue context
+;; @input  list args       - list of arguments to be given to above function
+;; @input  0/1 r           - bit to be set if right gripper should be checked
+;; @input  0/1 l           - bit to be set if left gripper should be checked
+;; @output undefined
 
+(defun check-gripper(errormsg func args &optional (r 0) (l 0))
+  (cram-language:pursue
+    (if (= r 1)
+        (cram-language:wait-for planning-logic::*gripper-righ-state-fluent*))
+    (if (= l 1)
+        (cram-language:wait-for planning-logic::*gripper-left-state-fluent*))
+    (cram-language:unwind-protect 
+         (if (listp args)
+             (apply func args)
+             (funcall func args))
+      (wait-for-handshake 'print "Handshake detected" errormsg)
+      )))
 
 ;; decide-gripper(moving-command)
 ;;
