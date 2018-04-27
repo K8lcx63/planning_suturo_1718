@@ -97,20 +97,7 @@
     (init-Action-Client-Base))
   *action-client-base*)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;will probably deleted -V
-(defun move-Base-To-Point-Safe (x y z angle &optional (motion 1))
-  (cram-language:wait-for
-   (move-Base-To-Point 0.15 0.5 0 -90 motion))
-  (if
-   (and
-    (> angle 90)
-    (< angle 270))
-   (move-Base-To-Point -0.29 1 0 180 motion)
-   (move-Base-To-Point 0.75 0.8 0 0 motion))
-  (print x)
-  (print y)
-  (print z))
+
 
 
 
