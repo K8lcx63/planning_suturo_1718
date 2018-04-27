@@ -82,10 +82,9 @@
         (loop for i from 1 to 2 do
           (planning-logic::grab-left-or-right)
         (planning-motion::call-motion-move-arm-homeposition 10)
-           ;   (planning-logic::move-pr2 0.75 1 0)
+        ;hier muss noch eine logik rein die entscheidet wie viele gripper grade benutzt werden sollen r und l
+        (planning-interaction:check-gripper "errormsgs" 'planning-logic:move-pr2 '(0.75 1 0 0) 0 0)
               ))))
-
-
 
        
 
