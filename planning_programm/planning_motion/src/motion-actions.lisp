@@ -42,17 +42,6 @@
              (cpl:fail 'planning-error::motion-error :message "Path to goal is obstructed."))
             (3 (roslisp::ros-error "Motion" "Unmanageble error occured in motion!")
              (cpl:fail 'planning-error::motion-error :message "Unmanageable error occured in motion!")))))))
-    
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -65,6 +54,7 @@
            (format t "An error happened: ~a~%" error-object)
            (roslisp::ros-info "Motion" "Trying to solve error.")
            ;Here is the place for solutions to the problem!
+           ;Fahren z.B hier
            (cpl:do-retry retry-counter
              (format t "Now retrying~%")
              (roslisp::ros-info "Motion" "Now retrying ...")

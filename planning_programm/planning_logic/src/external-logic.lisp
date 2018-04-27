@@ -17,8 +17,7 @@
   (init-model-publisher))
 
 (defun square (x)
-  (* x x)
-  )
+  (* x x))
 
 (defun disassemble-graspindividual-response (msg)
   (geometry_msgs-msg:y
@@ -58,18 +57,9 @@
                          :point tf-point-stamped
                          :target-frame endFrame))
 
-(defun transform-Pose (pose targetframe)
-  "gets a Geometry_msgs/PoseStamped in frame x and outputs geometry_msgs/PoseStamped in targetframe"
-  (let ((pose-transformable (cl-transforms-stamped:from-msg pose)))
-    (let ((transform-listener (make-instance 'cl-tf:transform-listener)))
-      (sleep 5.0)
-      (cl-tf:to-msg 
-       (cl-tf:transform-pose-stamped transform-listener
-                                     :pose pose-transformable
-                                     :target-frame targetframe)))) )
 
 
-;; Beschreibung: Die Funktion l ̈asst den Roboter
+;; Beschreibung: Die Funktion lässt den Roboter
 ;; anhand vorgegebener Positionen seine Drehung sowie seine
 ;; Position  ändern, wenn er ein Objekt nicht erreichen kann.
 
@@ -106,6 +96,7 @@
             (return-from should-Robo-Use-Left-Or-Right-Arm 6))))))
 
 
+;; fiegt raus, wenn Vision weiter ist
 ;; Beschreibung: Extrahiert alle Informationen aus der
 ;; Visioncloud und speichert normal_features, color_features,
 ;; object_amount und object_pose auf dem Parameterserver.
@@ -153,7 +144,7 @@
 
 
 
-;; Beschreibung: Eine Hilfsfunktion f ̈ur die Funktion disassemble-Vision-Call,
+;; Beschreibung: Eine Hilfsfunktion für die Funktion disassemble-Vision-Call,
 ;; um aus normal_features und color_features konkateniert ein features-X zu
 ;; erstellen. (Knowledge ben ̈otigt ein Array in dem zuerst color_features
 ;; vorkommen und direkt im Anschluss normal_features)
@@ -312,9 +303,6 @@
           (read-char))))))
 
 
-
-
-
 (defun init-Marker ()
   (setf *text-publisher* 
         (roslisp:advertise "/visualization_marker" "visualization_msgs/Marker")))
@@ -366,10 +354,12 @@
                                          twist (roslisp:make-msg "geometry_msgs/Twist"))))
 
 
-
-
+;;TO-DO Generic
 (defun grab-Object-Right ()
   (sleep 5.0)
+
+  ;;schachteln von hier in einer neuen funktion?
+  ;;eventuell generisch?
   (roslisp:with-fields (right_gripper)
       (cram-language:wait-for
        (planning-knowledge::empty-gripper))
@@ -384,6 +374,7 @@
        (if
         (eq T right_gripper)
         (progn
+   ;;dann tu dies
           (planning-logic::publish-text "trying to grab now with right arm")
           (roslisp:with-fields (grasp_pose)
               (cram-language:wait-for
@@ -504,7 +495,8 @@
            (make-instance 'cl-tf:transform-listener)) 
          (tf-point-stamped 
            (cl-tf:make-pose-stamped startFrame 0.0 
-                                    (cl-transforms:make-3d-vector x y z)(cl-transforms:make-quaternion xo yo zo w)))) 
+                                    (cl-transforms:make-3d-vector x y z)
+                                    (cl-transforms:make-quaternion xo yo zo w)))) 
       (catch-Transformation-Pose-Stamped transform-listener tf-point-stamped endFrame))))
 
 (defun catch-Transformation-Pose-Stamped (transform-listener tf-point-stamped endFrame)
@@ -512,17 +504,17 @@
   (sleep 5.0)
            (cl-tf:transform-pose-stamped transform-listener
                                          :pose tf-point-stamped
-                         :target-frame endFrame))
+                                         :target-frame endFrame))
 
 
-(defun distance (x-a y-a x-b y-b)
+(defun distance (xa ya xb yb)
   "calctulating the distance between 2 vectors"
   (sqrt
    (+
     (expt
-     (- x-a x-b) 2)
+     (- xa xb) 2)
     (expt
-     (- y-a y-b) 2))))
+     (- ya yb) 2))))
 
 
 
