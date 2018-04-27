@@ -181,6 +181,8 @@
       (wait-for-handshake 'print "Handshake detected" errormsg)
       )))
 
+
+
 ;; decide-gripper(moving-command)
 ;;
 ;; little function that translates motions terrible magic numbers from move-to-point action
@@ -334,3 +336,62 @@
      )))
 
 
+;; TODO
+
+;; Get quaternion rotation between two points
+;; Build 3 x 3 Matrix where
+;; 1 = Richtungsvektor = Objektpunkt - Handgelenk
+;; 2 = 0 0 1 - Damit die y-Achse auf Z liegt
+;; 3 = 1 x 2
+
+(defun calculate-pointing-quaternion (object-pos)
+  (let ((dir-vec
+          (get-directional-vector
+           object-pos
+           (get-pointing-pose object-pos)))
+        (y-vec
+          (cl-tf:make-3d-vector 0 0 1)))
+    (cl-tf:matrix->quaternion 
+     (vectors-to-matrix
+      dir-vec
+      y-vec
+      (cl-tf:cross-product dir-vec y-vec)))))
+
+;; get-directional-vector
+;;
+;; Calculate directional vector between two points
+;; Vektor gets normalized
+;;
+;; @input PoseStamped pose1 - Pose of first vektor
+;; @input PoseStamped pose2 - Pose of second vektor
+;; @output ct-tf:vector     - normalized directional vector
+
+(defun get-directional-vector (pose1 pose2)
+  "get directional vector for 2 points"
+  (cl-tf:normalize-vector
+   (cl-tf:v-
+    (cl-tf:from-msg
+     (geometry_msgs-msg:position
+      (geometry_msgs-msg:pose pose1)))
+    (cl-tf:from-msg
+     (geometry_msgs-msg:position
+      (geometry_msgs-msg:pose pose2))))))
+
+;; vector to matrix
+
+(defun vectors-to-matrix (vector-x vector-y vector-z)
+  (let ((matrix (make-array '(3 3))))
+    (print vector-x)
+    (setf (aref matrix 0 0) (cl-tf:x vector-x))
+    (setf (aref matrix 0 1) (cl-tf:y vector-x))
+    (setf (aref matrix 0 2) (cl-tf:z vector-x))
+    (setf (aref matrix 1 0) (cl-tf:x vector-y))
+    (setf (aref matrix 1 1) (cl-tf:y vector-y))
+    (setf (aref matrix 1 2) (cl-tf:z vector-y))
+    (setf (aref matrix 2 0) (cl-tf:x vector-z))
+    (setf (aref matrix 2 1) (cl-tf:y vector-z))
+    (setf (aref matrix 2 2) (cl-tf:z vector-z))
+    (print matrix)
+    (return-from vectors-to-matrix matrix)))
+              
+                                  
