@@ -59,13 +59,7 @@
 
 
 
-;; Beschreibung: Die Funktion lässt den Roboter
-;; anhand vorgegebener Positionen seine Drehung sowie seine
-;; Position  ändern, wenn er ein Objekt nicht erreichen kann.
-
-;; @param: point-for-motion number-for-arm
-;; @return: T oder Nil
-(defun try-To-Grab-Different-Location(x y z w pose label command)
+(defun try-To-Grab-Different-Location(x y z w pose-array direction-key force label command)
   "trying to grab the object now, with different locations and orientations."
   (let ((position (make-array '(5)  
                               :initial-contents '(0 0.10 0.15 -0.10 -0.15)))) 
@@ -78,22 +72,18 @@
             (cram-language:wait-for
              (planning-move:move-Base-To-Point x (+ y ya) z (+ w r)))
             (if
-             (eq 2
-                 (planning-motion:call-motion-move-arm-to-point pose label command))
+             (eq 1
+                 (planning-motion:call-motion-move-arm-to-point pose-array direction-key label command force))
              (return-from try-To-Grab-Different-Location nil))))))))
 
 
 
 
-(defun should-Robo-Use-Left-Or-Right-Arm (pose &optional (endFrame "/base_footprint"))
+(defun should-Robo-Use-Left-Or-Right-Arm (label)
   "decides if the left or right arm is chosen depends on which one is closer"
-  (let ((pointTransformed
-          (transformation-Vision-Point pose endFrame)))
-    (roslisp:with-fields (y) pointTransFormed
-      (progn
-        (if (> y 0)
-            (return-from should-Robo-Use-Left-Or-Right-Arm 7)
-            (return-from should-Robo-Use-Left-Or-Right-Arm 6))))))
+  (if (> (get-Information-About-Object label) 0)
+      (return-from should-Robo-Use-Left-Or-Right-Arm 7)
+      (return-from should-Robo-Use-Left-Or-Right-Arm 6)))
 
 
 ;; fiegt raus, wenn Vision weiter ist
@@ -354,102 +344,58 @@
                                          twist (roslisp:make-msg "geometry_msgs/Twist"))))
 
 
-;;TO-DO Generic
-(defun grab-Object-Right ()
+(defun grab-Object-Right (label)
   (sleep 5.0)
-
-  ;;schachteln von hier in einer neuen funktion?
-  ;;eventuell generisch?
   (roslisp:with-fields (right_gripper)
       (cram-language:wait-for
        (planning-knowledge::empty-gripper))
-    (print right_gripper)
-    (roslisp:with-fields (object_label_1)
-        (cram-language:wait-for
-         (planning-knowledge::objects-to-pick))
-      (print object_label_1)
-      (if
-       (>
-        (length object_label_1) 0)
        (if
         (eq T right_gripper)
         (progn
-   ;;dann tu dies
           (planning-logic::publish-text "trying to grab now with right arm")
-          (roslisp:with-fields (grasp_pose)
+          (roslisp:with-fields ((grasp_pose_array)
+                                (direction_key)
+                                (force))
               (cram-language:wait-for
-               (planning-knowledge::how-to-pick-objects object_label_1))
+               (planning-knowledge::how-to-pick-objects label))
             (cram-language:wait-for
-             (planning-logic:try-to-grab-different-location 0.29 1 0 180 grasp_pose object_label_1 6))
+             (planning-logic:try-to-grab-different-location 0.29 1 0 180 grasp_pose_array direction_key force label 6))
             (planning-motion::call-motion-move-arm-homeposition 11)))
-        (planning-logic::publish-text "can't grab the an object with right"))
-       (roslisp:with-fields (left_gripper)
-           (planning-knowledge::empty-gripper)
-         (if
-          (eq T left_gripper)
-          (progn
-            (planning-logic::publish-text "trying to grab now with left arm")
-            (roslisp:with-fields (grasp_pose)
-                (cram-language:wait-for
-                 (planning-knowledge::how-to-pick-objects object_label_1))
-              (cram-language:wait-for
-               (planning-logic:try-to-grab-different-location 0.29 1 0 180 grasp_pose object_label_1 7))
-              (planning-motion::call-motion-move-arm-homeposition 12)))
-          (planning-logic::publish-text "can't grab the object with left")))))))
+        (planning-logic::publish-text "can't grab the an object with right"))))
 
 
 
-(defun grab-Object-Left ()
+
+(defun grab-Object-Left (label)
   (sleep 5.0)
   (roslisp:with-fields (left_gripper)
       (cram-language:wait-for
        (planning-knowledge::empty-gripper))
-    (print left_gripper)
-    (roslisp:with-fields
-        (object_label_1)
-        (cram-language:wait-for
-         (planning-knowledge::objects-to-pick))
-      (print object_label_1)
-      (if
-       (>
-        (length object_label_1) 0)
        (if
         (eq T left_gripper)
         (progn
           (planning-logic::publish-text "trying to grab now with left arm")
-          (roslisp:with-fields (grasp_pose)
+          (roslisp:with-fields ((grasp_pose_array)
+                                (direction_key)
+                                (force))
               (cram-language:wait-for
-               (planning-knowledge::how-to-pick-objects object_label_1))
+               (planning-knowledge::how-to-pick-objects label))
             (cram-language:wait-for
-             (planning-logic:try-to-grab-different-location 0.29 1 0 180 grasp_pose object_label_1 7))
+             (planning-logic:try-to-grab-different-location 0.29 1 0 180 grasp_pose_array direction_key force label 7))
             (planning-motion::call-motion-move-arm-homeposition 12)))
-        (planning-logic::publish-text "can't grab the an object with right"))
-       (roslisp:with-fields (right_gripper)
-           (planning-knowledge::empty-gripper)
-         (if (eq T right_gripper)
-             (progn
-               (planning-logic::publish-text "trying to grab now with right arm")
-               (roslisp:with-fields (grasp_pose)
-                   (cram-language:wait-for
-                    (planning-knowledge::how-to-pick-objects object_label_1))
-                 (cram-language:wait-for
-                  (planning-logic:try-to-grab-different-location 0.29 1 0 180 grasp_pose object_label_1 6))
-                 (planning-motion::call-motion-move-arm-homeposition 11)))
-             (planning-logic::publish-text "can't grab the object with left")))))))
+        (planning-logic::publish-text "can't grab the an object with left"))))
 
 
-(defun grab-Left-Or-Right ()
+(defun grab-Left-Or-Right (label)
   (sleep 5.0)
   (roslisp:with-fields (object_label_1)
       (planning-knowledge::objects-to-pick)
     (if
      (> (length object_label_1) 0)
-     (roslisp:with-fields (grasp_pose)
-         (planning-knowledge::how-to-pick-objects object_label_1)
-       (if (=
-            (should-robo-use-left-or-right-arm grasp_pose) 7)
-           (grab-Object-Left)
-           (grab-Object-Right))))))
+     (if
+      (= (should-robo-use-left-or-right-arm label) 7)
+      (grab-Object-Left label)
+      (grab-Object-Right label)))))
 
 
 
@@ -493,22 +439,32 @@
     (let 
         ((transform-listener 
            (make-instance 'cl-tf:transform-listener)) 
-         (tf-point-stamped 
+         (tf-pose-stamped 
            (cl-tf:make-pose-stamped startFrame 0.0 
                                     (cl-transforms:make-3d-vector x y z)
                                     (cl-transforms:make-quaternion xo yo zo w)))) 
-      (catch-Transformation-Pose-Stamped transform-listener tf-point-stamped endFrame))))
+      (catch-Transformation-Pose-Stamped transform-listener tf-pose-stamped endFrame))))
 
-(defun catch-Transformation-Pose-Stamped (transform-listener tf-point-stamped endFrame)
+(defun transformation-XYZ (x y z startFrame &optional (endFrame "/base_footprint"))  
+    (let 
+        ((transform-listener 
+           (make-instance 'cl-tf:transform-listener)) 
+         (tf-pose-stamped
+           (cl-tf:make-pose-stamped startFrame 0.0 
+                                    (cl-transforms:make-3d-vector x y z)
+                                    (cl-transforms:make-quaternion 0 0 0 1)))) 
+      (catch-Transformation-Pose-Stamped transform-listener tf-pose-stamped endFrame)))
+
+(defun catch-Transformation-Pose-Stamped (transform-listener tf-pose-stamped endFrame)
   "transform-listener catch transformation (helpfunction)"
   (sleep 5.0)
            (cl-tf:transform-pose-stamped transform-listener
-                                         :pose tf-point-stamped
+                                         :pose tf-pose-stamped
                                          :target-frame endFrame))
 
 
 (defun distance (xa ya xb yb)
-  "calctulating the distance between 2 vectors"
+  "calctulating the distance between 2 2d-vectors"
   (sqrt
    (+
     (expt
@@ -518,4 +474,18 @@
 
 
 
+(defun save-Object (label object_pose)
+  (roslisp:with-fields (origin)
+      (planning-logic:transformation-pose-stamped object_pose "/map")
+     (roslisp:set-param label (roslisp:with-fields (x y z) origin (list x y z)))))
+
+(defun get-Information-About-Object (label)
+  (roslisp:with-fields (origin)
+      (transformation-XYZ
+       (nth 0 (roslisp:get-param label))
+       (nth 1 (roslisp:get-param label))
+       (nth 2 (roslisp:get-param label))
+       "/map")
+    (roslisp:with-fields (y) origin
+      (return-from get-Information-About-Object y))))
 
