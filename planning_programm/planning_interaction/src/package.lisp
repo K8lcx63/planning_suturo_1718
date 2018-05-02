@@ -10,5 +10,6 @@
    :say
    :decide-gripper
    :drive-to-human
+   :check-gripper
    :wait-for-handshake))
 

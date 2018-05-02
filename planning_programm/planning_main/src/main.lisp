@@ -78,14 +78,16 @@
                   (planning-logic::publish-text "Publishing object-pose")
                   (print name)
                   (roslisp:with-fields (label) name 
-                    (cram-language:wait-for (planning-logic::publish-pose label object_pose))))))))
+                    (cram-language:wait-for (planning-logic::publish-pose label object_pose))
+                    (planning-logic::save-object label object_pose)))))))
         (loop for i from 1 to 2 do
-          (planning-logic::grab-left-or-right)
+          (roslisp:with-fields (object_label_1)
+              (planning-knowledge:objects-to-pick)
+          (planning-logic::grab-left-or-right object_label_1)))
         (planning-motion::call-motion-move-arm-homeposition 10)
-           ;   (planning-logic::move-pr2 0.75 1 0)
-              ))))
-
-
+        ;hier muss noch eine logik rein die entscheidet wie viele gripper grade benutzt werden sollen r und l
+        (planning-interaction:check-gripper "errormsgs" 'planning-logic:move-pr2 '(0.75 1 0 0) 0 0)
+              )))
 
        
 
