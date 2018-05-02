@@ -8,6 +8,8 @@
 (defvar *pr2-pose* (cram-language:make-fluent :name :pr2-pose) nil)
 (defvar *gripper-righ-state-fluent* (cram-language:make-fluent))
 (defvar *gripper-left-state-fluent* (cram-language:make-fluent))
+(defvar *l* nil)
+(defvar *r* nil)
 
 (defun init-logic ()
   (vis-init)
@@ -489,3 +491,9 @@
     (roslisp:with-fields (y) origin
       (return-from get-Information-About-Object y))))
 
+(defun how-Many-Gripper ()
+           (roslisp:with-fields
+               ((x knowledge_msgs-srv:left_gripper)
+                (y knowledge_msgs-srv:right_gripper right_gripper))
+               (planning-knowledge:empty-gripper)
+             (if (eq x T) (setf *l* 0) (setf *l* 1)) (if (eq y T) (setf *r* 0) (setf *r* 1)))) 

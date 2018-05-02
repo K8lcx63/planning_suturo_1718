@@ -85,8 +85,8 @@
               (planning-knowledge:objects-to-pick)
           (planning-logic::grab-left-or-right object_label_1)))
         (planning-motion::call-motion-move-arm-homeposition 10)
-        ;hier muss noch eine logik rein die entscheidet wie viele gripper grade benutzt werden sollen r und l
-        (planning-interaction:check-gripper "errormsgs" 'planning-logic:move-pr2 '(0.75 1 0 0) 0 0)
+        (planning-logic::how-many-gripper)
+        (planning-interaction:check-gripper "errormsgs" 'planning-logic:move-pr2 '(0.75 1 0 0) planning-logic::*r* planning-logic::*l*)
               )))
 
        

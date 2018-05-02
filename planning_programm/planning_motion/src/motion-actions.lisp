@@ -45,7 +45,7 @@
 
 (defvar direction-key nil)
 
-(Defun call-Motion-Move-Arm-To-Point (pose-array direction-key label x &optional (force 15))
+(Defun call-Motion-Move-Arm-To-Point (pose-array label x &optional (force 15))
   "Moves choosen robot-arm (optional parameter) to the point-center-of-object (default right arm 3=right, 2=left)"
   (roslisp::ros-info "Motion" "moving arm to point")
   (cpl:with-retry-counters ((retry-counter 4))
@@ -68,9 +68,9 @@
                 (loop until
                       (actionlib:wait-for-server actionclient))
                 (let ((actiongoal
-                        (actionlib:make-action-goal actionclient goal_poses pose-array direction_key direction-key command x force force grasped_object_label label)))
+                        (actionlib:make-action-goal actionclient goal_poses pose-array command x force force grasped_object_label label)))
                   (actionlib:call-goal actionclient actiongoal))))
-             (roslisp:with-fields (motion_msgs-msg:status)
+             (roslisp:with-fields (motion_msgs-msg:status(motion_msgs-msg:movingcommandresult)status)
             status-message
               (case motion_msgs-msg:status
                 (0 (roslisp::ros-info "Motion" "Successfully moved into position."))
