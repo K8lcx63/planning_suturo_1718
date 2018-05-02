@@ -97,7 +97,7 @@
                                               (statement2 " and shake my hand?"))
   (planning-motion::call-motion-move-arm-homeposition 10)
   (let ((pose-to-point
-          (get-pointing-pose pose)))
+          (build-pointing-pose pose)))
     (planning-motion::call-motion-move-arm-to-point pose-to-point "" moving-command)) 
   (say (concatenate 'string statement label statement2))
   (planning-motion::toggle-gripper force (decide-gripper moving-command) *open-gripper-pos*)
@@ -276,28 +276,47 @@
 ;; ########################
 
 
+;; build-pointing-pose
+;;
+;; builds complete pointing pose for pr2, gripper will be oriented accordingly
+;;
+;; @input geometry_msgs/PoseStamped pose - Pose of object to point at
+;; @output geometry_msgs/PoseStamped     - Pose for pr2 to perform pointing
+
+(defun build-pointing-pose (pose)
+  (let ((pointing-pose
+            (get-pointing-pose pose))
+        (pointing-quat
+          (cl-tf:to-msg
+           (calculate-pointing-quaternion pose))))
+    (roslisp:modify-message-copy pointing-pose
+                                 (geometry_msgs-msg:orientation
+                                  geometry_msgs-msg:pose) pointing-quat)))
+
+
 
 ;; get-pointing-pose (pose)
 ;;
-;; Points at a pose the pr2 cant reach. Uses static x-value to ensure that theres a kinematic solution
-;; to Point at this position.
+;; Gets pointing pose with fixed quaternion. Uses "get-vektor-pr2-reachable" to ensure
+;; a kinematic solution is found.
 ;;  
 ;; @input   geometry_msgs/PoseStamped pose  - unreachable Pose to Point at
 ;; @output  geometry_msgs/PoseStamped       - reachable Pose to Point at
 
-
 (defun get-pointing-pose (pose)
   "Calculates pointing pose for given pose. Will be used to let the Pr2 use his Gripper to point at this pos"
-  (let ((pose-in-baselink (planning-logic::transform-pose pose "base_link")))
+  (let ((pose-in-baselink (cl-tf:to-msg (planning-logic::transformation-pose-stamped pose "/base_link"))))
                           (roslisp:modify-message-copy pose-in-baselink
-                               (geometry_msgs-msg:x
-                                geometry_msgs-msg:position
-                                geometry_msgs-msg:pose) 0.5
-                                (geometry_msgs-msg:orientation
-                                 geometry_msgs-msg:pose)
-                                 (roslisp:make-msg "geometry_msgs/quaternion" :x 0 :y 0 :z 0 :w 1)))
+                                                       (geometry_msgs-msg:position
+                                                        geometry_msgs-msg:pose)
+                                                       (cl-tf:to-msg
+                                                        (get-vektor-pr2-reachable
+                                                         (geometry_msgs-msg:position
+                                                          (geometry_msgs-msg:pose pose))))
+                                                       (geometry_msgs-msg:orientation
+                                                        geometry_msgs-msg:pose)
+                                                       (roslisp:make-msg "geometry_msgs/quaternion" :x 0 :y 0 :z 0 :w 1)))
   )
-
 
 
 
@@ -336,13 +355,15 @@
      )))
 
 
-;; TODO
 
-;; Get quaternion rotation between two points
-;; Build 3 x 3 Matrix where
-;; 1 = Richtungsvektor = Objektpunkt - Handgelenk
-;; 2 = 0 0 1 - Damit die y-Achse auf Z liegt
-;; 3 = 1 x 2
+
+;; calculate-pointing-quaternion
+;;
+;; calculates quaternion which needs to be given
+;; to pr2 wrist to point at certain object
+;;
+;; @input geometry_msgs/PoseStamped object-pos - Pose to Point at
+;; @output cl-tf:quaternion                    - Quaternion representing rotation
 
 (defun calculate-pointing-quaternion (object-pos)
   (let ((dir-vec
@@ -356,6 +377,9 @@
       dir-vec
       y-vec
       (cl-tf:cross-product dir-vec y-vec)))))
+
+
+
 
 ;; get-directional-vector
 ;;
@@ -377,11 +401,20 @@
      (geometry_msgs-msg:position
       (geometry_msgs-msg:pose pose2))))))
 
+
+
+
 ;; vector to matrix
+;;
+;; turns 3 vektors into one matrix (3x3)
+;;
+;; @input cl-tf/3D-VECTOR vector-x - Vector for first row
+;; @input cl-tf/3D-VECTOR vector-y - Vector for second row
+;; @input cl-tf/3D-VECTOR vector-z - Vector for third row
+;; @output array                   - 3x3 matrix
 
 (defun vectors-to-matrix (vector-x vector-y vector-z)
   (let ((matrix (make-array '(3 3))))
-    (print vector-x)
     (setf (aref matrix 0 0) (cl-tf:x vector-x))
     (setf (aref matrix 0 1) (cl-tf:y vector-x))
     (setf (aref matrix 0 2) (cl-tf:z vector-x))
@@ -391,7 +424,29 @@
     (setf (aref matrix 2 0) (cl-tf:x vector-z))
     (setf (aref matrix 2 1) (cl-tf:y vector-z))
     (setf (aref matrix 2 2) (cl-tf:z vector-z))
-    (print matrix)
     (return-from vectors-to-matrix matrix)))
               
-                                  
+
+
+
+;; get-vektor-pr2-reachable
+;;
+;; calculates a pr2-reachable vector out of an existing one
+;; first normalizes then halfes vector
+;; z is left untouched
+;;
+;; @input geometry_msgs/Point vektor - vektor to be calculated into reachable
+;; @output cl-transforms/3d-vector   - reachable vektor
+
+(defun get-vektor-pr2-reachable (vektor)
+  (let ((old-z (cl-tf:z (cl-tf:from-msg vektor)))
+        (vec
+          (cl-tf:normalize-vector
+           (cl-tf:make-3d-vector
+            (cl-tf:x (cl-tf:from-msg vektor))
+            (cl-tf:y (cl-tf:from-msg vektor))
+            (cl-tf:z 0.0)))))
+    (cl-tf:make-3d-vector
+     (/ (cl-tf:x vec) 2)
+     (/ (cl-tf:y vec) 2)
+     old-z)))
