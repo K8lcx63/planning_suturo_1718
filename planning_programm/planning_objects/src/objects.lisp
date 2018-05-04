@@ -1,15 +1,21 @@
 (in-package :planning-objects)
 
+;; Publisher for publishing markers where objects will be placed
 (defvar *marker-publisher* nil)
+
+;; ID for unique markers
 (defvar *marker-id* 10)
 
+;; Y-coordinate of the last placed object in storage place number
 (defvar *last-y-border-y-1* 9.0)
 (defvar *last-y-border-y-2* 9.0)
 (defvar *last-y-border-y-3* 9.0)
 (defvar *last-y-border-y-4* 9.0)
 
+;; Last placed object label
 (defvar *current-object-label*)
 
+;; Object label of object 1 or 2 in landing zone 1 to 4
 (defvar *object-label-1-lz-1* nil)
 (defvar *object-label-2-lz-1* nil)
 (defvar *object-label-1-lz-2* nil)
@@ -21,12 +27,16 @@
 
 (defvar *current-storage-place-number*)
 
+;; Message which tells the receiver of the landing zone if the storage place has space for another object
 (defvar *storage-place-capacity* "storage-place-empty")
 
+;; Asks Knowledge where the object belongs and crops the landing zone
+;;
+;; @input  string object                             - object lable
+;; @input  knowledge_msgs/gripper gripper            - gripper number, 1 for left 2 for right
+;; @output list (geometry_msgs/PoseStamped , string) - list of a pose where the object should be placed and a string that says "storage-place-empty" or "storage-place-full". "storage-place-empty" means that there is more space for one or more objects.
+
 (defun calculate-landing-zone (object gripper)
-  ;; Errechnet die Landezone und gibt diese als Liste mit der Zusatzinformation ob die Zone voll ist zurück.
-  ;; Als Parameter werden das object-label und der Gripper benötigt. 1 für links 2 für rechts.
-  ;; Benutzt fill-landing-zone-horizontally um die Landezone mit bis zu zwei Objekten zu befüllen.
   (setf *current-object-label* object)
   (let ((landing-zone-message
           (planning-knowledge::ask-knowledge-where-belongs object)))
@@ -47,8 +57,13 @@
                   (planning-knowledge::place-object gripper-msg "/map" exact-landing-x exact-landing-y)))
             (return-from calculate-landing-zone (list landing-pose-message *storage-place-capacity*))))))))
 
+;; Places one more object in the landing zone. Throws an error if the storage place already contains two or more objects.
+;;
+;; @input geometry_msgs/PoseStamped position - position of the new object
+;; @input float32 width                      - width of the landing zone, 1.0 is one meter
+;; @input float32 length                     - length of the landing zone, 1.0 is one meter
+
 (defun fill-landing-zone-horizontally (position width height)
-  ;; Befüllt die Landezone mit bis zu zwei Objekten. Wenn man versucht ein drittes Objekt einzufügen wird ein Fehler ausgegeben.
   (cpl:with-failure-handling
       (((or cpl:simple-plan-failure planning-error::objects-error) (error-object)
          (format t "An error happened: ~a~%" error-object)))
@@ -127,6 +142,8 @@
                (setf *last-y-border-y-4* current-y-border)))
         (return-from fill-landing-zone-horizontally landing-zone-pose))))))
 
+;; Pushes both objects of the last filled storage place away to free up space for new objects.
+
 (defun push-object ()
   (let ((push-pose)
     (gripper)
@@ -171,6 +188,8 @@
                (setf *last-y-border-y-4* 9.0)))
               (setf *storage-place-capacity* "storage-place-empty")))
 
+;; Clears all landing zones of objects. This is for testing purposes.
+
 (defun clear-all-landing-zones ()
   (setf *last-y-border-y-1* 9.0)
   (setf *last-y-border-y-2* 9.0)
@@ -186,9 +205,13 @@
   (setf *object-label-1-lz-4* nil)
   (setf *object-label-2-lz-4* nil))
 
+;; Asks Knowledge where the object belongs and crops the landing zone. Additionally a marker will be published at the position where the object should be placed.
+;;
+;; @input  string object                             - object lable
+;; @input  knowledge_msgs/gripper gripper            - gripper number, 1 for left 2 for right
+;; @output list (geometry_msgs/PoseStamped , string) - list of a pose where the object should be placed and a string that says "storage-place-empty" or "storage-place-full". "storage-place-empty" means that there is more space for one or more objects.
+
 (defun calculate-landing-zone-visualized (object gripper)
-  ;; Funktioniert wie calculate-landing-zone und publiziert zusätzlich einen Marker,
-  ;; wo später das Objekt abgestellt werden soll
   (let ((landing-zone-pose (calculate-landing-zone object gripper)))
     (visualize-landing-zone landing-zone-pose)
     (incf *marker-id*)
@@ -201,15 +224,26 @@
 ;;(defun clear-all-markers ())
 ;nützlich
 
+;; Main function which calls sub functions to publish markers of the landing zone.
+;;
+;; @input geometry_msgs/PoseStamped landing-zone-pose - pose where the marker should be spawned
+
 (defun visualize-landing-zone (landing-zone-pose)
-  ;; Ruft vis-init auf unf publish-pose
   (vis-init)
   (publish-pose landing-zone-pose *marker-id* 0.1 0.09166666616996129))
 
+;; Starts the marker publisher
+
 (defun vis-init ()
-  ;; Startet den marker-publisher
   (setf *marker-publisher*
         (roslisp:advertise "~location_marker" "visualization_msgs/Marker")))
+
+;; Publishes a marker with a random color at the given position
+;;
+;; @input geometry_msgs/PoseStamped pose - pose where the marker should be placed
+;; @input int id                         - unique id for the marker, to replace a marker just reuse its id
+;; @input float32 height                 - height of the marker 1.0 is one meter
+;; @input float32 length                 - length of the marker 1.0 is one meter         
 
 (defun publish-pose (pose id height width)
   ;; Publiziert eine Pose als Marker
