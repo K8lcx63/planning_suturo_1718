@@ -34,7 +34,7 @@
                           (height (storage_place_height))
                           (position (storage_place_position)))
         landing-zone-message
-      (setf width (- width 0.19))
+      (setf width (- width 0.03))
       (setf height (- height 0.2))
       (let ((middle-point-landing-zone-pose
               (cl-tf:to-msg (fill-landing-zone-horizontally position width height)))
@@ -80,7 +80,7 @@
                    (setf *current-storage-place-number* 4))))
 
           ;+ 0.11 um beim zweiten objekt mitzuteilen das jetzt kein platz mehr ist
-      (if (<= last-y-border (- y width-split))
+      (if (<= last-y-border (+ (- y width-split) 0.11))
 (setf *storage-place-capacity* "storage-place-full"))
 
 (if (<= last-y-border (- y width-split))
