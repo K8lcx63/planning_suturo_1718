@@ -116,12 +116,6 @@
 
 
 
-
-
-
-
-
-
 (defun toggle-gripper (effort &optional (gripper 1) (position 0.008))
   "Uses sound_play service to let the pr2 say a string out loud"
   (let ((actionclient (actionlib:make-action-client "/gripper" "motion_msgs/GripperAction")))
