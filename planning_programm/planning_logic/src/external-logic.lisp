@@ -9,6 +9,10 @@
 (defvar *gripper-left-state-fluent* (cram-language:make-fluent))
 (defvar *l* nil)
 (defvar *r* nil)
+(defvar *x* nil)
+(defvar *y* nil)
+(defvar *angle* nil)
+(defvar *counter* nil)
 
 
 
@@ -130,8 +134,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-                                        ;@param: pose, amount und optional endFrame
-                                        ;@return: a transformed point-stamped
+
 (defun transformation-Vision-Point (pose &optional (endFrame "/base_footprint")) 
   "transform a poseStamped-msg with an optional Frame, default is base_footprint, to a pointStamped" 
   (roslisp:with-fields 
@@ -235,10 +238,9 @@
        (nth 0 (roslisp:get-param label))
        (nth 1 (roslisp:get-param label))
        (nth 2 (roslisp:get-param label))
-       "/map")
+       "/map") 
     (roslisp:with-fields (y) origin
       (return-from get-Information-About-Object y))))
-
 
 
 (defun percieve-Objetcs ()
@@ -254,18 +256,22 @@
                    (planning-vision:call-vision-object-pose name (- i 1))
                  (planning-logic:publish-pose name object_pose)
                  (planning-logic::save-object name object_pose)))
-             (roslisp:set-param "counter" (+ 1 (roslisp:get-param "counter"))))))
+             (roslisp:set-param "counter"
+                                (+ 1 (roslisp:get-param "counter"))))))
 
 (defun percieve-Objects-And-Search (label)
+  (print "get er hier rein?")
   (roslisp:with-fields ((labels
                             (vision_suturo_msgs-msg:labels
                                 vision_suturo_msgs-srv:clouds)))
       (planning-vision:call-vision-object-clouds)
+    (print "absturz?")
     (loop for i from 1 to (array-total-size labels)
           do
              (let ((name
                      (aref labels (- i 1))))
                (if (eq label name)
+                   (print "hier ist eq label")
                    (progn
                      (roslisp:with-fields (object_pose)
                          (planning-vision:call-vision-object-pose name (- i 1))
@@ -273,6 +279,21 @@
                        (planning-logic::save-object name object_pose))
                      (return-from percieve-objects-and-search T)))))
     (return-from  percieve-objects-and-search nil)))
+
+
+(defun make-Object-Pose-For-Handshake (label)
+  (roslisp:make-msg "geometry_msgs/PoseStamped"
+                    (header) (roslisp:make-msg "std_msgs/header"
+                                               (frame_id) "/map")
+                    (pose) (roslisp:make-message "geometry_msgs/Pose" 
+                                                 (position) (roslisp:make-msg "geometry_msgs/Point"
+                                                                              (x) (nth 0 (roslisp:get-param label))
+                                                                              (y) (nth 1 (roslisp:get-param label))
+                                                                              (z) (nth 2 (roslisp:get-param label)))
+                                                 (orientation) (roslisp:make-msg "geometry_msgs/Quaternion"
+                                                                                 (w) 1))))
+
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -290,79 +311,51 @@
     (if (eq x T) (setf *l* 0) (setf *l* 1)) (if (eq y T) (setf *r* 0) (setf *r* 1)))) 
 
 
-(defun grab-Object-Right (label)
+
+(defun grab-Or-Place-Object (label x y angle arm-first arm-first-homeposi grab-string &optional arm-second arm-second-homeposi)
   (sleep 5.0)
-  (roslisp:with-fields (left_gripper)
-      (cram-language:wait-for
-       (planning-knowledge::empty-gripper))
-    (if
-     (eq T left_gripper)
-     (progn
-       (planning-logic::publish-text "trying to grab now with left arm")
-       (if (eq 
-            (cram-language:wait-for
-             (planning-logic:try-to-grab-different-location 0.29 1 0 180  label 6)) T)
-           (progn
-             (planning-motion::call-motion-move-arm-homeposition 11)
-             (return-from grab-Object-Right T))))
-     (progn
-       (planning-logic::publish-text "can't grab the an object with left")
-       (sleep 5.0)
-       (roslisp:with-fields (right_gripper)
-           (cram-language:wait-for
-            (planning-knowledge::empty-gripper))
-         (if
-          (eq T right_gripper)
+  (setf *x* x) (setf *y* y) (setf *angle* angle) (setf *counter* 0) 
+  (block start-Grab
+    (roslisp:with-fields (left_gripper)
+        (cram-language:wait-for
+         (planning-knowledge:empty-gripper))
+      (if (eq T left_gripper)
           (progn
-            (planning-logic::publish-text "trying to grab now with right arm")
-            (if (eq 
-                 (cram-language:wait-for
-                  (planning-logic:try-to-grab-different-location 0.29 1 0 180 label 7)) T)
+            (if (eq (try-to-grab-or-place-different-location *x* *y* 0 *angle* label arm-first) T)
                 (progn
-                  (planning-motion::call-motion-move-arm-homeposition 12)
-                  (return-from grab-Object-Right T)))))))))
-  (return-from grab-object-right nil))
+                  (planning-motion::call-motion-move-arm-homeposition arm-first-homeposi)
+                  (return-from grab-or-place-object T))))
+          (if (string= grab-string "grab")
+                                        ;grab with second arm
+              (progn
+                (sleep 5.0)
+                (roslisp:with-fields (right_gripper)
+                    (cram-language:wait-for
+                     (planning-knowledge:empty-gripper))
+                  (if(eq T right_gripper)
+                     (progn
+                       (if (eq (try-to-grab-or-place-different-location *x* *y* 0 *angle* label arm-second) T)
+                           (progn
+                             (planning-motion:call-motion-move-arm-homeposition arm-second-homeposi)
+                             (return-from grab-or-place-object T)))))
+                                        ;position of pr2 will be different
+                  (if (= *counter* 0)
+                      (progn
+                        (setf *counter* 1)
+                        (calculate-object-and-pr2-distance label)
+                        (return-from start-Grab)))
+                                        ;since here interaction with human
+                  (roslisp:with-fields (force)
+                      (cram-language:wait-for
+                       (planning-knowledge:how-to-pick-objects label))
+                    (if (and (eq T left_gripper)(= arm-first 7))
+                        (planning-interaction:ask-human-to-move-object (make-object-pose-for-handshake label) label force 3)
+                        (if (eq T right_gripper)
+                            (planning-interaction:ask-human-to-move-object (make-object-pose-for-handshake label) label force 2)))))))))))
+                                        ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>HIER NOCH EIN ELSE FÜR STRING GRAB WENN NICHT ABSTELLBAR  HUMAN INTERACTION
 
 
-
-
-
-(defun grab-Object-Left (label)
-  (sleep 5.0)
-  (roslisp:with-fields (left_gripper)
-      (cram-language:wait-for
-       (planning-knowledge::empty-gripper))
-    (if
-     (eq T left_gripper)
-     (progn
-       (planning-logic::publish-text "trying to grab now with left arm")
-       (if (eq 
-            (cram-language:wait-for
-             (planning-logic:try-to-grab-different-location 0.29 1 0 180  label 7)) T)
-           (progn
-             (planning-motion::call-motion-move-arm-homeposition 12)
-             (return-from grab-Object-Left T))))
-     (progn
-       (planning-logic::publish-text "can't grab the an object with left")
-       (sleep 5.0)
-       (roslisp:with-fields (right_gripper)
-           (cram-language:wait-for
-            (planning-knowledge::empty-gripper))
-         (if
-          (eq T right_gripper)
-          (progn
-            (planning-logic::publish-text "trying to grab now with right arm")
-            (if (eq 
-                 (cram-language:wait-for
-                  (planning-logic:try-to-grab-different-location 0.29 1 0 180 label 6)) T)
-                (progn
-                  (planning-motion::call-motion-move-arm-homeposition 11)
-                  (return-from grab-Object-Left T)))))))))
-  (return-from grab-Object-Left nil))
-
-
-;;hier kann dann noch die logik für kevin rein da grab-object-x jetzt T oder Nil zurückgibt
-(defun grab-Left-Or-Right (label)
+(defun grab-Left-Or-Right (x y angle label)
   (sleep 5.0)
   (roslisp:with-fields (object_label_1)
       (planning-knowledge::objects-to-pick)
@@ -370,15 +363,15 @@
      (> (length object_label_1) 0)
      (if
       (= (should-robo-use-left-or-right-arm label) 7)
-      (grab-Object-Left label)
-      (grab-Object-Right label)))))
+      (grab-or-place-object label x y angle 7 12 "grab" 6 11)
+      (grab-or-place-object label x y angle 6 11 "grab" 7 12)))))
+
+(defun place-Object ())
 
 
 
 
-
-(defun try-To-Grab-Different-Location(x y z w label command)
-  "trying to grab the object now, with different locations and orientations."
+(defun try-To-Grab-Or-Place-Different-Location(x y z w label command)
   (loop for i from 0 to 3
         do
            (roslisp:with-fields ((grasp_pose_array knowledge_msgs-srv:grasp_pose_array)
@@ -387,21 +380,21 @@
                 (planning-knowledge::how-to-pick-objects label))
              
              (let ((position (make-array '(5)  
-                                         :initial-contents '(0 0.10 0.15 -0.10 -0.15)))) 
+                                         :initial-contents '(0 0.15 0.20 -0.15 -0.20))))
                (loop for ya across position do
                  (planning-move:move-Base-To-Point x (+ ya y) z w)
                  (let ((rotation (make-array '(5)  
                                              :initial-contents '(0 10 20 -10 -20))))
                    (loop for r across rotation do
-                     (progn
-                       (cram-language:wait-for
-                        (planning-move:move-Base-To-Point x (+ y ya) z (+ w r)))
-                       (if
-                        (eq 1
-                            (planning-motion:call-motion-move-arm-to-point grasp_pose_array label command force))
-                        (return-from try-to-grab-different-location T)
-                        (if (eq (percieve-Objects-And-Search label) nil)
-                            (return-from try-to-grab-different-location nil)))))))))))
+                     (cram-language:wait-for
+                      (planning-move:move-Base-To-Point x (+ y ya) z (+ w r)))
+                     (if
+                      (eq 1(planning-motion:call-motion-move-arm-to-point grasp_pose_array label command force))
+                      (return-from try-to-grab-or-place-different-location T)
+                      (if
+                       (eq (percieve-Objects-And-Search label) nil)
+                       (return-from try-to-grab-or-place-different-location nil))))))))))
+
 
 (defun should-Robo-Use-Left-Or-Right-Arm (label)
   "decides if the left or right arm is chosen depends on which one is closer"
@@ -419,6 +412,21 @@
                                         ;OTHERTR;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun calculate-Object-And-Pr2-Distance (label)
+  (let ((punkt1
+          (distance -1 0
+                    (nth 0 (roslisp:get-param label))
+                    (nth 1 (roslisp:get-param label))))
+        (punkt2
+          (distance -1.7 0.20
+                    (nth 0 (roslisp:get-param label))
+                    (nth 1 (roslisp:get-param label)))))
+    (if (< punkt1 punkt2)
+        (set-first-posi)
+        (setf-second-posi))))
+
+
 
 (defun move-Base (x y z angle &optional (motion 1))
   (roslisp:with-fields
@@ -461,6 +469,16 @@
 (defun pose-cb (msg)
   "Callback for pose values. Called by the pose topic subscriber."
   (setf (cram-language:value *pr2-pose*) msg))
+
+(defun set-First-Posi ()
+  (setf *x* -1)
+  (setf *Y* 0)
+  (setf *angle* 90))
+
+(defun setf-Second-Posi ()
+  (setf *x* -1.7)
+  (setf *y* 0.20)
+  (setf *angle* 30))
 
 
 

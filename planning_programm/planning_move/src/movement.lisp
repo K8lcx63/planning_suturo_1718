@@ -36,7 +36,7 @@
                                         ;Errorhandling is missing -V
 (defmethod move-Base-To-Point (x y z angle  &optional (motion 1))
   "Moving robot base via nav_pcontroller/move_base. X Y Z are treated as coordinates. Angle for Orientation."
-;  (planning-motion::call-Motion-Move-Arm-Homeposition motion)
+  (planning-motion::call-Motion-Move-Arm-Homeposition motion)
   (get-action-client-base)
   (let ((pose-to-drive-to 
           (cl-transforms-stamped:to-msg 
