@@ -135,6 +135,13 @@
 
 
 
+
+
+
+
+
+
+
 ;; ;; fiegt raus, wenn Vision weiter ist
 ;; ;; Beschreibung: Extrahiert alle Informationen aus der
 ;; ;; Visioncloud und speichert normal_features, color_features,
@@ -206,22 +213,3 @@
 ;;                                                       (write-to-string amount)))))(print "made it"))
 
 
-      
-
-;; (defun find-Object (x z)
-;;   "Looking around to find /beliefstate/gripper_empty an object, restarting at current Point if reused" 
-;;   (block find-Object-Start
-;;     (loop for i from *beliefstateHead* to 24 do
-;;       (let ((c (mod i 12)))
-;;         (progn
-;;           (planning-move::move-Head x(second (assoc c *headMovementList*)) z)
-;;           (setf *beliefstateHead* c)
-;;           (setf *pose-array*
-;;                (planning-logic::disassemble-vision-call
-;;                 (planning-vision::call-vision-object-clouds)))
-;;           (if (> (roslisp:get-param "object_amount") 0)
-;;               (return-from find-Object-Start)))))
-;;     (roslisp::ros-info "find-Object" "Couldnt find any Object in front of me")
-;;     (return-from find-Object nil))
-;;   (roslisp::ros-info "find-Object" "I see the Object. Head is in Position")
-;;   (return-from find-Object T))

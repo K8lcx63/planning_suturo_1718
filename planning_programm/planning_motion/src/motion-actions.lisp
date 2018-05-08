@@ -9,8 +9,6 @@
         (((or cpl:simple-plan-failure planning-error::motion-error) (error-object)
            (format t "An error happened: ~a~%" error-object)
            (roslisp::ros-info "Motion" "Trying to solve error.")
-           ;Here is the place for solutions to the problem!
-           ;fahren z.B hier
            (cpl:do-retry retry-counter
              (format t "Now retrying~%")
              (roslisp::ros-info "Motion" "Now retrying ...")
@@ -32,7 +30,7 @@
                   (let ((actiongoal
                           (actionlib:make-action-goal actionclient goal_pose xtrans command x)))
                      (actionlib:call-goal actionclient actiongoal)))))
-           (roslisp:with-fields (motion_msgs-msg:status (motion_msgs-msg:movingcommandresult) status)
+           (roslisp:with-fields (motion_msgs-msg:status)
             status-message
           (case motion_msgs-msg:status
             (0 (roslisp::ros-info "Motion" "Successfully moved into home position."))
@@ -43,11 +41,10 @@
             (3 (roslisp::ros-error "Motion" "Unmanageble error occured in motion!")
              (cpl:fail 'planning-error::motion-error :message "Unmanageable error occured in motion!")))))))
 
+(defgeneric call-Motion-Move-Arm-To-Point (pose label command-x &optional force))
 
-
-(Defun call-Motion-Move-Arm-To-Point (point-center-of-object label &optional (x 3) (force 15))
-  "Moves choosen robot-arm (optional parameter) to the point-center-of-object (default right arm 3=right, 2=left)"
-  (roslisp::ros-info "Motion" "moving arm to point")
+(defmethod call-Motion-Move-Arm-To-Point ((pose geometry_msgs-msg:posearray) label command-x &optional (force 15))
+    (roslisp::ros-info "Motion" "moving arm to point")
   (cpl:with-retry-counters ((retry-counter 4))
     (cpl:with-failure-handling
         (((or cpl:simple-plan-failure planning-error::motion-error)(error-object)
@@ -68,9 +65,9 @@
                 (loop until
                       (actionlib:wait-for-server actionclient))
                 (let ((actiongoal
-                        (actionlib:make-action-goal actionclient goal_pose point-center-of-object command x force force grasped_object_label label)))
+                        (actionlib:make-action-goal actionclient goal_poses pose command command-x force force grasped_object_label label)))
                   (actionlib:call-goal actionclient actiongoal))))
-             (roslisp:with-fields (motion_msgs-msg:status (motion_msgs-msg:movingcommandresult status))
+             (roslisp:with-fields (motion_msgs-msg:status)
             status-message
               (case motion_msgs-msg:status
                 (0 (roslisp::ros-info "Motion" "Successfully moved into position."))
@@ -80,6 +77,44 @@
                  (cpl:fail 'planning-error::motion-error :message "Path to goal is obstructed."))
                 (3 (roslisp::ros-error "Motion" "Unmanageble error occured in motion!")
                  (cpl:fail 'planning-error::motion-error :message "Unmanageable error occured in motion!")))))))
+
+
+(defmethod call-Motion-Move-Arm-To-Point ((pose geometry_msgs-msg:posestamped) label command-x &optional (force 15))
+    (roslisp::ros-info "Motion" "moving arm to point")
+  (cpl:with-retry-counters ((retry-counter 4))
+    (cpl:with-failure-handling
+        (((or cpl:simple-plan-failure planning-error::motion-error)(error-object)
+           (format t "An error happened: ~a~%" error-object)
+           (roslisp::ros-info "Motion" "Trying to solve error.")
+           ;Here is the place for solutions to the problem!
+           ;Fahren z.B hier
+           (cpl:do-retry retry-counter
+             (format t "Now retrying~%")
+             (roslisp::ros-info "Motion" "Now retrying ...")
+             (cpl:retry))
+           (format t "Reached maximum amount of retries. Now propagating the failure up.~%")
+           (roslisp::ros-error "Motion" "Reached maximum amount of retries. Now propagating the failure up.~%")
+      (return-from call-Motion-Move-Arm-To-Point status-message)))
+      (setf status-message
+              (let ((actionclient 
+                      (actionlib:make-action-client "/moving" "motion_msgs/MovingCommandAction")))
+                (loop until
+                      (actionlib:wait-for-server actionclient))
+                (let ((actiongoal
+                        (actionlib:make-action-goal actionclient goal_pose pose command command-x force force grasped_object_label label)))
+                  (actionlib:call-goal actionclient actiongoal))))
+             (roslisp:with-fields (motion_msgs-msg:status)
+            status-message
+              (case motion_msgs-msg:status
+                (0 (roslisp::ros-info "Motion" "Successfully moved into position."))
+                (1 (roslisp::ros-warn "Motion" "Goal is out of range.")
+                 (cpl:fail 'planning-error::motion-error :message "Goal is out of range."))
+                (2 (roslisp::ros-warn "Motion" "Path to goal is obstructed.")
+                 (cpl:fail 'planning-error::motion-error :message "Path to goal is obstructed."))
+                (3 (roslisp::ros-error "Motion" "Unmanageble error occured in motion!")
+                 (cpl:fail 'planning-error::motion-error :message "Unmanageable error occured in motion!")))))))
+
+
 
 (defun toggle-gripper (effort &optional (gripper 1) (position 0.008))
   "Uses sound_play service to let the pr2 say a string out loud"

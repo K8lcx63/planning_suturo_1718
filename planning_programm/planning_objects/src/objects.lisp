@@ -24,6 +24,9 @@
 (defvar *storage-place-capacity* "storage-place-empty")
 
 (defun calculate-landing-zone (object gripper)
+  ;; Errechnet die Landezone und gibt diese als Liste mit der Zusatzinformation ob die Zone voll ist zurück.
+  ;; Als Parameter werden das object-label und der Gripper benötigt. 1 für links 2 für rechts.
+  ;; Benutzt fill-landing-zone-horizontally um die Landezone mit bis zu zwei Objekten zu befüllen.
   (setf *current-object-label* object)
   (let ((landing-zone-message
           (planning-knowledge::ask-knowledge-where-belongs object)))
@@ -31,7 +34,7 @@
                           (height (storage_place_height))
                           (position (storage_place_position)))
         landing-zone-message
-      (setf width (- width 0.19))
+      (setf width (- width 0.03))
       (setf height (- height 0.2))
       (let ((middle-point-landing-zone-pose
               (cl-tf:to-msg (fill-landing-zone-horizontally position width height)))
@@ -45,14 +48,11 @@
             (return-from calculate-landing-zone (list landing-pose-message *storage-place-capacity*))))))))
 
 (defun fill-landing-zone-horizontally (position width height)
-  ;(cpl:with-failure-handlingy
-   ;   ((cpl:simple-plan-failure 
-         ;(format t "An error happened: ~a~%" error-object)
-    ;     (roslisp:ros-warn "Objects" "Out of storage space!"))
-       ;;hier knowledge nach einer Schiebepose fragen
+  ;; Befüllt die Landezone mit bis zu zwei Objekten. Wenn man versucht ein drittes Objekt einzufügen wird ein Fehler ausgegeben.
+  (cpl:with-failure-handling
+      (((or cpl:simple-plan-failure planning-error::objects-error) (error-object)
+         (format t "An error happened: ~a~%" error-object)))
        
-       ;(planning-motion::call-motion-move-arm-to-point (position *current-object-label* 6))
-       ;)
     (roslisp:with-fields ((x (geometry_msgs-msg:x geometry_msgs-msg:point))
                           (y (geometry_msgs-msg:y geometry_msgs-msg:point))
                           (z (geometry_msgs-msg:z geometry_msgs-msg:point)))
@@ -61,9 +61,7 @@
               (current-y-border)
               (width-split (/ width 2.0))
               (height-split (/ height 2.0)))
-          
 
-      
           (cond ((>= y (- 1.13063 width-split))
                  (progn
                    (setf last-y-border *last-y-border-y-1*)
@@ -80,16 +78,13 @@
                  (progn
                    (setf last-y-border *last-y-border-y-4*)
                    (setf *current-storage-place-number* 4))))
-      
 
           ;+ 0.11 um beim zweiten objekt mitzuteilen das jetzt kein platz mehr ist
       (if (<= last-y-border (+ (- y width-split) 0.11))
-(setf *storage-place-capacity* "storage-place-full")
-          )
-            
+(setf *storage-place-capacity* "storage-place-full"))
 
-
-          
+(if (<= last-y-border (- y width-split))
+    (cpl:fail 'planning-error::objects-error :message "Out of storage space!"))
           
           (cond ((= *current-storage-place-number* 1)
                  (if (not *object-label-1-lz-1*)
@@ -119,9 +114,6 @@
                                               0.0
                                               (cl-transforms:make-3d-vector current-middle-point-x current-middle-point-y z)
                                               (cl-transforms:make-quaternion 0 0 0 1))))
-        ;(print last-y-border)
-        ;(print y)
-        ;(print width-split)
         
         (setf current-y-border (- last-y-border landing-zone-width))
         
@@ -133,45 +125,50 @@
                (setf *last-y-border-y-3* current-y-border))
               ((>= y (- 0.00563 width-split))
                (setf *last-y-border-y-4* current-y-border)))
-        (return-from fill-landing-zone-horizontally landing-zone-pose)))))
+        (return-from fill-landing-zone-horizontally landing-zone-pose))))))
 
 (defun push-object ()
-;hier knowledge nach schiebepose fragen und position ersetzen
+  (let ((push-pose)
+    (gripper)
+    (empty-gripper-msg (planning-knowledge::empty-gripper)))
 
-            (let (push-pose)
+;herausfinden welcher Gripper frei ist und in "gripper" rein schreiben. 5 links 4 rechts
+(roslisp:with-fields ((left-gripper (left_gripper))
+                      (right-gripper (right_gripper)))
+    empty-gripper-msg
+  (if left-gripper
+      (setf gripper 5))
+  (if right-gripper
+      (setf gripper 4)))
 
-              ;knowledge service benutzen um herauszufinden welcher gripper frei ist zum pushen
-              
+;gripper öffnen
+(planning-motion::toggle-gripper 20 gripper 0.08)
+
             (case *current-storage-place-number*
               (1
                (setf push-pose (planning-knowledge::push-object *object-label-1-lz-1*))
-               ;vorher gripper öffnen?
-               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-1-lz-1* 4)
-               ;vielleicht erst wieder in die home position
+               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-1-lz-1* gripper)
                (setf push-pose (planning-knowledge::push-object *object-label-2-lz-1*))
-               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-1* 4)
-
-                                        ;abfrage ob motion successfull war??
+               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-1* gripper)
                (setf *last-y-border-y-1* 9.0))
               (2
                (setf push-pose (planning-knowledge::push-object *object-label-1-lz-2*))
-               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-1-lz-2* 4)
+               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-1-lz-2* gripper)
                (setf push-pose (planning-knowledge::push-object *object-label-2-lz-2*))
-               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-2* 4)
+               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-2* gripper)
                (setf *last-y-border-y-2* 9.0))
               (3
                (setf push-pose (planning-knowledge::push-object *object-label-1-lz-3*))
-               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-1-lz-3* 4)
+               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-1-lz-3* gripper)
                (setf push-pose (planning-knowledge::push-object *object-label-2-lz-3*))
-               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-3* 4)
+               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-3* gripper)
                (setf *last-y-border-y-3* 9.0))
               (4
                (setf push-pose (planning-knowledge::push-object *object-label-1-lz-4*))
-               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-1-lz-4* 4)
+               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-1-lz-4* gripper)
                (setf push-pose (planning-knowledge::push-object *object-label-2-lz-4*))
-               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-4* 4)
+               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-4* gripper)
                (setf *last-y-border-y-4* 9.0)))
-
               (setf *storage-place-capacity* "storage-place-empty")))
 
 (defun clear-all-landing-zones ()
@@ -190,6 +187,8 @@
   (setf *object-label-2-lz-4* nil))
 
 (defun calculate-landing-zone-visualized (object gripper)
+  ;; Funktioniert wie calculate-landing-zone und publiziert zusätzlich einen Marker,
+  ;; wo später das Objekt abgestellt werden soll
   (let ((landing-zone-pose (calculate-landing-zone object gripper)))
     (visualize-landing-zone landing-zone-pose)
     (incf *marker-id*)
@@ -203,16 +202,20 @@
 ;nützlich
 
 (defun visualize-landing-zone (landing-zone-pose)
+  ;; Ruft vis-init auf unf publish-pose
   (vis-init)
   (publish-pose landing-zone-pose *marker-id* 0.1 0.09166666616996129))
 
 (defun vis-init ()
+  ;; Startet den marker-publisher
   (setf *marker-publisher*
         (roslisp:advertise "~location_marker" "visualization_msgs/Marker")))
 
 (defun publish-pose (pose id height width)
-  ;(roslisp:with-fields ((place-pose (knowledge_msgs-srv:place_pose))) pose
-  ;(setf pose (cl-tf:from-msg place-pose)))
+  ;; Publiziert eine Pose als Marker
+  (setf pose (nth 0 pose))
+  (roslisp:with-fields ((place-pose (knowledge_msgs-srv:place_pose))) pose
+  (setf pose (cl-tf:from-msg place-pose)))
   (let ((point (cl-transforms:origin pose))
         (rot (cl-transforms:orientation pose))
         (current-index 0)
