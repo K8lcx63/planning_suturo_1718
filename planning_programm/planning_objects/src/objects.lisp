@@ -55,14 +55,22 @@
                               (exact-landing-y
                                (geometry_msgs-msg:y geometry_msgs-msg:position geometry_msgs-msg:pose))) middle-point-landing-zone-pose
           (let ((landing-pose-message
-                  (planning-knowledge::place-object gripper-msg "/map" exact-landing-x exact-landing-y))
-                (in-case-of-sigg-bottle-true nil))
-; Kevin wants to demonstrate his human-robot-interaction.
-; Therefore everytime "SiggBottle" is accessed a string will be returned to let the caller know
-; he has to initiate human robot interaction
-            (if (string= object "SiggBottle")
-                (setf in-case-of-sigg-bottle-true t))
-            (return-from calculate-landing-zone (list landing-pose-message *storage-place-capacity* in-case-of-sigg-bottle-true))))))))
+                  (roslisp:make-msg "geometry_msgs/PoseStamped"
+                                    :header (roslisp:make-msg "std_msgs/Header"
+                                                              :frame_id "/map")
+                                    :pose (roslisp:make-msg "geometry_msgs/Pose"
+                                                            :position (roslisp:make-msg "geometry_msgs/Point"
+                                                                                        :x exact-landing-x
+                                                                                        :y exact-landing-y
+                                                                                :z 0.987)
+                                                            :orientation (roslisp:make-msg "geometry_msgs/Quaternion"
+                                                                                           :x 0.0
+                                                                                           :y 0.707
+                                                                                           :z 0.0
+                                                                                           :w 0.707)))
+                  ;(planning-knowledge::place-object gripper-msg "/map" exact-landing-x exact-landing-y)
+                  ))
+            (return-from calculate-landing-zone (list landing-pose-message *storage-place-capacity*))))))))
 
 ;; Places one more object in the landing zone. Throws an error if the storage place already contains two or more objects.
 ;;
@@ -154,25 +162,26 @@
 ;; If the storage place is not full an error will be thrown
 
 (defun push-object ()
-    (cpl:with-failure-handling
-      (((or cpl:simple-plan-failure planning-error::objects-error) (error-object)
-         (format t "An error happened: ~a~%" error-object)))
-
-  (let ((push-pose)
-    (gripper)
-    (empty-gripper-msg (planning-knowledge::empty-gripper)))
-
-;herausfinden welcher Gripper frei ist und in "gripper" rein schreiben. 5 links 4 rechts
-(roslisp:with-fields ((left-gripper (left_gripper))
-                      (right-gripper (right_gripper)))
-    empty-gripper-msg
-  (if left-gripper
-      (setf gripper 5))
-  (if right-gripper
-      (setf gripper 4)))
+(let ((push-pose
+                                    (roslisp:make-msg "geometry_msgs/PoseStamped"
+                                    :header (roslisp:make-msg "std_msgs/Header"
+                                                              :frame_id "/map")
+                                    :pose (roslisp:make-msg "geometry_msgs/Pose"
+                                                            :position (roslisp:make-msg "geometry_msgs/Point"
+                                                                                :x 1.358
+                                                                                :y 0.576
+                                                                                :z 0.95)
+                                                            :orientation (roslisp:make-msg "geometry_msgs/Quaternion"
+                                                                                           :x 0.0
+                                                                                           :y 0.0
+                                                                                           :z 0.0
+                                                                                           :w 1.0))))
+      (gripper 5))
 
 ;gripper öffnen
 (planning-motion::toggle-gripper 20 gripper 0.08)
+
+(roslisp:wait-duration 2.0)
 
 (case *current-storage-place-number*
   (1
@@ -194,9 +203,26 @@
   (3
    (if (or (not *object-label-1-lz-3*) (not *object-label-2-lz-3*))
        (cpl:fail 'planning-error::objects-error :message "The storage place is not full!"))
-   (setf push-pose (planning-knowledge::push-object *object-label-1-lz-3*))
+   ;(setf push-pose (planning-knowledge::push-object *object-label-1-lz-3*))
    (planning-motion::call-motion-move-arm-to-point push-pose *object-label-1-lz-3* gripper)
-   (setf push-pose (planning-knowledge::push-object *object-label-2-lz-3*))
+   ;(setf push-pose (planning-knowledge::push-object *object-label-2-lz-3*))
+
+   (setf push-pose (roslisp:make-msg "geometry_msgs/PoseStamped"
+                                    :header (roslisp:make-msg "std_msgs/Header"
+                                                              :frame_id "/map")
+                                    :pose (roslisp:make-msg "geometry_msgs/Pose"
+                                                            :position (roslisp:make-msg "geometry_msgs/Point"
+                                                                                :x 1.358
+                                                                                :y 0.4
+                                                                                :z 0.95)
+                                                            :orientation (roslisp:make-msg "geometry_msgs/Quaternion"
+                                                                                           :x 0.0
+                                                                                           :y 0.0
+                                                                                           :z 0.0
+                                                                                           :w 1.0))))
+
+   (planning-motion::call-motion-move-arm-homeposition)
+   
    (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-3* gripper)
    (setf *last-y-border-y-3* 9.0))
   (4
@@ -207,7 +233,7 @@
    (setf push-pose (planning-knowledge::push-object *object-label-2-lz-4*))
    (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-4* gripper)
    (setf *last-y-border-y-4* 9.0)))
-(setf *storage-place-capacity* "storage-place-empty"))))
+(setf *storage-place-capacity* "storage-place-empty")))
 
 ;; Clears all landing zones of objects. This is for testing purposes.
 
