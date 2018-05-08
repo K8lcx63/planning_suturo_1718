@@ -96,8 +96,10 @@
                                               (statement "I cannot grasp the Object over there. Can you please move the")
                                               (statement2 " and shake my hand?"))
   (planning-motion::call-motion-move-arm-homeposition 10)
+  (planning-logic::publish-sphere (geometry_msgs-msg:Pose pose))
   (let ((pose-to-point
           (build-pointing-pose pose)))
+    (planning-logic::publish-sphere (geometry_msgs-msg:Pose pose-to-point))
     (planning-motion::call-motion-move-arm-to-point pose-to-point "" moving-command)) 
   (say (concatenate 'string statement label statement2))
   (planning-motion::toggle-gripper force (decide-gripper moving-command) *open-gripper-pos*)
@@ -372,11 +374,12 @@
            (get-pointing-pose object-pos)))
         (y-vec
           (cl-tf:make-3d-vector 0 0 1)))
-    (cl-tf:matrix->quaternion 
-     (vectors-to-matrix
-      dir-vec
-      y-vec
-      (cl-tf:cross-product dir-vec y-vec)))))
+    (cl-tf:normalize
+     (cl-tf:matrix->quaternion 
+      (vectors-to-matrix
+       dir-vec
+       y-vec
+       (cl-tf:cross-product dir-vec y-vec))))))
 
 
 
@@ -416,13 +419,13 @@
 (defun vectors-to-matrix (vector-x vector-y vector-z)
   (let ((matrix (make-array '(3 3))))
     (setf (aref matrix 0 0) (cl-tf:x vector-x))
-    (setf (aref matrix 0 1) (cl-tf:y vector-x))
-    (setf (aref matrix 0 2) (cl-tf:z vector-x))
-    (setf (aref matrix 1 0) (cl-tf:x vector-y))
+    (setf (aref matrix 1 0) (cl-tf:y vector-x))
+    (setf (aref matrix 2 0) (cl-tf:z vector-x))
+    (setf (aref matrix 0 1) (cl-tf:x vector-y))
     (setf (aref matrix 1 1) (cl-tf:y vector-y))
-    (setf (aref matrix 1 2) (cl-tf:z vector-y))
-    (setf (aref matrix 2 0) (cl-tf:x vector-z))
-    (setf (aref matrix 2 1) (cl-tf:y vector-z))
+    (setf (aref matrix 2 1) (cl-tf:z vector-y))
+    (setf (aref matrix 0 2) (cl-tf:x vector-z))
+    (setf (aref matrix 1 2) (cl-tf:y vector-z))
     (setf (aref matrix 2 2) (cl-tf:z vector-z))
     (return-from vectors-to-matrix matrix)))
               
