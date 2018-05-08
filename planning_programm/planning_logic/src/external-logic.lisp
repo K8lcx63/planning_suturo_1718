@@ -73,6 +73,39 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defun publish-Text-Pose (string pose)
+  (roslisp:publish *text-publisher*
+                   (roslisp:make-message "visualization_msgs/Marker" (frame_id header) "map"
+                                         ns "planning_namespace"
+                                         id 0
+                                         type 9
+                                         action 0
+                                         pose pose
+                                         (x scale) 0.2
+                                         (y scale) 0.2
+                                         (z scale) 0.2
+                                         (r color) 0.5
+                                         (g color) 0.8
+                                         (b color) 1.0
+                                         (a color) 1.0
+                                         (text) string)))
+
+(defun publish-sphere (pose)
+  (roslisp:publish *text-publisher*
+                   (roslisp:make-message "visualization_msgs/Marker" (frame_id header) "base_link"
+                                         ns "planning_namespace"
+                                         id 101010
+                                         type 0
+                                         action 0
+                                         pose pose
+                                         (x scale) 0.2
+                                         (y scale) 0.2
+                                         (z scale) 0.2
+                                         (r color) 0.5
+                                         (g color) 0.8
+                                         (b color) 1.0
+                                         (a color) 1.0)))
+
 
 (defun publish-pose (label object_pose)
   (when *perception-publisher*
