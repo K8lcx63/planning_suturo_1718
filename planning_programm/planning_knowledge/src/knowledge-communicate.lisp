@@ -46,3 +46,5 @@
   (roslisp:call-service "/push_object/push" 'knowledge_msgs-srv:PushObject
                         :object_label object-label))
 
+(defun get-Object-Attached-To-Gripper ()
+  (roslisp:call-service "/beliefstate/object_attached_to_gripper" 'knowledge_msgs-srv:GetObjectAttachedToGripper))
