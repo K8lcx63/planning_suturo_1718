@@ -151,8 +151,13 @@
         (return-from fill-landing-zone-horizontally landing-zone-pose))))))
 
 ;; Pushes both objects of the last filled storage place away to free up space for new objects.
+;; If the storage place is not full an error will be thrown
 
 (defun push-object ()
+    (cpl:with-failure-handling
+      (((or cpl:simple-plan-failure planning-error::objects-error) (error-object)
+         (format t "An error happened: ~a~%" error-object)))
+
   (let ((push-pose)
     (gripper)
     (empty-gripper-msg (planning-knowledge::empty-gripper)))
@@ -171,30 +176,38 @@
 
 (case *current-storage-place-number*
   (1
+   (if (or (not *object-label-1-lz-1*) (not *object-label-2-lz-1*))
+       (cpl:fail 'planning-error::objects-error :message "The storage place is not full!"))
    (setf push-pose (planning-knowledge::push-object *object-label-1-lz-1*))
    (planning-motion::call-motion-move-arm-to-point push-pose *object-label-1-lz-1* gripper)
    (setf push-pose (planning-knowledge::push-object *object-label-2-lz-1*))
    (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-1* gripper)
-               (setf *last-y-border-y-1* 9.0))
-              (2
-               (setf push-pose (planning-knowledge::push-object *object-label-1-lz-2*))
-               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-1-lz-2* gripper)
-               (setf push-pose (planning-knowledge::push-object *object-label-2-lz-2*))
-               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-2* gripper)
-               (setf *last-y-border-y-2* 9.0))
-              (3
-               (setf push-pose (planning-knowledge::push-object *object-label-1-lz-3*))
-               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-1-lz-3* gripper)
-               (setf push-pose (planning-knowledge::push-object *object-label-2-lz-3*))
-               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-3* gripper)
-               (setf *last-y-border-y-3* 9.0))
-              (4
-               (setf push-pose (planning-knowledge::push-object *object-label-1-lz-4*))
-               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-1-lz-4* gripper)
-               (setf push-pose (planning-knowledge::push-object *object-label-2-lz-4*))
-               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-4* gripper)
-               (setf *last-y-border-y-4* 9.0)))
-              (setf *storage-place-capacity* "storage-place-empty")))
+   (setf *last-y-border-y-1* 9.0))
+  (2
+   (if (or (not *object-label-1-lz-2*) (not *object-label-2-lz-2*))
+       (cpl:fail 'planning-error::objects-error :message "The storage place is not full!"))
+   (setf push-pose (planning-knowledge::push-object *object-label-1-lz-2*))
+   (planning-motion::call-motion-move-arm-to-point push-pose *object-label-1-lz-2* gripper)
+   (setf push-pose (planning-knowledge::push-object *object-label-2-lz-2*))
+   (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-2* gripper)
+   (setf *last-y-border-y-2* 9.0))
+  (3
+   (if (or (not *object-label-1-lz-3*) (not *object-label-2-lz-3*))
+       (cpl:fail 'planning-error::objects-error :message "The storage place is not full!"))
+   (setf push-pose (planning-knowledge::push-object *object-label-1-lz-3*))
+   (planning-motion::call-motion-move-arm-to-point push-pose *object-label-1-lz-3* gripper)
+   (setf push-pose (planning-knowledge::push-object *object-label-2-lz-3*))
+   (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-3* gripper)
+   (setf *last-y-border-y-3* 9.0))
+  (4
+   (if (or (not *object-label-1-lz-4*) (not *object-label-2-lz-4*))
+       (cpl:fail 'planning-error::objects-error :message "The storage place is not full!"))
+   (setf push-pose (planning-knowledge::push-object *object-label-1-lz-4*))
+   (planning-motion::call-motion-move-arm-to-point push-pose *object-label-1-lz-4* gripper)
+   (setf push-pose (planning-knowledge::push-object *object-label-2-lz-4*))
+   (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-4* gripper)
+   (setf *last-y-border-y-4* 9.0)))
+(setf *storage-place-capacity* "storage-place-empty"))))
 
 ;; Clears all landing zones of objects. This is for testing purposes.
 
