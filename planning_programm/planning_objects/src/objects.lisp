@@ -34,9 +34,10 @@
 ;;
 ;; @input  string object                             - object lable
 ;; @input  knowledge_msgs/gripper gripper            - gripper number, 1 for left 2 for right
-;; @output list (geometry_msgs/PoseStamped , string) - list of a pose where the object should be placed and a string that says "storage-place-empty" or "storage-place-full". "storage-place-empty" means that there is more space for one or more objects.
+;; @output list (geometry_msgs/PoseStamped , string, bool) - list of a pose where the object should be placed and a string that says "storage-place-empty" or "storage-place-full". "storage-place-empty" means that there is more space for one or more objects. The last list object is true if the object is a "SiggBottle" and false if it is anything else.
 
 (defun calculate-landing-zone (object gripper)
+
   (setf *current-object-label* object)
   (let ((landing-zone-message
           (planning-knowledge::ask-knowledge-where-belongs object)))
@@ -54,8 +55,14 @@
                               (exact-landing-y
                                (geometry_msgs-msg:y geometry_msgs-msg:position geometry_msgs-msg:pose))) middle-point-landing-zone-pose
           (let ((landing-pose-message
-                  (planning-knowledge::place-object gripper-msg "/map" exact-landing-x exact-landing-y)))
-            (return-from calculate-landing-zone (list landing-pose-message *storage-place-capacity*))))))))
+                  (planning-knowledge::place-object gripper-msg "/map" exact-landing-x exact-landing-y))
+                (in-case-of-sigg-bottle-true nil))
+; Kevin wants to demonstrate his human-robot-interaction.
+; Therefore everytime "SiggBottle" is accessed a string will be returned to let the caller know
+; he has to initiate human robot interaction
+            (if (string= object "SiggBottle")
+                (setf in-case-of-sigg-bottle-true t))
+            (return-from calculate-landing-zone (list landing-pose-message *storage-place-capacity* in-case-of-sigg-bottle-true))))))))
 
 ;; Places one more object in the landing zone. Throws an error if the storage place already contains two or more objects.
 ;;
@@ -96,7 +103,8 @@
 
           ;+ 0.11 um beim zweiten objekt mitzuteilen das jetzt kein platz mehr ist
       (if (<= last-y-border (+ (- y width-split) 0.11))
-(setf *storage-place-capacity* "storage-place-full"))
+          (setf *storage-place-capacity* "storage-place-full")
+          (setf *storage-place-capacity* "storage-place-empty"))
 
 (if (<= last-y-border (- y width-split))
     (cpl:fail 'planning-error::objects-error :message "Out of storage space!"))
@@ -161,12 +169,12 @@
 ;gripper öffnen
 (planning-motion::toggle-gripper 20 gripper 0.08)
 
-            (case *current-storage-place-number*
-              (1
-               (setf push-pose (planning-knowledge::push-object *object-label-1-lz-1*))
-               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-1-lz-1* gripper)
-               (setf push-pose (planning-knowledge::push-object *object-label-2-lz-1*))
-               (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-1* gripper)
+(case *current-storage-place-number*
+  (1
+   (setf push-pose (planning-knowledge::push-object *object-label-1-lz-1*))
+   (planning-motion::call-motion-move-arm-to-point push-pose *object-label-1-lz-1* gripper)
+   (setf push-pose (planning-knowledge::push-object *object-label-2-lz-1*))
+   (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-1* gripper)
                (setf *last-y-border-y-1* 9.0))
               (2
                (setf push-pose (planning-knowledge::push-object *object-label-1-lz-2*))
