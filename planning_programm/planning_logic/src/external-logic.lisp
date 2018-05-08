@@ -244,20 +244,24 @@
 
 
 (defun percieve-Objetcs ()
+  (print "geht er hier rein percieve-Objects")
   (roslisp:with-fields ((labels
                             (vision_suturo_msgs-msg:labels
                                 vision_suturo_msgs-srv:clouds)))
-      (planning-vision:call-vision-object-clouds)
+      (cram-language:wait-for (planning-vision:call-vision-object-clouds))
     (loop for i from 1 to (array-total-size labels)
           do
+             (print "array-total-size:")             (print (array-total-size labels)) (print labels) 
              (let ((name
                      (aref labels (- i 1))))
                (roslisp:with-fields (object_pose)
                    (planning-vision:call-vision-object-pose name (- i 1))
+                 (print object_pose)
                  (planning-logic:publish-pose name object_pose)
                  (planning-logic::save-object name object_pose)))
              (roslisp:set-param "counter"
-                                (+ 1 (roslisp:get-param "counter"))))))
+                                (+ 1 (roslisp:get-param "counter")))
+          (print (roslisp:get-param "counter")))))
 
 (defun percieve-Objects-And-Search (label)
   (print "get er hier rein?")

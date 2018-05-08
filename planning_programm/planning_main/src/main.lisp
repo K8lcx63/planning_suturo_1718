@@ -6,7 +6,7 @@
 
 (defun init ()
   (planning-logic:init-logic)
-  ;(planning-interaction:init-interaction))
+                                        ;(planning-interaction:init-interaction))
   )
 
 (defun main ()
@@ -16,12 +16,12 @@
   ;;homeposition of the robo, he stand infront of the kitchen_island
   (planning-move:move-base-to-point -0.29 1 0 180)
   (block find-Objects-Start
+    (roslisp:set-param "counter" 0)
     (loop for i from 0 to 5 do
       (planning-move:move-Head 1.4 (second (assoc i *headMovementList*)) 0)
 
       ;;perciving objects
-      (cram-language:wait-for
-       (planning-logic::percieve-objetcs)))
+      (planning-logic::percieve-objetcs))
 
     (if (> (roslisp:get-param "counter") 0)
         (progn
@@ -29,37 +29,49 @@
           (loop for i from 1 to 2 do
             (roslisp:with-fields (object_label_1)
                 (planning-knowledge:objects-to-pick)
-              (planning-logic:grab-left-or-right object_label_1)))
+              (planning-logic:grab-left-or-right -0.29 1 180 object_label_1))) 
           (planning-motion:call-motion-move-arm-homeposition 10)
           (planning-logic::how-many-gripper)
-          ;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>WELCHER GRIPPER + OBJEKT?! +LOOP
+
           
-          (block drive-And-Place
-            ;;were should pr2 drive
-            (let ((calculate-landing-zone
-                    (planning-objects::calculate-landing-zone "JaMilch" 2)))
-              (setf *y*
-                    (planning-logic:disassemble-graspindividual-response calculate-landing-zone))
-              ;;driving to point
-              (planning-interaction:check-gripper "errormsgs" 'planning-logic:move-base '(0.75 *y* 0 0)
-                                                  planning-logic::*r*
-                                                  planning-logic::*l*)
+          ;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>WELCHER GRIPPER + OBJEKT?! +LOOP
 
-              ;;placing Object 
-              (roslisp:with-fields (place_pose)
-                  (nth 0 calculate-landing-zone)
-                (planning-motion:call-motion-move-arm-to-point place_pose "JaMilch" 8))
+          (loop for i from 1 to 2 do
+            (roslisp:with-fields (object_label)
+                (planning-knowledge::get-object-attached-to-gripper i)
+              (block drive-And-Place
+                ;;were should pr2 drive
+                 (if
+                  (> (length object_label) 0)
+                  (let ((calculate-landing-zone
+                          (planning-objects::calculate-landing-zone object_label i)))
+                    (setf *y*
+                          (planning-logic:disassemble-graspindividual-response calculate-landing-zone))
+                    ;;driving to point
+                    (planning-interaction:check-gripper "errormsgs" 'planning-logic:move-base '(0.75 *y* 0 0)
+                                                        planning-logic::*r*
+                                                        planning-logic::*l*)
+                    ;;placing Object 
+                    (roslisp:with-fields (place_pose)
+                        (nth 0 calculate-landing-zone)
+                      (if (= i 2)
+                          (planning-motion:call-motion-move-arm-to-point place_pose object_label 8)
+                          (planning-motion:call-motion-move-arm-to-point place_pose objecT_label 9)))
+                    (if
+                     (String= "storage-place-full" (nth 1 calculate-landing-zone))
+                     (planning-objects::push-object)))))))
 
-              ;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>LOOP ABSTELLEN STOP!!
-              (planning-logic:move-base -0.29 1 0 180)
-              (roslisp:delete-param "counter")
-              (return-from find-Objects-Start))))
-        (return-from main "My Work is done"))))
+          ;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>LOOP ABSTELLEN STOP!!
+          
+          (planning-logic:move-base -0.29 1 0 180)
+          (roslisp:delete-param "counter")
+          (return-from find-Objects-Start))
+        (return-from main "cant find any object"))))
 
 
 
- 
-                     
+
+
 
 
 
