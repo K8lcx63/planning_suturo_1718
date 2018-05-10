@@ -45,7 +45,7 @@
 
 (defmethod call-Motion-Move-Arm-To-Point ((pose geometry_msgs-msg:posearray) label command-x &optional (force 15))
     (roslisp::ros-info "Motion" "moving arm to point")
-  (cpl:with-retry-counters ((retry-counter 4))
+  (cpl:with-retry-counters ((retry-counter 2))
     (cpl:with-failure-handling
         (((or cpl:simple-plan-failure planning-error::motion-error)(error-object)
            (format t "An error happened: ~a~%" error-object)

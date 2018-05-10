@@ -17,10 +17,11 @@
   (planning-move:move-base-to-point -0.29 1 0 180)
   (block find-Objects-Start
     (roslisp:set-param "counter" 0)
-    (loop for i from 0 to 5 do
+    (loop for i from 0 to 0 do
       (planning-move:move-Head 1.4 (second (assoc i *headMovementList*)) 0)
 
       ;;perciving objects
+      (sleep 5.0)
       (planning-logic::percieve-objetcs))
 
     (if (> (roslisp:get-param "counter") 0)

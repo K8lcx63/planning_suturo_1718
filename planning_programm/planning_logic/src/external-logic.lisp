@@ -284,6 +284,7 @@
       (cram-language:wait-for (planning-vision:call-vision-object-clouds))
     (loop for i from 1 to (array-total-size labels)
           do
+             (sleep 5.0)
              (print "array-total-size:")             (print (array-total-size labels)) (print labels) 
              (let ((name
                      (aref labels (- i 1))))
@@ -365,6 +366,7 @@
           (if (string= grab-string "grab")
                                         ;grab with second arm
               (progn
+                (print "grab with second arm")
                 (sleep 5.0)
                 (roslisp:with-fields (right_gripper)
                     (cram-language:wait-for
@@ -376,11 +378,11 @@
                              (planning-motion:call-motion-move-arm-homeposition arm-second-homeposi)
                              (return-from grab-or-place-object T)))))
                                         ;position of pr2 will be different
-                  (if (= *counter* 0)
-                      (progn
-                        (setf *counter* 1)
-                        (calculate-object-and-pr2-distance label)
-                        (return-from start-Grab)))
+                  ;; (if (= *counter* 0)
+                  ;;     (progn
+                  ;;       (setf *counter* 1)
+                  ;;       (calculate-object-and-pr2-distance label)
+                  ;;       (return-from start-Grab)))
                                         ;since here interaction with human
                   (roslisp:with-fields (force)
                       (cram-language:wait-for
@@ -416,22 +418,24 @@
                (cram-language:wait-for
                 (planning-knowledge::how-to-pick-objects label))
              
-             (let ((position (make-array '(5)  
-                                         :initial-contents '(0 0.15 0.20 -0.15 -0.20))))
+             (let ((position (make-array '(3)  
+                                         :initial-contents '(0  0.20 -0.20))))
                (loop for ya across position do
                  (planning-move:move-Base-To-Point x (+ ya y) z w)
-                 (let ((rotation (make-array '(5)  
-                                             :initial-contents '(0 10 20 -10 -20))))
+                 (let ((rotation (make-array '(1)  
+                                             :initial-contents '(0))))
+                     (if
+                       (eq (percieve-Objects-And-Search label) nil)
+                       (return-from try-to-grab-or-place-different-location nil)
+                       (planning-motion:call-motion-move-arm-homeposition 10))
                    (loop for r across rotation do
                      (cram-language:wait-for
                       (planning-move:move-Base-To-Point x (+ y ya) z (+ w r)))
                      (if
                       (eq 1(planning-motion:call-motion-move-arm-to-point grasp_pose_array label command force))
                       (return-from try-to-grab-or-place-different-location T)
-                      (if
-                       (eq (percieve-Objects-And-Search label) nil)
-                       (return-from try-to-grab-or-place-different-location nil))))))))))
-
+                    ))))))))
+                       
 
 (defun should-Robo-Use-Left-Or-Right-Arm (label)
   "decides if the left or right arm is chosen depends on which one is closer"
