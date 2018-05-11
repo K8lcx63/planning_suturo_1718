@@ -45,7 +45,7 @@
 
 (defmethod call-Motion-Move-Arm-To-Point ((pose geometry_msgs-msg:posearray) label command-x &optional (force 15))
     (roslisp::ros-info "Motion" "moving arm to point")
-  (cpl:with-retry-counters ((retry-counter 4))
+  (cpl:with-retry-counters ((retry-counter 2))
     (cpl:with-failure-handling
         (((or cpl:simple-plan-failure planning-error::motion-error)(error-object)
            (format t "An error happened: ~a~%" error-object)
@@ -66,7 +66,7 @@
                       (actionlib:wait-for-server actionclient))
                 (let ((actiongoal
                         (actionlib:make-action-goal actionclient goal_poses pose command command-x force force grasped_object_label label)))
-                  (actionlib:call-goal actionclient actiongoal))))
+                  (cram-language:wait-for(actionlib:call-goal actionclient actiongoal)))))
              (roslisp:with-fields (motion_msgs-msg:status)
             status-message
               (case motion_msgs-msg:status
@@ -124,5 +124,6 @@
            (actionlib:make-action-goal actionclient position position force effort gripper gripper)))
       (actionlib:wait-for-server actionclient 5.0)
       (actionlib:call-goal actionclient actiongoal))))
+  
 
 

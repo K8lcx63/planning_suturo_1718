@@ -34,13 +34,13 @@
       (actionlib:call-goal actionclient actiongoal))))
 
                                         ;Errorhandling is missing -V
-(defmethod move-Base-To-Point (x y z angle  &optional (motion 1))
+(defmethod move-Base-To-Point (x y z angle  &optional (motion 1) (frame "/map"))
   "Moving robot base via nav_pcontroller/move_base. X Y Z are treated as coordinates. Angle for Orientation."
   (planning-motion::call-Motion-Move-Arm-Homeposition motion)
   (get-action-client-base)
   (let ((pose-to-drive-to 
           (cl-transforms-stamped:to-msg 
-           (cl-transforms-stamped:make-pose-stamped "map" 10
+           (cl-transforms-stamped:make-pose-stamped frame 0
                                                     (cl-transforms:make-3d-vector x y z)
                                                     (quaternion x y z angle)))))
     (let ((actiongoal 
@@ -49,14 +49,16 @@
 
 
 
-(defmethod move-Base-To-Point :before (x y z angle  &optional (motion 1))
+
+
+(defmethod move-Base-To-Point :before (x y z angle  &optional (motion 1) (frame "/map"))
   "before method for move-Base-To-Point"
   (roslisp:ros-info (move-Base-To-Point)
                     "robo is starting to move..."))
 
 
 
-(defmethod move-Base-To-Point :after (x y z angle &optional motion)
+(defmethod move-Base-To-Point :after (x y z angle &optional (motion 1)(frame "/map"))
   "after method for move-Base-To-Point"
   (roslisp:ros-info (move-Base-To-Point)
                     "robo is done moving."))
