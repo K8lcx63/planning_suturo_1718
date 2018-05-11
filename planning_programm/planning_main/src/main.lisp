@@ -6,8 +6,8 @@
 
 (defun init ()
   (planning-logic:init-logic)
-                                        ;(planning-interaction:init-interaction))
-  )
+  (planning-interaction:init-interaction))
+  
 
 (defun main ()
   "Main function - Executing and planning robot behaviour on the top level"  
@@ -17,8 +17,8 @@
   (planning-move:move-base-to-point -0.29 1 0 180)
   (block find-Objects-Start
     (roslisp:set-param "counter" 0)
-    (loop for i from 0 to 5 do 
-      (planning-move:move-Head 1.4 (second (assoc i *headMovementList*)) 0)
+    (loop for i from 0 to 0 do 
+      (planning-move:move-Head 1.2 (second (assoc i *headMovementList*)) 0)
 
       ;;perciving objects
       (sleep 5.0)
@@ -47,12 +47,14 @@
                   (let ((calculate-landing-zone
                           (planning-objects::calculate-landing-zone object_label i)))
                     (setf *y*
-                          (planning-logic:disassemble-graspindividual-response calculate-landing-zone))
+                          (planning-logic:disassemble-graspindividual-response (nth 0 calculate-landing-zone)))
                     ;;driving to point
-                    (planning-interaction:check-gripper "errormsgs" 'planning-logic:move-base '(0.75 *y* 0 0)
-                                                        planning-logic::*r*
-                                                        planning-logic::*l*)
-                    ;;placing Object 
+                    ;; (cram-language:top-level
+                    ;; (planning-interaction:check-gripper "errormsgs" 'planning-logic:move-base '(0.75 *y* 0 0 10 "/map" nil)
+                    ;;                                     planning-logic::*r*
+                    ;;                                     planning-logic::*l*))
+                    ;;placing Object
+                    (planning-logic:move-base 0.75 *y* 0 0)
                     (roslisp:with-fields (place_pose)
                         (nth 0 calculate-landing-zone)
                       (if (= i 2)

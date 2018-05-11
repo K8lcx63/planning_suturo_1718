@@ -440,25 +440,30 @@
 
 
 (defun trying-To-Grab (label x y angle arm-first arm-first-homeposi grab-string arm-second arm-second-homeposi)
-  (grab-or-place-object label x y angle arm-first arm-first-homeposi grab-string arm-second arm-second-homeposi)
-  (if (and (string= grab-string "grab")(= *counter* 0))
-      (progn
-        (setf *counter* 1)
-        (calculate-object-and-pr2-distance label)
-        (sleep 5.0)
-        (if (eq T
-                (grab-or-place-object label *x* *y* *angle* arm-first arm-first-homeposi grab-string arm-second arm-second-homeposi))
-            (return-from trying-To-Grab T)))
+  (if (eq nil 
+          (grab-or-place-object label x y angle arm-first arm-first-homeposi grab-string arm-second arm-second-homeposi))
+      (if (and (string= grab-string "grab")(= *counter* 0))
+          (progn
+            (setf *counter* 1)
+            (calculate-object-and-pr2-distance label)
+            (sleep 5.0)
+            (if (eq T
+                    (grab-or-place-object label *x* *y* *angle* arm-first arm-first-homeposi grab-string arm-second arm-second-homeposi))
+                (return-from trying-To-Grab T) 
                                         ; since here interaction with human
-                  ;; (roslisp:with-fields (force)
-                  ;;     (cram-language:wait-for
-                  ;;      (planning-knowledge:how-to-pick-objects label))
-                  ;;   (if (and (eq T left_gripper)(= arm-first 7))
-                  ;;       (planning-interaction:ask-human-to-move-object (make-object-pose-for-handshake label) label force 3)
-                  ;;       (if (eq T right_gripper)
-                  ;;           (planning-interaction:ask-human-to-move-object (make-object-pose-for-handshake label) label force 2)))))))))))
+                (roslisp:with-fields
+                    ((left_gripper (knowledge_msgs-srv:left_gripper))
+                     (right_gripper(knowledge_msgs-srv:right_gripper)))
+                    (cram-language:wait-for
+                     (planning-knowledge:empty-gripper))
+                  (roslisp:with-fields (force)
+                      (cram-language:wait-for
+                       (planning-knowledge:how-to-pick-objects label))
+                    (if (and (eq T left_gripper)(= arm-first 7))
+                        (planning-interaction:ask-human-to-move-object (make-object-pose-for-handshake label) label force 3)
+                        (if (eq T right_gripper)
+                            (planning-interaction:ask-human-to-move-object (make-object-pose-for-handshake label) label force 2))))))))))
                                         ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>HIER NOCH EIN ELSE FÜR STRING GRAB WENN NICHT ABSTELLBAR  HUMAN INTERACTION
-            ))
 
 
 (defun grab-Left-Or-Right (x y angle label)
@@ -484,26 +489,27 @@
       (cram-language:wait-for
        (planning-knowledge::how-to-pick-objects label))
     (planning-move:move-base-to-point x y z w 10)
-    (let ((position (make-array '(3)  
-                                :initial-contents '(0  0.20 -0.20))))
+    (let ((position (make-array '(1)  
+                                :initial-contents '(0))))
       (loop for ya across position do
         (print "print ya")
         (print ya)
-        (let ((rotation (make-array '(3)  
-                                    :initial-contents '(0 30 -30))))
-          ;; (if
-          ;;   (eq (percieve-Objects-And-Search label) nil)
-          ;;   (return-from try-to-grab-or-place-different-location nil) -->nur reinmachen wenn vision geht
-          (planning-motion:call-motion-move-arm-homeposition 10)
-          (loop for r across rotation do
-            (print "ab hier versucht er zu rotatieren atm auf 0 gesetzt")
-            (cram-language:wait-for
-             (planning-move:move-Base-To-Point 0 ya 0 r 10 "/base_link"))
-            (if
-             (eq 1(planning-motion:call-motion-move-arm-to-point grasp_pose_array label command force))
-             (return-from try-to-grab-or-place-different-location T)
-             )))))))
-                       
+        (let ((rotation (make-array '(1)  
+                                    :initial-contents '(0))))
+
+              (planning-motion:call-motion-move-arm-homeposition 10)
+              (loop for r across rotation do
+              (print "ab hier versucht er zu rotatieren atm auf 0 gesetzt")
+              (cram-language:wait-for
+               (planning-move:move-Base-To-Point 0 ya 0 r 10 "/base_link"))
+              (if
+               (eq 1(planning-motion:call-motion-move-arm-to-point grasp_pose_array label command force))
+               (return-from try-to-grab-or-place-different-location T)
+               ;; (if
+               ;;  (eq (percieve-Objects-And-Search label) nil)
+               ;;  (return-from try-to-grab-or-place-different-location nil)
+                
+               )))))))                       
 
 (defun should-Robo-Use-Left-Or-Right-Arm (label)
   "decides if the left or right arm is chosen depends on which one is closer"
