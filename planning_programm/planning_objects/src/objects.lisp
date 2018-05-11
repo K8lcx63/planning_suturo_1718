@@ -1,5 +1,7 @@
 (in-package :planning-objects)
 
+(defvar *hack-counter* 0)
+
 ;; Publisher for publishing markers where objects will be placed
 (defvar *marker-publisher* nil)
 
@@ -46,7 +48,7 @@
                           (position (storage_place_position)))
         landing-zone-message
       (setf width (- width 0.03))
-      (setf height (- height 0.2))
+      (setf height (- height 0.3))
       (let ((middle-point-landing-zone-pose
               (cl-tf:to-msg (fill-landing-zone-horizontally position width height)))
             (gripper-msg (roslisp:make-message "knowledge_msgs/gripper" :gripper gripper)))
@@ -60,8 +62,8 @@
                                                               :frame_id "/map")
                                     :pose (roslisp:make-msg "geometry_msgs/Pose"
                                                             :position (roslisp:make-msg "geometry_msgs/Point"
-                                                                                        :x exact-landing-x
-                                                                                        :y exact-landing-y
+                                                                                        :x 1.35
+                                                                                        :y 0.516
                                                                                 :z 0.987)
                                                             :orientation (roslisp:make-msg "geometry_msgs/Quaternion"
                                                                                            :x 0.0
@@ -69,6 +71,25 @@
                                                                                            :z 0.0
                                                                                            :w 0.707))))
                 (in-case-of-sigg-bottle-true nil))
+
+            (if (= *hack-counter* 1)
+                (progn (setf landing-pose-message (roslisp:make-msg "geometry_msgs/PoseStamped"
+                                    :header (roslisp:make-msg "std_msgs/Header"
+                                                              :frame_id "/map")
+                                    :pose (roslisp:make-msg "geometry_msgs/Pose"
+                                                            :position (roslisp:make-msg "geometry_msgs/Point"
+                                                                                        :x 1.42
+                                                                                        :y 0.344
+                                                                                :z 0.987)
+                                                            :orientation (roslisp:make-msg "geometry_msgs/Quaternion"
+                                                                                           :x 0.0
+                                                                                           :y 0.707
+                                                                                           :z 0.0
+                                                                                           :w 0.707))))
+                       (decf *hack-counter*))
+                (incf *hack-counter*))
+                
+            
             ; Kevin wants to demonstrate his human-robot-interaction.
             ; Therefore everytime "SiggBottle" is accessed a string will be returned to let the caller know
             ; he has to initiate human robot interaction
@@ -173,9 +194,9 @@
                                                               :frame_id "/map")
                                     :pose (roslisp:make-msg "geometry_msgs/Pose"
                                                             :position (roslisp:make-msg "geometry_msgs/Point"
-                                                                                :x 1.358
-                                                                                :y 0.576
-                                                                                :z 0.95)
+                                                                                :x 1.35
+                                                                                :y 0.516
+                                                                                :z 0.987)
                                                             :orientation (roslisp:make-msg "geometry_msgs/Quaternion"
                                                                                            :x 0.0
                                                                                            :y 0.0
@@ -217,9 +238,9 @@
                                                               :frame_id "/map")
                                     :pose (roslisp:make-msg "geometry_msgs/Pose"
                                                             :position (roslisp:make-msg "geometry_msgs/Point"
-                                                                                :x 1.358
-                                                                                :y 0.4
-                                                                                :z 0.95)
+                                                                                :x 1.42
+                                                                                :y 0.344
+                                                                                :z 0.987)
                                                             :orientation (roslisp:make-msg "geometry_msgs/Quaternion"
                                                                                            :x 0.0
                                                                                            :y 0.0
@@ -300,8 +321,8 @@
 (defun publish-pose (pose id height width)
   ;; Publiziert eine Pose als Marker
   (setf pose (nth 0 pose))
-  (roslisp:with-fields ((place-pose (knowledge_msgs-srv:place_pose))) pose
-  (setf pose (cl-tf:from-msg place-pose)))
+  ;(roslisp:with-fields ((place-pose (knowledge_msgs-srv:place_pose))) pose
+  (setf pose (cl-tf:from-msg pose))
   (let ((point (cl-transforms:origin pose))
         (rot (cl-transforms:orientation pose))
         (current-index 0)
