@@ -67,10 +67,15 @@
                                                                                            :x 0.0
                                                                                            :y 0.707
                                                                                            :z 0.0
-                                                                                           :w 0.707)))
-                  ;(planning-knowledge::place-object gripper-msg "/map" exact-landing-x exact-landing-y)
-                  ))
-            (return-from calculate-landing-zone (list landing-pose-message *storage-place-capacity*))))))))
+                                                                                           :w 0.707))))
+                (in-case-of-sigg-bottle-true nil))
+            ; Kevin wants to demonstrate his human-robot-interaction.
+            ; Therefore everytime "SiggBottle" is accessed a string will be returned to let the caller know
+            ; he has to initiate human robot interaction
+            (if (string= object "SiggBottle")
+                (setf in-case-of-sigg-bottle-true t))
+            (return-from calculate-landing-zone (list landing-pose-message *storage-place-capacity* in-case-of-sigg-bottle-true))))))))
+
 
 ;; Places one more object in the landing zone. Throws an error if the storage place already contains two or more objects.
 ;;
