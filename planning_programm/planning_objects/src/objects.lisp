@@ -1,5 +1,7 @@
 (in-package :planning-objects)
 
+;; GitKraken needs this commit to merge branches
+
 ;; Publisher for publishing markers where objects will be placed
 (defvar *marker-publisher* nil)
 
