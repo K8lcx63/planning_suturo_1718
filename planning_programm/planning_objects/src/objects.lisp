@@ -198,13 +198,13 @@
    (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-2* gripper)
    (setf *last-y-border-y-2* 9.0))
   (3
-   (if (or (not *object-label-1-lz-3*) (not *object-label-2-lz-3*))
-       (cpl:fail 'planning-error::objects-error :message "The storage place is not full!"))
+   ;(if (or (not *object-label-1-lz-3*) (not *object-label-2-lz-3*))
+      ; (cpl:fail 'planning-error::objects-error :message "The storage place is not full!"))
    (setf push-pose (planning-knowledge::push-object *object-label-1-lz-3*))
    (planning-motion::call-motion-move-arm-to-point push-pose *object-label-1-lz-3* gripper)
-   (planning-motion::call-motion-move-arm-homeposition)
-   (setf push-pose (planning-knowledge::push-object *object-label-2-lz-3*))
-   (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-3* gripper)
+   ;(planning-motion::call-motion-move-arm-homeposition)
+   ;(setf push-pose (planning-knowledge::push-object *object-label-2-lz-3*))
+   ;(planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-3* gripper)
    (setf *last-y-border-y-3* 9.0))
   (4
    (if (or (not *object-label-1-lz-4*) (not *object-label-2-lz-4*))
