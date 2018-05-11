@@ -185,6 +185,7 @@
         (return-from fill-landing-zone-horizontally landing-zone-pose))))))
 
 ;; Pushes both objects of the last filled storage place away to free up space for new objects.
+;; In between pushes the robot will move into the home position to avoid collisions.
 ;; If the storage place is not full an error will be thrown
 
 (defun push-object ()
@@ -215,6 +216,7 @@
        (cpl:fail 'planning-error::objects-error :message "The storage place is not full!"))
    (setf push-pose (planning-knowledge::push-object *object-label-1-lz-1*))
    (planning-motion::call-motion-move-arm-to-point push-pose *object-label-1-lz-1* gripper)
+   (planning-motion::call-motion-move-arm-homeposition)
    (setf push-pose (planning-knowledge::push-object *object-label-2-lz-1*))
    (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-1* gripper)
    (setf *last-y-border-y-1* 9.0))
@@ -223,6 +225,7 @@
        (cpl:fail 'planning-error::objects-error :message "The storage place is not full!"))
    (setf push-pose (planning-knowledge::push-object *object-label-1-lz-2*))
    (planning-motion::call-motion-move-arm-to-point push-pose *object-label-1-lz-2* gripper)
+   (planning-motion::call-motion-move-arm-homeposition)
    (setf push-pose (planning-knowledge::push-object *object-label-2-lz-2*))
    (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-2* gripper)
    (setf *last-y-border-y-2* 9.0))
@@ -256,6 +259,7 @@
        (cpl:fail 'planning-error::objects-error :message "The storage place is not full!"))
    (setf push-pose (planning-knowledge::push-object *object-label-1-lz-4*))
    (planning-motion::call-motion-move-arm-to-point push-pose *object-label-1-lz-4* gripper)
+   (planning-motion::call-motion-move-arm-homeposition)
    (setf push-pose (planning-knowledge::push-object *object-label-2-lz-4*))
    (planning-motion::call-motion-move-arm-to-point push-pose *object-label-2-lz-4* gripper)
    (setf *last-y-border-y-4* 9.0)))
