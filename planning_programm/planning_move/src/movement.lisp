@@ -36,6 +36,19 @@
                                         ;Errorhandling is missing -V
 (defmethod move-Base-To-Point (x y z angle  &optional (motion 1) (frame "/map"))
   "Moving robot base via nav_pcontroller/move_base. X Y Z are treated as coordinates. Angle for Orientation."
+  (cpl:with-retry-counters ((retry-counter 2))
+    (cpl:with-failure-handling
+        (((or cpl:simple-plan-failure planning-error::motion-error) (error-object)
+           (format t "An error happened: ~a~%" error-object)
+           (roslisp::ros-info "Moving" "Trying to solve error.")
+           (cpl:do-retry retry-counter
+             (format t "Now retrying~%")
+             (roslisp::ros-info "Moving" "Now retrying ...")
+             (cpl:retry)) 
+           (format t "Reached maximum amount of retries. Now propagating the failure up.~%")
+           (roslisp::ros-error "Moving" "Reached maximum amount of retries. Now propagating the failure up.~%")
+           (return-from move-Base-To-Point nil)))
+      ;moving
   (planning-motion::call-Motion-Move-Arm-Homeposition motion)
   (get-action-client-base)
   (let ((pose-to-drive-to 
@@ -45,7 +58,7 @@
                                                     (quaternion x y z angle)))))
     (let ((actiongoal 
             (actionlib:make-action-goal *action-client-base* target_pose pose-to-drive-to)))
-      (actionlib:call-goal *action-client-base* actiongoal))))
+      (actionlib:call-goal *action-client-base* actiongoal))))))
 
 
 
