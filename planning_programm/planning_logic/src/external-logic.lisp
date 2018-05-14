@@ -69,7 +69,10 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
                                         ;PUBLISH;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;All functions with the purpose of publishing something
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -108,6 +111,7 @@
 
 
 (defun publish-pose (label object_pose)
+  "publish a label and a pose on to the server '/beliefstate/perceive_action"
   (when *perception-publisher*
     (roslisp:publish *perception-publisher*
                      (roslisp:make-message "knowledge_msgs/perceivedobject"
@@ -116,8 +120,11 @@
 
 
 
-
+;;This function is only for the demo scenario purpose.
+;;Here a "JaMilch" is percieved and published to Team Knowledge also a new param will be created on the Ros
+;;Param Server.
 (defun publish-Pose-JaMilch ()
+  "publish a label and a defined pose on to the server '/beliefstate/perceive_action" 
   (let ((object_pose_stamped 
           (roslisp:make-msg "geometry_msgs/posestamped"
                             header (roslisp:make-msg "std_msgs/header"
@@ -125,13 +132,13 @@
                             pose (roslisp:make-msg "geometry_msgs/pose"
                                                    (position) (roslisp:make-msg "geometry_msgs/point"
                                                                                 (x) -0.9
-                                                                                (y) 1.5
+                                                                                (y) 1.3
                                                                                 (z) 0.932383)
                                                    (orientation) (roslisp:make-msg "geometry_msgs/quaternion"
-                                                                                   (x) 1
+                                                                                   (x) 0
                                                                                    (y) 0
                                                                                    (z) 0
-                                                                                   (w) 0)))))
+                                                                                   (w) 1)))))
     (when *perception-publisher*
       (roslisp:publish *perception-publisher*
                        (roslisp:make-message "knowledge_msgs/PerceivedObject"
@@ -149,6 +156,7 @@
 
 
 (defun publish-Text (string)
+  "publish a text in rviz with a given string"
   (roslisp:publish *text-publisher*
                    (roslisp:make-message "visualization_msgs/Marker" (frame_id header) "map"
                                          ns "planning_namespace"
@@ -176,6 +184,8 @@
                                          (a color) 1.0
                                          (text) string)))
 
+
+;;publish a model-pose for different models
 (defun publish-Model-Pose (string)
   (roslisp:publish *model-publisher*
                    (roslisp:make-message "gazebo_msgs/ModelState"
@@ -194,11 +204,14 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
                                         ;TRANSFORMATIONS;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;All functions with the purpose of transformations
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
+;;This function is used to decide which arm the pr2 should use for an object.
 (defun transformation-Vision-Point (pose &optional (endFrame "/base_footprint")) 
   "transform a poseStamped-msg with an optional Frame, default is base_footprint, to a pointStamped" 
   (roslisp:with-fields 
@@ -232,7 +245,7 @@
 
 
 (defun transformation-Pose-Stamped (pose &optional (endFrame "/base_footprint")) 
-  "transform a msgs with an optional Frame, default is base_footprint" 
+  "transform a Pose-Stamped-msgs with an optional Frame, default is base_footprint" 
   (roslisp:with-fields 
       ((startFrame 
         (STD_msgs-msg:frame_id geometry_msgs-msg:header)) 
@@ -260,7 +273,9 @@
                                     (cl-transforms:make-quaternion xo yo zo w)))) 
       (catch-Transformation-Pose-Stamped transform-listener tf-pose-stamped endFrame))))
 
-(defun transformation-XYZ (x y z startFrame &optional (endFrame "/base_footprint"))  
+
+(defun transformation-XYZ (x y z startFrame &optional (endFrame "/base_footprint"))
+  "transforms a point with standart ( 0 0 0 1) quaternion"
   (let 
       ((transform-listener 
          (make-instance 'cl-tf:transform-listener)) 
@@ -285,18 +300,23 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-                                        ;OBJECT;
+
+                                        ;OBJECTS;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;All functions with the purpose of doing something with objects
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 
 (defun save-Object (label object_pose)
+  "The given object (label) will be set as a new param on the Paramserver, but keep in mind only the Point will be saved. The label will be the name of the param."
   (roslisp:with-fields (origin)
       (transformation-pose-stamped object_pose "/map")
     (roslisp:set-param label (roslisp:with-fields (x y z) origin (list x y z)))))
 
 (defun get-Information-About-Object (label)
+  "Transforming the point of the label to frame "/map" return value is the transformed y value." 
   (roslisp:with-fields (origin)
       (transformation-XYZ
        (nth 0 (roslisp:get-param label))
@@ -308,7 +328,7 @@
 
 
 (defun percieve-Objetcs ()
-  (print "geht er hier rein percieve-Objects")
+  "Calling vision_sutuo service to percieve objects, while looping for the array-total-size through all the percieved objects will be published and saved on to the Paramserver. Another param named "counter" is logging how many objects has been seen."
   (roslisp:with-fields ((labels
                             (vision_suturo_msgs-msg:labels
                                 vision_suturo_msgs-srv:clouds)))
@@ -329,18 +349,16 @@
           (print (roslisp:get-param "counter")))))
 
 (defun percieve-Objects-And-Search (label)
-  (print "percieve objects an search:")
+  "searching for the given object if its still seen."
   (roslisp:with-fields ((labels
                             (vision_suturo_msgs-msg:labels
                                 vision_suturo_msgs-srv:clouds)))
       (planning-vision:call-vision-object-clouds)
-    (print "hier rechnet er mit vision")
     (loop for i from 1 to (array-total-size labels)
           do
              (let ((name
                      (aref labels (- i 1))))
                (if (eq label name)
-                   (print "hier ist eq label")
                    (progn
                      (roslisp:with-fields (object_pose)
                          (planning-vision:call-vision-object-pose name (- i 1))
@@ -351,6 +369,7 @@
 
 
 (defun make-Object-Pose-For-Handshake (label)
+  "making a msg from the point of an object for the handshake function."
   (roslisp:make-msg "geometry_msgs/PoseStamped"
                     (header) (roslisp:make-msg "std_msgs/header"
                                                (frame_id) "/map")
@@ -369,23 +388,30 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                                         ;GRAB;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;All functions with the purpose of grabbing or placing an object
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 (defun how-Many-Gripper ()
+  "looping through the emtpy-gripper server and setting the variable left and right to T(1) or nil (o)"
   (roslisp:with-fields
       ((x knowledge_msgs-srv:left_gripper)
        (y knowledge_msgs-srv:right_gripper right_gripper))
       (planning-knowledge:empty-gripper)
-    (if (eq x T) (setf *l* 0) (setf *l* 1)) (if (eq y T) (setf *r* 0) (setf *r* 1)))) 
+    (if (eq x T)
+        (setf *l* 0)
+        (setf *l* 1))
+    (if (eq y T)
+        (setf *r* 0)
+        (setf *r* 1)))) 
 
 
 
 (defun grab-Or-Place-Object (label x y angle arm-first arm-first-homeposi grab-string &optional arm-second arm-second-homeposi)
+  "Trying to grab or place, if the given grab-string is equal to "grab" the pr2 will also try to grab it with another arm and different places"
   (sleep 5.0)
-  (print "er geht in die FUNKTION GRAB-OR_PLACE_OBJECT REIN")
   (block start-Grab
-    (print "block start-grab")
 ;which gripper
     (if (= arm-first 6)
        (roslisp:with-fields (right_gripper)
@@ -399,9 +425,6 @@
 ;trying to grab first arm
     (if (eq T *first-gripper*) 
             (progn
-               (print "erster arm:")
-               (print arm-first)
- 
               (if (eq (try-to-grab-or-place-different-location x y 0 angle label arm-first) T)
                   (progn
                     (planning-motion::call-motion-move-arm-homeposition arm-first-homeposi)
@@ -410,7 +433,6 @@
     (if (string= grab-string "grab")
                       ;grab with second arm
         (progn
-          (print "grab with second arm")
           (sleep 5.0)
                 
                     ;which gripper is empty
@@ -426,26 +448,24 @@
               
           (if(eq T *second-gripper*)
              (progn
-               (print "second arm:")
-               (print arm-second)
                (if (eq (try-to-grab-or-place-different-location x y 0 angle label arm-second) T)
                    (progn
                      (planning-motion:call-motion-move-arm-homeposition arm-second-homeposi)
-                             (return-from grab-or-place-object T)))))
-          (print "counter bei grab:")
-          (print *counter*)))
-
-  (return-from grab-or-place-object nil))) 
+                             (return-from grab-or-place-object T)))))))
+(return-from grab-or-place-object nil)))
 
 
 
 (defun trying-To-Grab (label x y angle arm-first arm-first-homeposi grab-string arm-second arm-second-homeposi)
+  "trying to grab object, first with both arms and different locations after that the pr2 will try to move around the kitchen island if its still not working he will ask the human for help."
   (if (eq nil 
           (grab-or-place-object label x y angle arm-first arm-first-homeposi grab-string arm-second arm-second-homeposi))
       (if (and (string= grab-string "grab")(= *counter* 0))
           (progn
             (setf *counter* 1)
             (calculate-object-and-pr2-distance label)
+            (planning-move:move-base-to-point *x* *y* 0 *angle* 10)
+            (percieve-objetcs)
             (sleep 5.0)
             (if (eq T
                     (grab-or-place-object label *x* *y* *angle* arm-first arm-first-homeposi grab-string arm-second arm-second-homeposi))
@@ -463,10 +483,10 @@
                         (planning-interaction:ask-human-to-move-object (make-object-pose-for-handshake label) label force 3)
                         (if (eq T right_gripper)
                             (planning-interaction:ask-human-to-move-object (make-object-pose-for-handshake label) label force 2))))))))))
-                                        ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>HIER NOCH EIN ELSE FÜR STRING GRAB WENN NICHT ABSTELLBAR  HUMAN INTERACTION
-
+                                        
 
 (defun grab-Left-Or-Right (x y angle label)
+  "decide if right or left arm should be used."
   (sleep 5.0)
   (setf *counter* 0)
   (roslisp:with-fields (object_label_1)
@@ -478,38 +498,35 @@
       (trying-To-Grab label x y angle 7 12 "grab" 6 11)
       (trying-To-Grab label x y angle 6 11 "grab" 7 12)))))
 
-(defun place-Object ())
 
 
-
-
+;;carefully! the movement here will be done in the frame "/base_footprint"
 (defun try-To-Grab-Or-Place-Different-Location(x y z w label command)
+  "different locations for grabbing a object"
   (roslisp:with-fields ((grasp_pose_array knowledge_msgs-srv:grasp_pose_array)
                         (force knowledge_msgs-srv:force))
       (cram-language:wait-for
        (planning-knowledge::how-to-pick-objects label))
     (planning-move:move-base-to-point x y z w 10)
-    (let ((position (make-array '(1)  
-                                :initial-contents '(0))))
+    (let ((position (make-array '(3)  
+                                :initial-contents '(0 20 -20))))
       (loop for ya across position do
-        (print "print ya")
-        (print ya)
         (let ((rotation (make-array '(1)  
-                                    :initial-contents '(0))))
+                                    :initial-contents '(0 30 -30))))
 
               (planning-motion:call-motion-move-arm-homeposition 10)
               (loop for r across rotation do
-              (print "ab hier versucht er zu rotatieren atm auf 0 gesetzt")
               (cram-language:wait-for
                (planning-move:move-Base-To-Point 0 ya 0 r 10 "/base_link"))
-              (if
-               (eq 1(planning-motion:call-motion-move-arm-to-point grasp_pose_array label command force))
-               (return-from try-to-grab-or-place-different-location T)
-               ;; (if
-               ;;  (eq (percieve-Objects-And-Search label) nil)
-               ;;  (return-from try-to-grab-or-place-different-location nil)
-                
-               )))))))                       
+              ;vision needs to be work
+              ;; (if
+              ;;  (eq (percieve-Objects-And-Search label) nil)
+              ;;  (return-from try-to-grab-or-place-different-location nil)
+               (if
+                (eq 1(planning-motion:call-motion-move-arm-to-point grasp_pose_array label command force))
+                (return-from try-to-grab-or-place-different-location T))))))))
+;)                       
+
 
 (defun should-Robo-Use-Left-Or-Right-Arm (label)
   "decides if the left or right arm is chosen depends on which one is closer"
@@ -524,7 +541,9 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-                                        ;OTHERTR;
+
+                                        ;OTHERS;
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -591,6 +610,7 @@
   (setf *Y* 0)
   (setf *angle* 90)
    (print "x y z angle set-first-posi")(print *x*) (print *y*) (print *angle*))
+
 (defun set-Second-Posi ()
   (setf *x* -1.7)
   (setf *y* 0.20)
