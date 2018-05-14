@@ -18,6 +18,12 @@
 (defvar *open-gripper-pos* 0.090)
 (defvar *closed-gripper-pos* 0.006)
 
+;; Publisher for knowledge taking object 
+(defvar *take-object-publisher*) 
+ 
+;; Publisher for knowledge dropping object 
+(defvar *drop-object-publisher*) 
+
 ;; Configurable position for gripper holding object out to human
 (defvar *holding-pose-right*
   (roslisp:make-msg "geometry_msgs/PoseStamped" 
@@ -55,6 +61,8 @@
   (setf *magnitude-publisher* (roslisp:advertise "/planning_interaction/wrench_force_magnitude" "std_msgs/Float32"))
   (setf *handshake-publisher* (roslisp:advertise "/planning_interaction/handshake_detection" "std_msgs/Float32"))
   (setf *sound-play-actionclient* (actionlib:make-action-client "/sound_play" "sound_play/SoundRequestAction"))
+  (setf *take-object-publisher* (roslisp:advertise "/beliefstate/grasp_object_human_interaction" "knowledge_msgs/GraspObjectHumanInteraction")) 
+  (setf *drop-object-publisher* (roslisp:advertise "/beliefstate/drop_action" "knowledge_msgs/DropObject")) 
   (loop until (actionlib:wait-for-server *sound-play-actionclient* 5.0)
         do (roslisp:ros-info "init-interaction" "sound_play node has not been started correctly. Please use roslaunch sound_play soundplay_node.py"))
   (roslisp:ros-info "init-interaction" "Sound_play action initialized")
@@ -111,6 +119,7 @@
            (cram-language:wait-for *handshake-detection*)
         (say "Thanks Human, i will grasp the Object now. Please be carefull.")
         (sleep 5)
+	(put-object-in-hand (decide-gripper moving-command) label) 
         (planning-motion::toggle-gripper force (decide-gripper moving-command) *closed-gripper-pos*)))))
 
 
@@ -146,6 +155,7 @@
         (sleep 5)
         (planning-motion::toggle-gripper 20.0 (decide-gripper moving-command) *open-gripper-pos*)
         (sleep 5)
+	(drop-object-in-hand (decide-gripper moving-command)) 
         (planning-motion::call-motion-move-arm-homeposition 10)
         )
       )
@@ -460,3 +470,18 @@
      (/ (cl-tf:x vec) 2)
      (/ (cl-tf:y vec) 2)
      old-z)))
+
+(defun put-object-in-hand (gripper label) 
+  (roslisp:publish *take-object-publisher* 
+                   (roslisp:make-msg "knowledge_msgs/GraspObjectHumanInteraction" 
+                                     :gripper 
+                                     (roslisp:make-msg "knowledge_msgs/gripper" 
+                                                       :gripper gripper) 
+                                     :object_label label))) 
+ 
+(defun drop-object-in-hand (gripper) 
+  (roslisp:publish *drop-object-publisher* 
+                   (roslisp:make-msg "knowledge_msgs/DropObject" 
+                                     :gripper (roslisp:make-msg "knowledge_msgs/gripper"
+                                                                :gripper gripper)))) 
+

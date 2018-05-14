@@ -509,7 +509,7 @@
     (let ((position (make-array '(3)  
                                 :initial-contents '(0 20 -20))))
       (loop for ya across position do
-        (let ((rotation (make-array '(1)  
+        (let ((rotation (make-array '(3)  
                                     :initial-contents '(0 30 -30))))
 
               (planning-motion:call-motion-move-arm-homeposition 10)
