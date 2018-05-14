@@ -1,5 +1,7 @@
 (in-package :planning-interaction)
 
+(defvar *success* 0)
+
 ;; Publisher for publishing calculated magnitude of wrench-force see @calculate-wrench-magnitude
 (defvar *magnitude-publisher*)
 
@@ -171,17 +173,22 @@
 ;; @output undefined
 
 (defun check-gripper(errormsg func args &optional (r 0) (l 0))
-  (cram-language:pursue
-    (if (= r 1)
-        (cram-language:wait-for planning-logic::*gripper-righ-state-fluent*))
-    (if (= l 1)
-        (cram-language:wait-for planning-logic::*gripper-left-state-fluent*))
-    (cram-language:unwind-protect 
-         (if (listp args)
-             (apply func args)
-             (funcall func args))
-      (wait-for-handshake 'print "Handshake detected" errormsg)
-      )))
+  (cram-language:top-level
+    (cram-language:pursue
+      (if (= r 1)
+          (cram-language:wait-for planning-logic::*gripper-righ-state-fluent*)
+          (cram-language:sleep 10000))
+      (if (= l 1)
+          (cram-language:wait-for planning-logic::*gripper-left-state-fluent*)
+          (cram-language:sleep 10000))
+      (cram-language:unwind-protect 
+           (progn
+             (if (listp args)
+               (apply func args)
+               (funcall func args))
+             (setf *success* 1))
+        (if (= *success* 0) (wait-for-handshake 'print "Handshake detected" errormsg))
+      ))))
 
 
 

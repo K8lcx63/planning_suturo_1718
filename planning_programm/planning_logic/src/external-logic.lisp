@@ -439,30 +439,30 @@
 
 
 
-(defun trying-To-Grab (label x y angle arm-first arm-first-homeposi grab-string arm-second arm-second-homeposi)
-  (if (eq nil 
-          (grab-or-place-object label x y angle arm-first arm-first-homeposi grab-string arm-second arm-second-homeposi))
-      (if (and (string= grab-string "grab")(= *counter* 0))
-          (progn
-            (setf *counter* 1)
-            (calculate-object-and-pr2-distance label)
-            (sleep 5.0)
-            (if (eq T
-                    (grab-or-place-object label *x* *y* *angle* arm-first arm-first-homeposi grab-string arm-second arm-second-homeposi))
-                (return-from trying-To-Grab T) 
-                                        ; since here interaction with human
-                (roslisp:with-fields
-                    ((left_gripper (knowledge_msgs-srv:left_gripper))
-                     (right_gripper(knowledge_msgs-srv:right_gripper)))
-                    (cram-language:wait-for
-                     (planning-knowledge:empty-gripper))
-                  (roslisp:with-fields (force)
-                      (cram-language:wait-for
-                       (planning-knowledge:how-to-pick-objects label))
-                    (if (and (eq T left_gripper)(= arm-first 7))
-                        (planning-interaction:ask-human-to-move-object (make-object-pose-for-handshake label) label force 3)
-                        (if (eq T right_gripper)
-                            (planning-interaction:ask-human-to-move-object (make-object-pose-for-handshake label) label force 2))))))))))
+;;(defun trying-To-Grab (label x y angle arm-first arm-first-homeposi grab-string arm-second arm-second-homeposi)
+;;  (if (eq nil 
+;;          (grab-or-place-object label x y angle arm-first arm-first-homeposi grab-string arm-second arm-second-homeposi))
+;;      (if (and (string= grab-string "grab")(= *counter* 0))
+;;          (progn
+;;            (setf *counter* 1)
+;;            (calculate-object-and-pr2-distance label)
+;;            (sleep 5.0)
+;;            (if (eq T
+;;                    (grab-or-place-object label *x* *y* *angle* arm-first arm-first-homeposi grab-string arm-second arm-second-homeposi))
+;;                (return-from trying-To-Grab T) 
+;;                                        ; since here interaction with human
+;;                (roslisp:with-fields
+;;                    ((left_gripper (knowledge_msgs-srv:left_gripper))
+;;                     (right_gripper(knowledge_msgs-srv:right_gripper)))
+;;                    (cram-language:wait-for
+;;                     (planning-knowledge:empty-gripper))
+;;                  (roslisp:with-fields (force)
+;;                      (cram-language:wait-for
+;;                       (planning-knowledge:how-to-pick-objects label))
+;;                    (if (and (eq T left_gripper)(= arm-first 7))
+;;                        (planning-interaction:ask-human-to-move-object (make-object-pose-for-handshake label) label force 3)
+;;                        (if (eq T right_gripper)
+;;                            (planning-interaction:ask-human-to-move-object (make-object-pose-for-handshake label) label force 2))))))))))
                                         ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>HIER NOCH EIN ELSE FÜR STRING GRAB WENN NICHT ABSTELLBAR  HUMAN INTERACTION
 
 
