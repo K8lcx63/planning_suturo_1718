@@ -183,6 +183,7 @@
 ;; @output undefined
 
 (defun check-gripper(errormsg func args &optional (r 0) (l 0))
+  (setf *success* 0)
   (cram-language:top-level
     (cram-language:pursue
       (if (= r 1)
