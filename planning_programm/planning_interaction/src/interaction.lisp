@@ -62,7 +62,7 @@
   (setf *handshake-publisher* (roslisp:advertise "/planning_interaction/handshake_detection" "std_msgs/Float32"))
   (setf *sound-play-actionclient* (actionlib:make-action-client "/sound_play" "sound_play/SoundRequestAction"))
   (setf *take-object-publisher* (roslisp:advertise "/beliefstate/grasp_object_human_interaction" "knowledge_msgs/GraspObjectHumanInteraction")) 
-  (setf *drop-object-publisher* (roslisp:advertise "/beliefstate/drop_action" "knowledge_msgs/DropObject")) 
+  (setf *drop-object-publisher* (roslisp:advertise "/beliefstate/delete_object_human_interaction" "std_msgs/String")) 
   (loop until (actionlib:wait-for-server *sound-play-actionclient* 5.0)
         do (roslisp:ros-info "init-interaction" "sound_play node has not been started correctly. Please use roslaunch sound_play soundplay_node.py"))
   (roslisp:ros-info "init-interaction" "Sound_play action initialized")
@@ -155,7 +155,7 @@
         (sleep 5)
         (planning-motion::toggle-gripper 20.0 (decide-gripper moving-command) *open-gripper-pos*)
         (sleep 5)
-	(drop-object-in-hand (decide-gripper moving-command)) 
+        (drop-object-in-hand label) 
         (planning-motion::call-motion-move-arm-homeposition 10)
         )
       )
@@ -480,9 +480,6 @@
                                                        :gripper gripper) 
                                      :object_label label))) 
  
-(defun drop-object-in-hand (gripper) 
-  (roslisp:publish *drop-object-publisher* 
-                   (roslisp:make-msg "knowledge_msgs/DropObject" 
-                                     :gripper (roslisp:make-msg "knowledge_msgs/gripper"
-                                                                :gripper gripper)))) 
+(defun drop-object-in-hand (label) 
+  (roslisp:publish *drop-object-publisher* (roslisp:make-msg "std_msgs/String" :data label))) 
 
