@@ -77,7 +77,7 @@
                                                              planning-logic::*r*
                                                              planning-logic::*l*)
                        ;;placing Object
-                       (planning-logic:move-base 0.75 *y* 0 0) 
+                       ;;(planning-logic:move-base 0.75 *y* 0 0) 
                        (roslisp:with-fields (place_pose)
                            (nth 0 calculate-landing-zone)
                          (if (= i 2)
@@ -147,4 +147,22 @@
                          (if (eq T right_gripper)
                              (planning-interaction:ask-human-to-move-object
                               (planning-logic::make-object-pose-for-handshake object_label_1) object_label_1 force 2)))))))
-              (planning-motion:call-motion-move-arm-homeposition 10)))))))
+              (planning-motion:call-motion-move-arm-homeposition 10))
+         (planning-logic::how-many-gripper)
+              ;;object attached to gripper  >>>>>>>>>>>>>>>
+              (loop for i from 1 to 2 do
+                (roslisp:with-fields (object_label)
+                    (planning-knowledge::get-object-attached-to-gripper i)
+                  (block drive-And-Place
+                    ;;were should pr2 drive  >>>>>>>>>>>>>>>
+                    (if
+                     (> (length object_label) 0)
+                     (let ((calculate-landing-zone
+                             (planning-objects::calculate-landing-zone object_label i)))
+                       (setf *y*
+                             (planning-logic:disassemble-graspindividual-response (nth 0 calculate-landing-zone)))
+                       ;;driving to point  >>>>>>>>>>>>>>>
+                         (planning-interaction:check-gripper "errormsgs" 'planning-logic:move-base '(0.75 *y* 0 0 10 "/map" nil)
+                                                             planning-logic::*r*
+                                                             planning-logic::*l*)))))))))))
+                       
