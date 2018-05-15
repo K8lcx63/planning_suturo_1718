@@ -40,6 +40,7 @@
                     (if
                      (eq nil
                          (nth 0 tmp-list))
+                     (print (nth 0 tmp-list))
                      ;;human interaction  >>>>>>>>>>>>>>>                         
                      (roslisp:with-fields
                          ((left_gripper (knowledge_msgs-srv:left_gripper))
@@ -72,10 +73,9 @@
                        (setf *y*
                              (planning-logic:disassemble-graspindividual-response (nth 0 calculate-landing-zone)))
                        ;;driving to point  >>>>>>>>>>>>>>>
-                       (cram-language:top-level
                          (planning-interaction:check-gripper "errormsgs" 'planning-logic:move-base '(0.75 *y* 0 0 10 "/map" nil)
                                                              planning-logic::*r*
-                                                             planning-logic::*l*))
+                                                             planning-logic::*l*)
                        ;;placing Object
                        (planning-logic:move-base 0.75 *y* 0 0) 
                        (roslisp:with-fields (place_pose)
