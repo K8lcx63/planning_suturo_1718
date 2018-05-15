@@ -1,4 +1,4 @@
-(in-package :planning-logic)
+(in-package :planning-demo)
 
 (defvar *joint-states* 0)
 (defvar *perception-publisher*)
@@ -539,9 +539,9 @@
             ;;  (eq (percieve-Objects-And-Search label) nil)
             ;;  (return-from try-to-grab-or-place-different-location nil)
             (if
-             (eq 1(planning-motion:call-motion-move-arm-to-point grasp_pose_array label command force))
+             (eq 2(planning-motion:call-motion-move-arm-to-point grasp_pose_array label 10 force))
              (return-from try-to-grab-or-place-different-location T)))))))
-    (return-from try-to-grab-or-place-different-location nil))
+  (return-from try-to-grab-or-place-different-location nil))
                                         ;)
 
 

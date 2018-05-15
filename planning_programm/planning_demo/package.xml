@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>planning_main</name>
+  <name>planning_demo</name>
   <version>0.4.0</version>
-  <description>planning_main</description>
+  <description>planning_main_programm</description>
   <author>Kevin Störmer, Vanessa Hassouna, Hauke Tietjen</author>
   <maintainer email="stoermer@uni-bremen.de">Kevin Störmer, Vanessa Hassouna, Hauke Tietjen</maintainer>
   <license>BSD</license>
@@ -18,14 +18,6 @@
   <buildtool_depend>planning_knowledge</buildtool_depend>
   <buildtool_depend>planning_vision</buildtool_depend>
   <buildtool_depend>planning_move</buildtool_depend>
-  <buildtool_depend>planning_error</buildtool_depend>
-  <buildtool_depend>cram-language</buildtool_depend>
-  <buildtool_depend>planning_logic</buildtool_depend>
-  <buildtool_depend>planning_objects</buildtool_depend>
-  <buildtool_depend>knowledge_msgs</buildtool_depend>
-  <buildtool_depend>gazebo_msgs</buildtool_depend>
-  <buildtool_depend>planning_interaction</buildtool_depend>
-  <buildtool_depend>planning_objects</buildtool_depend>
-   <buildtool_depend>planning_old</buildtool_depend>
- <buildtool_depend>planning_demo</buildtool_depend>
+  <buildtool_depend>cram_language</buildtool_depend>
+
 </package>
