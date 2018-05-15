@@ -108,7 +108,7 @@
   (planning-motion::call-motion-move-arm-homeposition 10)
   (planning-logic::publish-sphere (geometry_msgs-msg:Pose pose))
   (let ((pose-to-point
-          (build-pointing-pose pose)))
+          (build-pointing-pose (planning-logic:transformation-pose-stamped pose "/base_link"))))
     (planning-logic::publish-sphere (geometry_msgs-msg:Pose pose-to-point))
     (planning-motion::call-motion-move-arm-to-point pose-to-point "" moving-command)) 
   (say (concatenate 'string statement label statement2))
