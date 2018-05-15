@@ -24,7 +24,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun init-logic ()
+(defun init-demo ()
   (vis-init)
   (init-gripper-states)
   (init-pr2)
@@ -524,21 +524,20 @@
 (defun try-To-Grab-Or-Place-Different-Location(x y z w label command)
   "different locations for grabbing a object"
   (print "try-to-grab-or-place-different-location")
+  (planning-move:move-base-To-Point x y z w 10)
   (roslisp:with-fields ((grasp_pose_array knowledge_msgs-srv:grasp_pose_array)
                         (force knowledge_msgs-srv:force))
       (cram-language:wait-for
        (planning-knowledge::how-to-pick-objects label))
-    (planning-move:move-base-to-point x y z w 10)
     (let ((position (make-array '(3)  
-                                :initial-contents '(0 20 -20))))
+                                :initial-contents '(0 -0.10 0.10))))
       (loop for ya across position do
         (let ((rotation (make-array '(1)  
                                     :initial-contents '(0))))
 
-          (planning-motion:call-motion-move-arm-homeposition 10)
           (loop for r across rotation do
             (cram-language:wait-for
-             (planning-move:move-Base-To-Point 0 (+ y ya) 0 r 10 "/base_link"))
+             (planning-move:move-Base-To-Point 0 ya 0 r 10 "/base_link"))
                                         ;vision needs to be work
             ;; (if
             ;;  (eq (percieve-Objects-And-Search label) nil)

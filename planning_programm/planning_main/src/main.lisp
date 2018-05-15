@@ -7,6 +7,7 @@
 (defvar *tmp-arm* nil)
 
 (defun init ()
+  (planning-demo::init-demo)
   (planning-logic:init-logic)
   (planning-interaction:init-interaction))
 
@@ -22,7 +23,6 @@
     (planning-move:move-base-to-point -0.29 1 0 180)
     (block find-Objects-Start
       (loop for a from 0 to 5 do
-        
         (roslisp:set-param "counter" 0)
         (loop for i from 0 to 0 do 
           (planning-move:move-Head 1.2 (second (assoc i *headMovementList*)) 0)
@@ -33,7 +33,7 @@
         (if (> (roslisp:get-param "counter") 0)
             (progn
               ;;grab object
-              (loop for i from 1 to 2 do
+              (loop for i from 1 to 1 do
                 (roslisp:with-fields (object_label_1)
                     (planning-knowledge:objects-to-pick)
                   (let ((tmp-list (planning-logic:grab-left-or-right -0.29 1 180 object_label_1)))
@@ -73,7 +73,7 @@
                        (setf *y*
                              (planning-logic:disassemble-graspindividual-response (nth 0 calculate-landing-zone)))
                        ;;driving to point  >>>>>>>>>>>>>>>
-                         (planning-interaction:check-gripper "errormsgs" 'planning-logic:move-base '(0.75 *y* 0 0 10 "/map" nil)
+                         (planning-interaction:check-gripper "i dropped an object" 'planning-logic:move-base '(0.75 *y* 0 0 10)
                                                              planning-logic::*r*
                                                              planning-logic::*l*)
                        ;;placing Object
@@ -162,7 +162,7 @@
                        (setf *y*
                              (planning-logic:disassemble-graspindividual-response (nth 0 calculate-landing-zone)))
                        ;;driving to point  >>>>>>>>>>>>>>>
-                         (planning-interaction:check-gripper "errormsgs" 'planning-logic:move-base '(0.75 *y* 0 0 10 "/map" nil)
+                         (planning-interaction:check-gripper "errormsgs" 'planning-logic:move-base '(0.75 *y* 0 0 10)
                                                              planning-logic::*r*
                                                              planning-logic::*l*)))))))))))
                        

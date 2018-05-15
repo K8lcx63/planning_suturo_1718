@@ -530,7 +530,7 @@
        (planning-knowledge::how-to-pick-objects label))
     (planning-move:move-base-to-point x y z w 10)
     (let ((position (make-array '(3)  
-                                :initial-contents '(0 20 -20))))
+                                :initial-contents '(0 0.10 -0.10))))
       (loop for ya across position do
         (let ((rotation (make-array '(1)  
                                     :initial-contents '(0))))
@@ -538,7 +538,7 @@
           (planning-motion:call-motion-move-arm-homeposition 10)
           (loop for r across rotation do
             (cram-language:wait-for
-             (planning-move:move-Base-To-Point 0 (+ y ya) 0 r 10 "/base_link"))
+             (planning-move:move-Base-To-Point 0 ya 0 r 10 "/base_link"))
                                         ;vision needs to be work
             ;; (if
             ;;  (eq (percieve-Objects-And-Search label) nil)
