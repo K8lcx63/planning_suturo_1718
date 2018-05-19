@@ -7,6 +7,7 @@
 (defvar *tmp-arm* nil)
 
 (defun init ()
+  (planning-demo::init-demo)
   (planning-logic:init-logic)
   (planning-interaction:init-interaction))
 
@@ -22,7 +23,6 @@
     (planning-move:move-base-to-point -0.29 1 0 180)
     (block find-Objects-Start
       (loop for a from 0 to 5 do
-        
         (roslisp:set-param "counter" 0)
         (loop for i from 0 to 0 do 
           (planning-move:move-Head 1.2 (second (assoc i *headMovementList*)) 0)
@@ -33,13 +33,14 @@
         (if (> (roslisp:get-param "counter") 0)
             (progn
               ;;grab object
-              (loop for i from 1 to 2 do
+              (loop for i from 1 to 1 do
                 (roslisp:with-fields (object_label_1)
                     (planning-knowledge:objects-to-pick)
                   (let ((tmp-list (planning-logic:grab-left-or-right -0.29 1 180 object_label_1)))
                     (if
                      (eq nil
                          (nth 0 tmp-list))
+                     (print (nth 0 tmp-list))
                      ;;human interaction  >>>>>>>>>>>>>>>                         
                      (roslisp:with-fields
                          ((left_gripper (knowledge_msgs-srv:left_gripper))
@@ -72,12 +73,11 @@
                        (setf *y*
                              (planning-logic:disassemble-graspindividual-response (nth 0 calculate-landing-zone)))
                        ;;driving to point  >>>>>>>>>>>>>>>
-                       (cram-language:top-level
-                         (planning-interaction:check-gripper "errormsgs" 'planning-logic:move-base '(0.75 *y* 0 0 10 "/map" nil)
+                         (planning-interaction:check-gripper "i dropped an object" 'planning-logic:move-base '(0.75 *y* 0 0 10)
                                                              planning-logic::*r*
-                                                             planning-logic::*l*))
+                                                             planning-logic::*l*)
                        ;;placing Object
-                       (planning-logic:move-base 0.75 *y* 0 0) 
+                       ;;(planning-logic:move-base 0.75 *y* 0 0) 
                        (roslisp:with-fields (place_pose)
                            (nth 0 calculate-landing-zone)
                          (if (= i 2)
@@ -147,4 +147,22 @@
                          (if (eq T right_gripper)
                              (planning-interaction:ask-human-to-move-object
                               (planning-logic::make-object-pose-for-handshake object_label_1) object_label_1 force 2)))))))
-              (planning-motion:call-motion-move-arm-homeposition 10)))))))
+              (planning-motion:call-motion-move-arm-homeposition 10))
+         (planning-logic::how-many-gripper)
+              ;;object attached to gripper  >>>>>>>>>>>>>>>
+              (loop for i from 1 to 2 do
+                (roslisp:with-fields (object_label)
+                    (planning-knowledge::get-object-attached-to-gripper i)
+                  (block drive-And-Place
+                    ;;were should pr2 drive  >>>>>>>>>>>>>>>
+                    (if
+                     (> (length object_label) 0)
+                     (let ((calculate-landing-zone
+                             (planning-objects::calculate-landing-zone object_label i)))
+                       (setf *y*
+                             (planning-logic:disassemble-graspindividual-response (nth 0 calculate-landing-zone)))
+                       ;;driving to point  >>>>>>>>>>>>>>>
+                         (planning-interaction:check-gripper "errormsgs" 'planning-logic:move-base '(0.75 *y* 0 0 10)
+                                                             planning-logic::*r*
+                                                             planning-logic::*l*)))))))))))
+                       

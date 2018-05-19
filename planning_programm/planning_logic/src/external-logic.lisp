@@ -12,7 +12,7 @@
 (defvar *x* nil)
 (defvar *y* nil)
 (defvar *angle* nil)
-(defvar *counter* nil)
+(defvar *counter* 0)
 (defvar *first-gripper* nil)
 (defvar *second-gripper* nil)
 
@@ -423,6 +423,7 @@
 
 (defmethod grab-Or-Place-Object (label x y angle arm-first arm-first-homeposi grab-string &optional arm-second arm-second-homeposi)
   "Trying to grab or place, if the given grab-string is equal to grab the pr2 will also try to grab it with another arm and different places"
+  (print "grab-or-place-object")
   (sleep 5.0)
   (block start-Grab
                                         ;which gripper
@@ -446,6 +447,7 @@
     (if (string= grab-string "grab")
                                         ;grab with second arm
         (progn
+          (print "try with second arm")
           (sleep 5.0)
           
                                         ;which gripper is empty
@@ -482,6 +484,7 @@
           (grab-or-place-object label x y angle arm-first arm-first-homeposi grab-string arm-second arm-second-homeposi))
       (if (and (string= grab-string "grab")(= *counter* 0))
           (progn
+            (print "geht er in trying-to-grab distance change rein")
             (setf *counter* 1)
             (calculate-object-and-pr2-distance label)
             (sleep 5.0)
@@ -517,18 +520,20 @@
 
 
 ;;carefully! the movement here will be done in the frame "/base_footprint"
-(defmethod try-To-Grab-Or-Place-Different-Location(x y z w label command)
+
+(defun try-To-Grab-Or-Place-Different-Location(x y z w label command)
   "different locations for grabbing a object"
+  (print "try-to-grab-or-place-different-location")
   (roslisp:with-fields ((grasp_pose_array knowledge_msgs-srv:grasp_pose_array)
                         (force knowledge_msgs-srv:force))
       (cram-language:wait-for
        (planning-knowledge::how-to-pick-objects label))
     (planning-move:move-base-to-point x y z w 10)
     (let ((position (make-array '(3)  
-                                :initial-contents '(0 20 -20))))
+                                :initial-contents '(0 0.10 -0.10))))
       (loop for ya across position do
-        (let ((rotation (make-array '(3)  
-                                    :initial-contents '(0 30 -30))))
+        (let ((rotation (make-array '(1)  
+                                    :initial-contents '(0))))
 
           (planning-motion:call-motion-move-arm-homeposition 10)
           (loop for r across rotation do
@@ -545,13 +550,13 @@
                                         ;)
 
 
-(defmethod try-To-Grab-Or-Place-Different-Location :before(x y z w label command)
-  "before method for try-To-Grab-Or-Place-Different-Location"
-  (publish-text "I'm moving now to grab the object"))
+;; (defmethod try-To-Grab-Or-Place-Different-Location :before(x y z w label command)
+;;   "before method for try-To-Grab-Or-Place-Different-Location"
+;;   (publish-text "I'm moving now to grab the object"))
 
-(defmethod try-To-Grab-Or-Place-Different-Location(x y z w label command)
-  "after method for try-To-Grab-Or-Place-Different-Location"
-  (publish-text "im done with grabbing the object"))
+;; (defmethod try-To-Grab-Or-Place-Different-Location(x y z w label command)
+;;   "after method for try-To-Grab-Or-Place-Different-Location"
+;;   (publish-text "im done with grabbing the object"))
 
 
 (defun should-Robo-Use-Left-Or-Right-Arm (label)
