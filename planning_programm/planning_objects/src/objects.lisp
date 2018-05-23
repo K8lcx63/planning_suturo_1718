@@ -1,5 +1,11 @@
 (in-package :planning-objects)
 
+
+;; ############################
+;; ###   GLOBAL VARIABLES   ###
+;; ############################
+
+
 ;; Publisher for publishing markers where objects will be placed
 (defvar *marker-publisher* nil)
 
@@ -30,10 +36,17 @@
 ;; Message which tells the receiver of the landing zone if the storage place has space for another object
 (defvar *storage-place-capacity* "storage-place-empty")
 
-;; Asks Knowledge where the object belongs and crops the landing zone
+
+;; ##########################
+;; ###   CORE FUNCTIONS   ###
+;; ##########################
+
+
+;; Asks Knowledge where the object belongs and crops the landing zone. The object must be spelled correctly or an error will be thrown by the function check-storage-place-spelling.
+;; fill-landing-zone-horizontally will be used to give the object its coordinates within the landing zone.
 ;;
-;; @input  string object                             - object lable
-;; @input  knowledge_msgs/gripper gripper            - gripper number, 1 for left 2 for right
+;; @input  string object                                   - object lable
+;; @input  knowledge_msgs/gripper gripper                  - number of the gripper which holds the object, 1 for left 2 for right
 ;; @output list (geometry_msgs/PoseStamped , string, bool) - list of a pose where the object should be placed and a string that says "storage-place-empty" or "storage-place-full". "storage-place-empty" means that there is more space for one or more objects. The last list object is true if the object is a "SiggBottle" and false if it is anything else.
 
 (defun calculate-landing-zone (object gripper)
@@ -64,6 +77,7 @@
                     (planning-knowledge::place-object gripper-msg "/map" exact-landing-x exact-landing-y)))
               (return-from calculate-landing-zone (list landing-pose-message *storage-place-capacity*)))))))))
 
+
 ;; Checks if the object-lable is one of the following
 ;; "HelaCurryKetchup", "TomatoSauceOroDiParma", "PringlesPaprika", "PringlesSalt", "JaMilch", "KoellnMuesliKnusperHonigNuss", "KellogsToppasMini", "CupEcoOrange", "EdekaRedBowl" and "SiggBottle".
 ;; If it is one of them and correctly spelled with capitalization this function returns true.
@@ -76,6 +90,7 @@
   (loop for x in '("HelaCurryKetchup" "TomatoSauceOroDiParma" "PringlesPaprika" "PringlesSalt" "JaMilch" "KoellnMuesliKnusperHonigNuss" "KellogsToppasMini" "CupEcoOrange" "EdekaRedBowl" "SiggBottle")
         do (if (string= object-lable x)
                (return t))))
+
 
 ;; Places one more object in the landing zone. Throws an error if the storage place already contains two or more objects.
 ;;
@@ -163,9 +178,10 @@
                  (setf *last-y-border-y-4* current-y-border)))
           (return-from fill-landing-zone-horizontally landing-zone-pose))))))
 
+
 ;; Pushes both objects of the last filled storage place away to free up space for new objects.
 ;; In between pushes the robot will move into the home position to avoid collisions.
-;; If the storage place is not full an error will be thrown
+;; If the storage place is not full an error will be thrown.
 
 (defun push-object ()
   (cpl:with-failure-handling
@@ -227,26 +243,13 @@
          (setf *last-y-border-y-4* 9.0)))
       (setf *storage-place-capacity* "storage-place-empty"))))
 
-;; Clears all landing zones of objects. This is for testing purposes.
 
-(defun clear-all-landing-zones ()
-  (setf *last-y-border-y-1* 9.0)
-  (setf *last-y-border-y-2* 9.0)
-  (setf *last-y-border-y-3* 9.0)
-  (setf *last-y-border-y-4* 9.0)
+;; #########################
+;; ###   VISUALIZATION   ###
+;; #########################
 
-  (setf *object-label-1-lz-1* nil)
-  (setf *object-label-2-lz-1* nil)
-  (setf *object-label-1-lz-2* nil)
-  (setf *object-label-2-lz-2* nil)
-  (setf *object-label-1-lz-3* nil)
-  (setf *object-label-2-lz-3* nil)
-  (setf *object-label-1-lz-4* nil)
-  (setf *object-label-2-lz-4* nil)
 
-  (setf *storage-place-capacity* "storage-place-empty"))
-
-;; Asks Knowledge where the object belongs and crops the landing zone. Additionally a marker will be published at the position where the object should be placed.
+;; Works like calculate-landing-zone. Additionally a marker will be published at the position where the object should be placed.
 ;;
 ;; @input  string object                             - object lable
 ;; @input  knowledge_msgs/gripper gripper            - gripper number, 1 for left 2 for right
@@ -258,7 +261,7 @@
     (incf *marker-id*)
     (return-from calculate-landing-zone-visualized landing-zone-pose)))
 
-;; Main function which calls sub functions to publish markers of the landing zone.
+;; Main function of visualiation which calls sub functions to publish markers of the landing zone.
 ;;
 ;; @input geometry_msgs/PoseStamped landing-zone-pose - pose where the marker should be spawned
 
@@ -266,13 +269,14 @@
   (vis-init)
   (publish-pose landing-zone-pose *marker-id* 0.1 0.1))
 
+
 ;; Starts the marker publisher
 
 (defun vis-init ()
   (setf *marker-publisher*
         (roslisp:advertise "~location_marker" "visualization_msgs/Marker")))
 
-;; Publishes a marker with a random color at the given position
+;; Publishes a marker with a random color at the given position.
 ;;
 ;; @input geometry_msgs/PoseStamped pose - pose where the marker should be placed
 ;; @input int id                         - unique id for the marker, to replace a marker just reuse its id
@@ -321,3 +325,26 @@
                                              (a color) 1.0)))))
 
 
+;; #####################
+;; ###   DEBUGGING   ###
+;; #####################
+
+
+;; Clears all landing zones of objects. This is for testing purposes.
+
+(defun clear-all-landing-zones ()
+  (setf *last-y-border-y-1* 9.0)
+  (setf *last-y-border-y-2* 9.0)
+  (setf *last-y-border-y-3* 9.0)
+  (setf *last-y-border-y-4* 9.0)
+
+  (setf *object-label-1-lz-1* nil)
+  (setf *object-label-2-lz-1* nil)
+  (setf *object-label-1-lz-2* nil)
+  (setf *object-label-2-lz-2* nil)
+  (setf *object-label-1-lz-3* nil)
+  (setf *object-label-2-lz-3* nil)
+  (setf *object-label-1-lz-4* nil)
+  (setf *object-label-2-lz-4* nil)
+
+  (setf *storage-place-capacity* "storage-place-empty"))
