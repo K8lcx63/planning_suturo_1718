@@ -45,9 +45,9 @@
 ;; Asks Knowledge where the object belongs and crops the landing zone. The object must be spelled correctly or an error will be thrown by the function check-storage-place-spelling.
 ;; fill-landing-zone-horizontally will be used to give the object its coordinates within the landing zone.
 ;;
-;; @input  string object                                   - object lable
-;; @input  knowledge_msgs/gripper gripper                  - number of the gripper which holds the object, 1 for left 2 for right
-;; @output list (geometry_msgs/PoseStamped , string, bool) - list of a pose where the object should be placed and a string that says "storage-place-empty" or "storage-place-full". "storage-place-empty" means that there is more space for one or more objects. The last list object is true if the object is a "SiggBottle" and false if it is anything else.
+;; @input  string object                             - object lable
+;; @input  knowledge_msgs/gripper gripper            - number of the gripper which holds the object, 1 for left 2 for right
+;; @output list (geometry_msgs/PoseStamped , string) - list of a pose where the object should be placed and a string that says "storage-place-empty" or "storage-place-full". "storage-place-empty" means that there is more space for one or more objects.
 
 (defun calculate-landing-zone (object gripper)
   (cpl:with-failure-handling
