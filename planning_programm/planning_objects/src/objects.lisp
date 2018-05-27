@@ -78,17 +78,17 @@
               (return-from calculate-landing-zone (list landing-pose-message *storage-place-capacity*)))))))))
 
 
-;; Checks if the object-lable is one of the following
+;; Checks if the object-label is one of the following
 ;; "HelaCurryKetchup", "TomatoSauceOroDiParma", "PringlesPaprika", "PringlesSalt", "JaMilch", "KoellnMuesliKnusperHonigNuss", "KellogsToppasMini", "CupEcoOrange", "EdekaRedBowl" and "SiggBottle".
 ;; If it is one of them and correctly spelled with capitalization this function returns true.
 ;; If it does not match it will return false.
 
-;; @input string object-lable - name of the object
+;; @input string object-label - name of the object
 ;; @output bool               - true if the name of the object matches one in the list, otherwise false
 
-(defun check-storage-place-spelling (object-lable)
+(defun check-storage-place-spelling (object-label)
   (loop for x in '("HelaCurryKetchup" "TomatoSauceOroDiParma" "PringlesPaprika" "PringlesSalt" "JaMilch" "KoellnMuesliKnusperHonigNuss" "KellogsToppasMini" "CupEcoOrange" "EdekaRedBowl" "SiggBottle")
-        do (if (string= object-lable x)
+        do (if (string= object-label x)
                (return t))))
 
 
